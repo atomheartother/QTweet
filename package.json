@@ -1,0 +1,15 @@
+{
+  "name": "aikyan",
+  "version": "1.0.0",
+  "description": "A bot who posts images from a twitter profile",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Thomas N",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "twitter": "^1.7.1"
+  }
+}
