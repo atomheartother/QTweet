@@ -25,6 +25,7 @@ function addGet(channel, screenName, delay) {
     channels[channel.id][screenName] = {
         'intervalId' : interval,
         'delay' : delay,
+        'lastImg' : "",
     };
 }
 
@@ -57,8 +58,19 @@ function getLatestPic(channel, screenName) {
                 if (!(tweet.hasOwnProperty('extended_entities') &&
                       tweet.extended_entities.hasOwnProperty('media') &&
                       tweet.extended_entities.media.length > 0))
-                    return  channel.send("Sorry, the latest tweet from " + tweet.user.name + " doesn't have a picture! Here's what it says: `" + tweet.text + "`");
+                    return  channel.send("Sorry, the latest tweet from " + tweet.user.name + " doesn't have a picture! Here's what it says:\n`" + tweet.text + "`");
                 var imgurl = tweet.extended_entities.media[0].media_url_https;
+                if (channels.hasOwnProperty(channel.id) &&
+                    channels[channel.id].hasOwnProperty(screenName))
+                {
+                    // This is a recurrent call. If the previous image was the same as this one, no need to post
+                    if (channels[channel.id][screenName].lastImg === imgurl)
+                    {
+                        console.log("Tried posting same image from " + screenName + " twice, ignored");
+                        return;
+                    }
+                    channels[channel.id][screenName].lastImg = imgurl;
+                }
                 const embed = new Discord.RichEmbed()
                       .setAuthor(tweet.user.name, tweet.user.profile_image_url_https)
                       .setColor(0xD667CF)
@@ -79,7 +91,7 @@ dClient.on('message', (message) => {
     if (message.content.indexOf(config.prefix) !== 0)
     {
         if (message.channel.type == "dm")
-            message.channel.send("Hello, I am A.I.kyan! Type " + config.prefix+ "help to see a list of my commands! ❤");
+            message.channel.send("Hello, I am A.I.kyan! Type " + config.prefix + "help to see a list of my commands! ❤");
         return ;
     }
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
@@ -133,12 +145,15 @@ dClient.on('message', (message) => {
             return message.channel.send("This command will stop automatically fetching pictures from a twitter user\nUsage: `" + config.prefix + "stopget <twitter screen name>`");
         var screenName = args[0];
         if (!channels.hasOwnProperty(message.channel.id))
-            return message.channel.send("I'm afraid you don't have any oingoing `get`s! Use !!startget to do that");
+            return message.channel.send("I'm afraid you don't have any oingoing `get`s! Use " + config.prefix + "startget to do that");
         if (!(channels[message.channel.id].hasOwnProperty(screenName)))
-            return message.channel.send("This user isn't being `get`ted right now. Use !!list to see whatI'm currently doing!");
+            return message.channel.send("This user isn't being `get`ted right now. Use " + config.prefix + "list to see what I'm currently doing!");
         var intervalId = channels[message.channel.id][screenName].intervalId;
         clearInterval(intervalId);
         delete channels[message.channel.id][screenName];
+        if (Object.keys(channels[message.channel.id]).length === 0 &&
+            channels[message.channel.id].constructor === Object)
+            delete channels[message.channel.id];
         message.channel.send("It's gone!");
         saveChannels();
     }
@@ -146,7 +161,7 @@ dClient.on('message', (message) => {
     if (command === "list")
     {
         if (!(message.channel.id in channels))
-            return message.channel.send("I'm afraid you don't have any oingoing `get`s! Use !!startget to do that");
+            return message.channel.send("I'm afraid you don't have any oingoing `get`s! Use " + config.prefix + "startget to do that");
         var str = "We are currently getting the users:\n";
         for (var key in channels[message.channel.id])
         {
@@ -172,6 +187,7 @@ dClient.on('ready', () => {
                 // Restore the channels object from saved file
                 var channelsCopy = JSON.parse(data);
                 // Re-create the thing at random intervals
+                console.log(channelsCopy);
                 for (var id in channelsCopy) { // Iterate over channels
                     if (!channelsCopy.hasOwnProperty(id)) continue;
 
@@ -179,18 +195,18 @@ dClient.on('ready', () => {
                     for (var name in channel) { // Iterate over gets in channels
                         if (!channel.hasOwnProperty(name)) continue;
 
-                        // We'll space out our gets depending on their delay
-                        // Need a closure for this to save the loop vairables' state
+                        // Need a closure for this to save the loop variables' state
                         (function(channelId, screenName) {
                             // Acquire the get object
                             var get = channelsCopy[channelId][screenName];
+                            // Get the channel object from channel id
+                            var channel = dClient.channels.get(channelId);
+                            // Immediately add the interval
+                            addGet(channel, screenName, get.delay);
+                            // Queue up a request immediately, on a random timer to avoid overloading APIs
                             setTimeout(function() {
-                                // Get the channel object from channel id
-                                var channel = dClient.channels.get(channelId);
                                 getLatestPic(channel, screenName);
-                                addGet(channel, screenName, get.delay);
                             }, Math.floor((Math.random() * get.delay) * 1000 * 60));
-                            // }, 1000); // Do it after 1s instead, for debugging purposes
                         })(id, name);
                     }
                 }
