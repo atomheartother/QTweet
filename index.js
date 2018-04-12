@@ -19,13 +19,15 @@ var channels = {};
 
 function addGet(channel, screenName, delay) {
     var interval = setInterval(getLatestPic, (delay * 1000 ) * 60, channel, screenName);
+    console.log(channel.name);
+    console.log(interval);
     if (!channels.hasOwnProperty(channel.id))
         channels[channel.id] = {};
 
     channels[channel.id][screenName] = {
-        'intervalId' : interval,
         'delay' : delay,
         'lastImg' : "",
+        'intervalId' : interval
     };
 }
 
@@ -52,36 +54,36 @@ function saveChannels() {
 }
 
 function getLatestPic(channel, screenName) {
-        tClient.get('statuses/user_timeline', {screen_name:screenName})
-            .then(function(tweets){
-                var tweet = tweets[0];
-                if (!(tweet.hasOwnProperty('extended_entities') &&
-                      tweet.extended_entities.hasOwnProperty('media') &&
-                      tweet.extended_entities.media.length > 0))
-                    return  channel.send("Sorry, the latest tweet from " + tweet.user.name + " doesn't have a picture! Here's what it says:\n`" + tweet.text + "`");
-                var imgurl = tweet.extended_entities.media[0].media_url_https;
-                if (channels.hasOwnProperty(channel.id) &&
-                    channels[channel.id].hasOwnProperty(screenName))
+    tClient.get('statuses/user_timeline', {screen_name:screenName})
+        .then(function(tweets){
+            var tweet = tweets[0];
+            if (!(tweet.hasOwnProperty('extended_entities') &&
+                  tweet.extended_entities.hasOwnProperty('media') &&
+                  tweet.extended_entities.media.length > 0))
+                return  channel.send("Sorry, the latest tweet from " + tweet.user.name + " doesn't have a picture! Here's what it says:\n`" + tweet.text + "`");
+            var imgurl = tweet.extended_entities.media[0].media_url_https;
+            if (channels.hasOwnProperty(channel.id) &&
+                channels[channel.id].hasOwnProperty(screenName))
+            {
+                if (channels[channel.id][screenName].lastImg === imgurl)
                 {
                     // This is a recurrent call. If the previous image was the same as this one, no need to post
-                    if (channels[channel.id][screenName].lastImg === imgurl)
-                    {
-                        console.log("Tried posting same image from " + screenName + " twice, ignored");
-                        return;
-                    }
-                    channels[channel.id][screenName].lastImg = imgurl;
+                    console.log("Tried posting same image from " + screenName + " twice, ignored");
+                    return;
                 }
-                const embed = new Discord.RichEmbed()
-                      .setAuthor(tweet.user.name, tweet.user.profile_image_url_https)
-                      .setColor(0xD667CF)
-                      .setFooter(tweet.text)
-                      .setImage(tweet.extended_entities.media[0].media_url_https);
-                channel.send({embed});
-            })
-            .catch(function(error){
-                channel.send("Something went wrong fetching this user's last tweet, sorry! :c");
-                console.error(error);
-            });
+                channels[channel.id][screenName].lastImg = imgurl;
+            }
+            const embed = new Discord.RichEmbed()
+                  .setAuthor(tweet.user.name, tweet.user.profile_image_url_https)
+                  .setColor(0xD667CF)
+                  .setFooter(tweet.text)
+                  .setImage(tweet.extended_entities.media[0].media_url_https);
+            channel.send({embed});
+        })
+        .catch(function(error){
+            channel.send("Something went wrong fetching this user's last tweet, sorry! :c");
+            console.error(error);
+        });
 }
 
 dClient.on('message', (message) => {
@@ -131,7 +133,8 @@ dClient.on('message', (message) => {
         {
             if (!message.author.id === config.ownerId)
                 return message.channel.send("Sorry, the delay needs to be 15 minutes or over! Bots aren't allowed to go that fast :C");
-            else message.channel.send("Overriding 15 minutes limit as " + message.author.username + " is my benevolent master");
+            else
+                message.channel.send("Overriding 15 minutes limit as " + message.author.username + " is my benevolent master");
         }
         message.channel.send("I'm starting to get pictures from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
         getLatestPic(message.channel, screenName);
@@ -149,6 +152,7 @@ dClient.on('message', (message) => {
         if (!(channels[message.channel.id].hasOwnProperty(screenName)))
             return message.channel.send("This user isn't being `get`ted right now. Use " + config.prefix + "list to see what I'm currently doing!");
         var intervalId = channels[message.channel.id][screenName].intervalId;
+        console.log(intervalId);
         clearInterval(intervalId);
         delete channels[message.channel.id][screenName];
         if (Object.keys(channels[message.channel.id]).length === 0 &&
