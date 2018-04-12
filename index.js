@@ -1,7 +1,10 @@
 var Twitter = require('twitter');
 const Discord = require('discord.js');
+const fs = require('fs');
 
-var pw = require('./config.json');
+// Config & password files
+var config = require('./config.json');
+var pw = require('./pw.json')
 
 var tClient = new Twitter({
     consumer_key: pw.tId,
@@ -13,6 +16,39 @@ var tClient = new Twitter({
 const dClient = new Discord.Client();
 
 var channels = {};
+
+function addGet(channel, screenName, delay) {
+    var interval = setInterval(getLatestPic, (delay * 1000 ) * 60, channel, screenName);
+    if (!channels.hasOwnProperty(channel.id))
+        channels[channel.id] = {};
+
+    channels[channel.id][screenName] = {
+        'intervalId' : interval,
+        'delay' : delay,
+    };
+}
+
+function saveChannels() {
+    // Create a copy of the channels object, remove all timeouts from it
+    var channelsCopy = Object.assign({}, channels);
+    for (var id in channelsCopy) { // Iterate over channels
+        if (!channelsCopy.hasOwnProperty(id)) continue;
+
+        var channel = channelsCopy[id];
+        for (var name in channel) { // Iterate over gets in channels
+            if (!channel.hasOwnProperty(name)) continue;
+            var get = channel[name];
+            delete get.intervalId;
+        }
+    }
+    var json = JSON.stringify(channelsCopy);
+    fs.writeFile(config.getFile, json, 'utf8', function(err) {
+        if (err !== null) {
+            console.error("Error saving channels object:");
+            console.error(err);
+        }
+    });
+}
 
 function getLatestPic(channel, screenName) {
         tClient.get('statuses/user_timeline', {screen_name:screenName})
@@ -40,13 +76,13 @@ dClient.on('message', (message) => {
     // Ignore bots
     if (message.author.bot) return;
 
-    if (message.content.indexOf(pw.prefix) !== 0)
+    if (message.content.indexOf(config.prefix) !== 0)
     {
         if (message.channel.type == "dm")
-            message.channel.send("Hello, I am A.I.kyan! Type " + pw.prefix+ "help to see a list of my commands! ❤");
+            message.channel.send("Hello, I am A.I.kyan! Type " + config.prefix+ "help to see a list of my commands! ❤");
         return ;
     }
-    var args = message.content.slice(pw.prefix.length).trim().split(/ +/g);
+    var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
 
     if (command === "help" || command === "?")
@@ -56,17 +92,17 @@ dClient.on('message', (message) => {
               .setTitle("A.I.kyan's Command List")
               .setDescription("This is all the things I can currently do:")
               .setFooter("Issues, suggestions? My creator is Tom'#4242")
-              .addField(pw.prefix + "pic", "This command will get the latest tweet from the given user and post its picture.\nUsage: `" + pw.prefix + "pic <twitter screen name>`")
-              .addField(pw.prefix + "startget", "This command will periodically fetch a picture from a twitter user's last tweet\nUsage: `" + pw.prefix + "startget <twitter screen name> <time in minutes >= 15>`")
-              .addField(pw.prefix + "stopget", "This command will stop automatically fetching pictures from a twitter user\nUsage: `" + pw.prefix + "stopget <twitter screen name>`")
-              .addField(pw.prefix + "list", "Will print out a list of the twitter users you're currently getting pictures from.")
+              .addField(config.prefix + "pic", "This command will get the latest tweet from the given user and post its picture.\nUsage: `" + config.prefix + "pic <twitter screen name>`")
+              .addField(config.prefix + "startget", "This command will periodically fetch a picture from a twitter user's last tweet\nUsage: `" + config.prefix + "startget <twitter screen name> <time in minutes >= 15>`")
+              .addField(config.prefix + "stopget", "This command will stop automatically fetching pictures from a twitter user\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
+              .addField(config.prefix + "list", "Will print out a list of the twitter users you're currently getting pictures from.")
 
         message.channel.send({embed});
     }
 
     if (command === "pic") {
         if (args.length < 1)
-            return message.channel.send("This command will get the latest tweet from the given user and post its picture.\nUsage: `" + pw.prefix + "getpic <twitter screen name>`");
+            return message.channel.send("This command will get the latest tweet from the given user and post its picture.\nUsage: `" + config.prefix + "getpic <twitter screen name>`");
         var screenName = args[0];
         getLatestPic(message.channel, screenName);
     }
@@ -74,33 +110,27 @@ dClient.on('message', (message) => {
     if (command === "startget")
     {
         if (args.length < 2)
-            return message.channel.send("This command will periodically fetch a picture from a twitter user's last tweet\nUsage: `" + pw.prefix + "startget <twitter screen name> <time in minutes >= 15>`");
+            return message.channel.send("This command will periodically fetch a picture from a twitter user's last tweet\nUsage: `" + config.prefix + "startget <twitter screen name> <time in minutes >= 15>`");
         var screenName = args[0];
         var delay = parseInt(args[1]);
         if (isNaN(delay))
             return message.channel.send("I'm sorry, I don't think " + args[1] + " is a number!");
         if (delay < 15)
         {
-            if (!message.author.id === pw.ownerId)
+            if (!message.author.id === config.ownerId)
                 return message.channel.send("Sorry, the delay needs to be 15 minutes or over! Bots aren't allowed to go that fast :C");
             else message.channel.send("Overriding 15 minutes limit as " + message.author.username + " is my benevolent master");
         }
-        message.channel.send("I'm starting to get pictures from " + screenName + ", remember you can stop me at any time with `" + pw.prefix + "stopget " + screenName + "` !");
+        message.channel.send("I'm starting to get pictures from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
         getLatestPic(message.channel, screenName);
-        var interval = setInterval(getLatestPic, (delay * 1000 ) * 60, message.channel, screenName);
-        if (!channels.hasOwnProperty(message.channel.id))
-            channels[message.channel.id] = {};
-
-        channels[message.channel.id][screenName] = {
-            'intervalId' : interval,
-            'delay' : delay,
-        };
+        addGet(message.channel, screenName, delay);
+        saveChannels();
     }
 
     if (command === "stopget")
     {
         if (args.length < 1)
-            return message.channel.send("This command will stop automatically fetching pictures from a twitter user\nUsage: `" + pw.prefix + "stopget <twitter screen name>`");
+            return message.channel.send("This command will stop automatically fetching pictures from a twitter user\nUsage: `" + config.prefix + "stopget <twitter screen name>`");
         var screenName = args[0];
         if (!channels.hasOwnProperty(message.channel.id))
             return message.channel.send("I'm afraid you don't have any oingoing `get`s! Use !!startget to do that");
@@ -110,6 +140,7 @@ dClient.on('message', (message) => {
         clearInterval(intervalId);
         delete channels[message.channel.id][screenName];
         message.channel.send("It's gone!");
+        saveChannels();
     }
 
     if (command === "list")
@@ -130,7 +161,42 @@ dClient.on('message', (message) => {
 });
 
 dClient.on('ready', () => {
-    console.log('Ready!');
+    fs.stat(config.getFile, function(err, stat) {
+        if (err == null) {
+            console.log("Found a get file at " + config.getFile);
+            fs.readFile(config.getFile, 'utf8', function(err, data) {
+                if (err) {
+                    console.error("There was a problem reading the config file");
+                    return;
+                }
+                // Restore the channels object from saved file
+                var channelsCopy = JSON.parse(data);
+                // Re-create the thing at random intervals
+                for (var id in channelsCopy) { // Iterate over channels
+                    if (!channelsCopy.hasOwnProperty(id)) continue;
+
+                    var channel = channelsCopy[id];
+                    for (var name in channel) { // Iterate over gets in channels
+                        if (!channel.hasOwnProperty(name)) continue;
+
+                        // We'll space out our gets depending on their delay
+                        // Need a closure for this to save the loop vairables' state
+                        (function(channelId, screenName) {
+                            // Acquire the get object
+                            var get = channelsCopy[channelId][screenName];
+                            setTimeout(function() {
+                                // Get the channel object from channel id
+                                var channel = dClient.channels.get(channelId);
+                                getLatestPic(channel, screenName);
+                                addGet(channel, screenName, get.delay);
+                            }, Math.floor((Math.random() * get.delay) * 1000 * 60));
+                            // }, 1000); // Do it after 1s instead, for debugging purposes
+                        })(id, name);
+                    }
+                }
+            });
+        }
+    });
 });
 
 dClient.login(pw.dToken);
