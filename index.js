@@ -30,7 +30,7 @@ var users = {};
 function sendEmbed(channel, embed) {
     channel.send(embed)
         .then(function(message) {
-            message.react("⬆");
+            message.react("❤");
         })
         .catch(function(error){
             channel.send("I tried to respond but Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n`" + error.name + ": " + error.message + "`");
