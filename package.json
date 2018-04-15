@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^11.3.2",
+    "fortune-teller": "^0.1.2",
     "twitter": "^1.7.1"
   }
 }
