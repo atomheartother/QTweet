@@ -20,10 +20,10 @@ var stream = null;
 
 // Users:
 // Dict of TwitterUser, using userId as key
-// TwitterUser:
-// channels: Array of Gets
-// Get:
-// channel: channel object
+//  TwitterUser:
+//   channels: Array of Gets
+//   Get:
+//    channel: channel object
 var users = {};
 
 // Register the stream with twitter
@@ -46,7 +46,7 @@ function createStream() {
     // Else, register the stream using our userIds
     stream = tClient.stream('statuses/filter', {follow: userIds.toString()});
 
-    stream.on('data', function(tweet, err) {
+    stream.on('data', function(tweet) {
         if ((tweet.hasOwnProperty('in_reply_to_user_id')
             && tweet.in_reply_to_user_id !== null) ||
             tweet.hasOwnProperty('retweeted_status'))
@@ -147,7 +147,7 @@ function postTweet(channel, tweet) {
           tweet.extended_entities.media.length > 0))
     {
         embed = new Discord.RichEmbed()
-            .setAuthor(tweet.user.name, tweet.user.profile_image_url_https)
+            .setAuthor(tweet.user.name, tweet.user.profile_image_url_https, "https://twitter.com/" + tweet.user.screen_name)
             .setColor(0x69B2D6)
             .setDescription(tweet.text)
     }
@@ -155,9 +155,9 @@ function postTweet(channel, tweet) {
     {
         var imgurl = tweet.extended_entities.media[0].media_url_https;
         embed = new Discord.RichEmbed()
-            .setAuthor(tweet.user.name, tweet.user.profile_image_url_https)
+            .setAuthor(tweet.user.name, tweet.user.profile_image_url_https, "https://twitter.com/" + tweet.user.screen_name)
             .setColor(0xD667CF)
-            .setFooter(tweet.text)
+            .setDescription(tweet.text)
             .setImage(tweet.extended_entities.media[0].media_url_https);
     }
     channel.send({embed});
@@ -165,7 +165,10 @@ function postTweet(channel, tweet) {
 
 function getLatestPic(channel, screenName) {
     tClient.get('statuses/user_timeline', {screen_name:screenName})
-        .then(function(tweets){
+        .then(function(tweets, error){
+            if (tweets.length < 1) {
+                return channel.send("It doesn't look like " + screenName + " has any tweets... ");
+            }
             var tweet = tweets[0];
             postTweet(channel, tweet);
         })
@@ -188,6 +191,15 @@ dClient.on('message', (message) => {
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
 
+    // Only take commands from guild owner or creator
+    if (!(message.author.id === config.ownerId ||
+         message.author.id === message.channel.guild.ownerID))
+    {
+        message.channel.send("Sorry, I only take orders from the server owner and from my creator for now!");
+        return;
+    }
+
+
     if (command === "help" || command === "?")
     {
         const embed = new Discord.RichEmbed()
@@ -195,17 +207,17 @@ dClient.on('message', (message) => {
               .setTitle("A.I.kyan's Command List")
               .setDescription("This is all the things I can currently do:")
               .setFooter("Issues, suggestions? My creator is Tom'#4242")
-              .addField(config.prefix + "pic", "This command will get the latest tweet from the given user and post its picture.\nUsage: `" + config.prefix + "pic <twitter screen name>`")
-              .addField(config.prefix + "startget", "This command will periodically fetch a picture from a twitter user's last tweet\nUsage: `" + config.prefix + "startget <twitter screen name>`")
-              .addField(config.prefix + "stopget", "This command will stop automatically fetching pictures from a twitter user\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
-              .addField(config.prefix + "list", "Will print out a list of the twitter users you're currently getting pictures from.")
+              .addField(config.prefix + "tweet", "This command will get the latest tweet from the given user and post it.\nUsage: `" + config.prefix + "tweet <twitter screen name>`")
+              .addField(config.prefix + "startget", "This command will post a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`")
+              .addField(config.prefix + "stopget", "This command will stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
+//              .addField(config.prefix + "list", "Will print out a list of the twitter users you're currently getting pictures from.")
 
         message.channel.send({embed});
     }
 
     if (command === "pic") {
         if (args.length < 1)
-            return message.channel.send("This command will get the latest tweet from the given user and post its picture.\nUsage: `" + config.prefix + "getpic <twitter screen name>`");
+            return message.channel.send("This command will get the latest tweet from the given user and post it..\nUsage: `" + config.prefix + "getpic <twitter screen name>`");
         var screenName = args[0];
         getLatestPic(message.channel, screenName);
     }
@@ -213,7 +225,7 @@ dClient.on('message', (message) => {
     if (command === "startget")
     {
         if (args.length < 1)
-            return message.channel.send("This command will periodically fetch a picture from a twitter user's last tweet\nUsage: `" + config.prefix + "startget <twitter screen name>`");
+            return message.channel.send("This command will post a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`");
         var screenName = args[0];
         message.channel.send("I'm starting to get pictures from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
         // getLatestPic(message.channel, screenName);
@@ -231,7 +243,7 @@ dClient.on('message', (message) => {
     if (command === "stopget")
     {
         if (args.length < 1)
-            return message.channel.send("This command will stop automatically fetching pictures from a twitter user\nUsage: `" + config.prefix + "stopget <twitter screen name>`");
+            return message.channel.send("This command will stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`");
         var screenName = args[0];
         tClient.get('users/lookup', {screen_name : screenName})
             .then(function(data) {
