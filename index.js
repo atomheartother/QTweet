@@ -1,6 +1,7 @@
 var Twitter = require('twitter');
 const Discord = require('discord.js');
 const fs = require('fs');
+var fortune = require('fortune-teller');
 
 // Config & password files
 var config = require('./config.json');
@@ -230,7 +231,10 @@ dClient.on('message', (message) => {
 
     if (message.content.indexOf(config.prefix) !== 0)
     {
-        if (message.channel.type == "dm")
+        if (message.mentions.members.find(item => item.user.id === dClient.user.id)) {
+            message.reply(fortune.fortune());
+        }
+        else if (message.channel.type == "dm")
             message.channel.send("Hello, I am A.I.kyan! Type " + config.prefix + "help to see a list of my commands! ❤");
         return ;
     }
@@ -356,6 +360,7 @@ dClient.on('message', (message) => {
         }
         message.channel.send(str);
     }
+
 });
 
 dClient.on('ready', () => {
