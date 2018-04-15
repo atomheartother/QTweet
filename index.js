@@ -26,13 +26,20 @@ var stream = null;
 //    channel: channel object
 var users = {};
 
+function sendEmbed(channel, embed) {
+    channel.send(embed)
+        .catch(function(error){
+            channel.send("I tried to respond but Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n`" + error.name + ": " + error.message + "`");
+        });
+}
+
 // Register the stream with twitter
 function createStream() {
     if (stream != null)
         stream.destroy();
     stream = null;
 
-    userIds = [];
+    var userIds = [];
     // Get all the user IDs
     for (var id in users) {
         if (!users.hasOwnProperty(id)) continue;
@@ -160,7 +167,7 @@ function postTweet(channel, tweet) {
             .setDescription(tweet.text)
             .setImage(tweet.extended_entities.media[0].media_url_https);
     }
-    channel.send({embed});
+    sendEmbed(channel, {embed});
 }
 
 function getLatestPic(channel, screenName) {
@@ -199,6 +206,10 @@ dClient.on('message', (message) => {
         return;
     }
 
+    // if (!message.channel.permissionsFor(dClient.user).has("EMBED_LINKS")) {
+    //     message.channel.send("I need permission to send embed links to function properly!");
+    //     return;
+    // }
 
     if (command === "help" || command === "?")
     {
@@ -212,7 +223,7 @@ dClient.on('message', (message) => {
               .addField(config.prefix + "stopget", "This command will stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
 //              .addField(config.prefix + "list", "Will print out a list of the twitter users you're currently getting pictures from.")
 
-        message.channel.send({embed});
+        sendEmbed(message.channel, {embed});
     }
 
     if (command === "pic") {
