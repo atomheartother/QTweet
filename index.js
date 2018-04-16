@@ -1,213 +1,16 @@
 var Twitter = require('twitter');
 const Discord = require('discord.js');
-const fs = require('fs');
 var fortune = require('fortune-teller');
 
-// Config & password files
+// Config file
 var config = require('./config.json');
-var pw = require('./pw.json');
 
-var tClient = new Twitter({
-    consumer_key: pw.tId,
-    consumer_secret: pw.tSecret,
-    access_token_key: pw.tToken,
-    access_token_secret: pw.tTokenS
-});
+var dClient = require('./dClient.js');
+var tClient = require('./tClient.js');
+var userList = require('./userList.js');
+var users = require('./users.js');
+var post = require('./post.js');
 
-const dClient = new Discord.Client();
-
-// This is the stream variable, which handles receiving the twitter feed
-var stream = null;
-
-// Users:
-// Dict of TwitterUser, using userId as key
-//  TwitterUser:
-//   name: screen name
-//   channels: Array of Gets
-//   Get:
-//    channel: channel object
-var users = {};
-
-function sendEmbed(channel, embed, react) {
-    channel.send(embed)
-        .then(function(message) {
-            if (react)
-                message.react("❤");
-        })
-        .catch(function(error){
-            channel.send("I tried to respond but Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n`" + error.name + ": " + error.message + "`");
-        });
-}
-
-// Register the stream with twitter
-function createStream() {
-    if (stream != null)
-        stream.destroy();
-    stream = null;
-
-    let userIds = [];
-    // Get all the user IDs
-    for (let id in users) {
-        if (!users.hasOwnProperty(id)) continue;
-
-        userIds.push(id);
-    }
-    // If there are none, we can just leave stream at null
-    if (userIds.length < 1)
-        return;
-
-    // Else, register the stream using our userIds
-    stream = tClient.stream('statuses/filter', {follow: userIds.toString()});
-
-    stream.on('data', function(tweet) {
-        if ((tweet.hasOwnProperty('in_reply_to_user_id')
-             && tweet.in_reply_to_user_id !== null) ||
-            tweet.hasOwnProperty('retweeted_status'))
-            // This is a reply or a retweet, ignore it
-            return;
-        if (!users.hasOwnProperty(tweet.user.id_str)) {
-            // Somehow we got a tweet from someone we don't follow anymore.
-            console.error("We got a tweet from someone we don't follow:");
-            console.error(tweet);
-            return;
-        }
-        for (let get of users[tweet.user.id_str].channels) {
-            postTweet(get.channel, tweet);
-        }
-    });
-
-    stream.on('error', function(err) {
-        console.error("Error getting a stream");
-        console.error(err);
-    });
-}
-
-function addGet(channel, userId, screenName) {
-    if (!users.hasOwnProperty(userId)) {
-        // Create the user object
-        users[userId] = {channels : []};
-    }
-    if (screenName != null && !users[userId].hasOwnProperty('name')) {
-        users[userId].name = screenName;
-    }
-
-    for (let get of users[userId].channels) {
-        // Get is already in there for this channel
-        if (get.channel.id == channel.id)
-            return;
-    }
-
-    users[userId].channels.push({
-        "channel" : channel,
-    });
-}
-
-// We save users as:
-// {
-//    "userId" : {name: "screen_name", channels: [channelId1, channelId2]}
-// }
-function saveUsers() {
-    // Create a copy of the channels object, remove all timeouts from it
-    let usersCopy = {};
-    for (let userId in users) { // Iterate over twitter users
-        if (!users.hasOwnProperty(userId)) continue;
-
-        usersCopy[userId] = {channels:[]};
-        if (users[userId].hasOwnProperty('name')) {
-            usersCopy[userId].name = users[userId].name;
-        }
-        for (let get of users[userId].channels) {
-            usersCopy[userId].channels.push(get.channel.id);
-        }
-    }
-    console.log("Saved users:");
-    console.log(usersCopy);
-    let json = JSON.stringify(usersCopy);
-    fs.writeFile(config.getFile, json, 'utf8', function(err) {
-        if (err !== null) {
-            console.error("Error saving users object:");
-            console.error(err);
-        }
-    });
-}
-
-function loadUsers() {
-    fs.stat(config.getFile, function(err, stat) {
-        if (err == null) {
-            console.log("Loading gets from " + config.getFile);
-            fs.readFile(config.getFile, 'utf8', function(err, data) {
-                if (err) {
-                    console.error("There was a problem reading the config file");
-                    return;
-                }
-                // Restore the channels object from saved file
-                let usersCopy = JSON.parse(data);
-                for (let userId in usersCopy) { // Iterate over users
-                    if (!usersCopy.hasOwnProperty(userId)) continue;
-
-                    let name = usersCopy[userId].hasOwnProperty('name') ? usersCopy[userId].name : null;
-                    let channels = usersCopy[userId].channels;
-                    for (let channelId of channels) { // Iterate over gets in channels
-                        let channel = dClient.channels.get(channelId);
-                        addGet(channel, userId, name);
-                    }
-                }
-                // All users have been registered, we can request the stream from Twitter
-                createStream();
-            });
-        }
-    });
-}
-
-function postTweet(channel, tweet) {
-    let embed = {
-        "author": {
-            "name": tweet.user.name,
-            "url": "https://twitter.com/" + tweet.user.screen_name,
-            "icon_url": tweet.user.profile_image_url_https
-        },
-        "description": tweet.text,
-    };
-    if (users.hasOwnProperty(tweet.user.id_str) &&
-        !users[tweet.user.id_str].hasOwnProperty('name')) {
-        // if we don't have that user's name, add it to our list
-        users[tweet.user.id_str].name = tweet.user.screen_name;
-        saveUsers();
-    }
-    if (!(tweet.hasOwnProperty('extended_entities') &&
-          tweet.extended_entities.hasOwnProperty('media') &&
-          tweet.extended_entities.media.length > 0))
-    {
-        // Text tweet
-        embed.color = 0x69B2D6;
-    }
-    else if (tweet.extended_entities.media[0].type === "animated_gif" ||
-             tweet.extended_entities.media[0].type === "video")
-    {
-        // Gif/video. We can't make it clickable, but we can make the tweet redirect to it
-        let vidinfo = tweet.extended_entities.media[0].video_info;
-        let vidurl = null;
-        for (let vid of vidinfo.variants) {
-            if (vid.content_type === "video/mp4")
-                vidurl = vid.url;
-        }
-        let  imgurl = tweet.extended_entities.media[0].media_url_https;
-        if (vidurl !== null) {
-            embed.title = tweet.text;
-            embed.description = "[Link to video](" + vidurl + ")";
-        }
-        embed.color = 0x67D67D;
-        embed.image = { "url": imgurl };
-    }
-    else
-    {
-        // Image
-        let imgurl = tweet.extended_entities.media[0].media_url_https;
-        embed.color = 0xD667CF;
-        embed.image = { "url": imgurl };
-    }
-    sendEmbed(channel, {embed}, true);
-}
 
 function getLatestPic(channel, screenName) {
     tClient.get('statuses/user_timeline', {screen_name:screenName})
@@ -217,7 +20,7 @@ function getLatestPic(channel, screenName) {
                 return;
             }
             let tweet = tweets[0];
-            postTweet(channel, tweet);
+            post.tweet(channel, tweet);
         })
         .catch(function(error){
             channel.send("Something went wrong fetching this user's last tweet, sorry! :c");
@@ -261,13 +64,15 @@ dClient.on('message', (message) => {
               .addField(config.prefix + "stopget", "This command will stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
               .addField(config.prefix + "list", "Will print out a list of the twitter users you're currently fetching tweets from.");
 
-        sendEmbed(message.channel, {embed}, false);
+        post.embed(message.channel, {embed}, false);
     }
 
     if (command === "tweet") {
         if (args.length < 1)
+        {
             message.channel.send("This command will get the latest tweet from the given user and post it..\nUsage: `" + config.prefix + "tweet <twitter screen name>`");
-        return;
+            return;
+        }
         let screenName = args[0];
         getLatestPic(message.channel, screenName);
     }
@@ -283,8 +88,8 @@ dClient.on('message', (message) => {
             .then(function(data) {
                 message.channel.send("I'm starting to get tweets from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
                 let userId = data[0].id_str;
-                addGet(message.channel, userId, screenName);
-                saveUsers();
+                users.add(message.channel, userId, screenName);
+                users.save();
             })
             .catch(function(error) {
                 console.error(error);
@@ -301,79 +106,15 @@ dClient.on('message', (message) => {
             return;
         }
         let screenName = args[0];
-        tClient.get('users/lookup', {screen_name : screenName})
-            .then(function(data) {
-                let userId = data[0].id_str;
-                if (!users.hasOwnProperty(userId))
-                {
-                    message.channel.send("You're not currently `get`ting this user. Use `" + config.prefix + "startget "+ screenName +"` to do it!");
-                    return;
-                }
-                let idx = -1;
-                for (let i = 0 ; i < users[userId].channels.length ; i++)
-                {
-                    let channel = users[userId].channels[i].channel;
-                    if (channel.id == message.channel.id)
-                    {
-                        idx = i;
-                    }
-                }
-                if (idx == -1)
-                    message.channel.send("You're not currently `get`ting this user. Use `" + config.prefix + "startget "+ screenName +"` to do it!");
-                else
-                {
-                    // Remove element from channels
-                    users[userId].channels.splice(idx, 1);
-                    if (users[userId].channels.length < 1) {
-                        // If no one needs this user's tweets we can delete the enty
-                        delete users[userId];
-                        // ...and re-register the stream, which will now delete the user
-                        createStream();
-                    }
-                    message.channel.send("It's gone!");
-                    saveUsers();
-                    return;
-
-                }
-            })
-            .catch(function(err) {
-                console.error(err);
-                message.channel.send("I can't find a user by the name of " + screenName);
-            });
+        users.rm(message.channel, screenName);
     }
+
     if (command === "list")
     {
-        let userIds = [];
-        for (let userId in users) {
-            if (!users.hasOwnProperty(userId)) continue;
-
-            let twitterUser = users[userId];
-
-            for (let get of twitterUser.channels) {
-                if (get.channel.id === message.channel.id) {
-                    userIds.push(userId);
-                }
-            }
-        }
-
-        if (userIds.length < 1) {
-            message.channel.send("You aren't fetching tweets from anywhere!");
-            return;
-        }
-        let str = "You're fetching tweets from:";
-        for (let userId of userIds) {
-            if (users[userId].hasOwnProperty('name')) {
-                str += "\n- " + users[userId].name;
-            }
-            else
-                str += "\n- ID: " + userId + " (I don't know their name yet, I need a tweet from them!)";
-        }
-        message.channel.send(str);
+        users.showList(message.channel);
     }
 });
 
 dClient.on('ready', () => {
-    loadUsers();
+    users.load();
 });
-
-dClient.login(pw.dToken);
