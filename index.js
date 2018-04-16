@@ -5,12 +5,17 @@ var fortune = require('fortune-teller');
 // Config file
 var config = require('./config.json');
 
+// Get variables and methods from other parts of the program:
+// Discord client
 var dClient = require('./dClient.js');
+// Twitter client
 var tClient = require('./tClient.js');
+// List of users
 var userList = require('./userList.js');
+// User methods
 var users = require('./users.js');
+// Post methods
 var post = require('./post.js');
-
 
 function getLatestPic(channel, screenName) {
     tClient.get('statuses/user_timeline', {screen_name:screenName})
