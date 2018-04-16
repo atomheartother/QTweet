@@ -350,9 +350,7 @@ dClient.on('message', (message) => {
               .addField(config.prefix + "list", "Print this help message.")
               .addBlankField()
               .addField("**Get A.I.Kyan**", "Want to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!", true)
-              .addField("**Source code**", "You can find me on [GitHub](https://github.com/atomheartother/A-I-kyan)!", true)
-              .addBlankField();
-
+              .addField("**Source code**", "You can find me on [GitHub](https://github.com/atomheartother/A-I-kyan)!", true);
         postEmbed(message.channel, {embed}, false);
     }
 
