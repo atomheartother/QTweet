@@ -327,30 +327,19 @@ dClient.on('message', (message) => {
     let args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     let command = args.shift().toLowerCase();
 
-    // Only take commands from guild owner or creator
-    if (!(message.author.id === config.ownerId ||
-          message.author.id === message.channel.guild.ownerID))
-    {
-        message.channel.send("Sorry, I only take orders from the server owner and from my creator for now!");
-        return;
-    }
-
     if (command === "help" || command === "?")
     {
         const embed = new Discord.RichEmbed()
               .setColor(0xD667CF)
               .setTitle("A.I.kyan")
-              .setDescription("Here is the list of my commands:")
-              .setFooter("Issues, suggestions? My creator is Tom'#4242")
-              .setDescription("")
-              .addField(config.prefix + "tweet", "Get the latest tweet from the given user and post it.\nUsage: `" + config.prefix + "tweet <twitter screen name>`")
+              .setURL("https://github.com/atomheartother/A-I-kyan")
+              .setDescription("Hello, I am A.I.kyan, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!\nHere's a list of what I can do:")
+              .setFooter("*: Anyone can perform these commands. Issues, suggestions? My creator is Tom'#4242")
+              .addField(config.prefix + "tweet*", "Get the latest tweet from the given user and post it.\nUsage: `" + config.prefix + "tweet <twitter screen name>`")
               .addField(config.prefix + "startget", "Post a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`")
               .addField(config.prefix + "stopget", "Stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
-              .addField(config.prefix + "list", "Print a list of the twitter users you're currently fetching tweets from.")
-              .addField(config.prefix + "help", "Print this help message.")
-              .addBlankField()
-              .addField("**Get A.I.Kyan**", "Want to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!", true)
-              .addField("**Source code**", "You can find me on [GitHub](https://github.com/atomheartother/A-I-kyan)!", true);
+              .addField(config.prefix + "list*", "Print a list of the twitter users you're currently fetching tweets from.")
+              .addField(config.prefix + "help*", "Print this help message.");
         postEmbed(message.channel, {embed}, false);
     }
 
@@ -366,6 +355,13 @@ dClient.on('message', (message) => {
 
     if (command === "startget")
     {
+        // Only take commands from guild owner or creator
+        if (!(message.author.id === config.ownerId ||
+              message.author.id === message.channel.guild.ownerID))
+        {
+            message.channel.send("Sorry, only my creator and the server owner can do this for now!");
+            return;
+        }
         if (args.length < 1) {
             message.channel.send("This command will post a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`");
             return;
@@ -391,6 +387,14 @@ dClient.on('message', (message) => {
 
     if (command === "stopget")
     {
+        // Only take commands from guild owner or creator
+        if (!(message.author.id === config.ownerId ||
+              message.author.id === message.channel.guild.ownerID))
+        {
+            message.channel.send("Sorry, only my creator and the server owner can do this for now!");
+            return;
+        }
+
         if (args.length < 1)
         {
             message.channel.send("This command will stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`");
