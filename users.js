@@ -18,8 +18,8 @@ function createStream() {
 
     let userIds = [];
     // Get all the user IDs
-    for (let id in users.list) {
-        if (!users.list.hasOwnProperty(id)) continue;
+    for (let id in users) {
+        if (!users.hasOwnProperty(id)) continue;
 
         userIds.push(id);
     }
@@ -29,20 +29,19 @@ function createStream() {
 
     // Else, register the stream using our userIds
     stream = tClient.stream('statuses/filter', {follow: userIds.toString()});
-
     stream.on('data', function(tweet) {
         if ((tweet.hasOwnProperty('in_reply_to_user_id')
              && tweet.in_reply_to_user_id !== null) ||
             tweet.hasOwnProperty('retweeted_status'))
             // This is a reply or a retweet, ignore it
             return;
-        if (!users.list.hasOwnProperty(tweet.user.id_str)) {
+        if (!users.hasOwnProperty(tweet.user.id_str)) {
             // Somehow we got a tweet from someone we don't follow anymore.
             console.error("We got a tweet from someone we don't follow:");
             console.error(tweet);
             return;
         }
-        for (let get of users.list[tweet.user.id_str].channels) {
+        for (let get of users[tweet.user.id_str].channels) {
             post.tweet(get.channel, tweet);
         }
     });
