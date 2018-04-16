@@ -344,10 +344,10 @@ dClient.on('message', (message) => {
               .setFooter("Issues, suggestions? My creator is Tom'#4242")
               .setDescription("")
               .addField(config.prefix + "tweet", "Get the latest tweet from the given user and post it.\nUsage: `" + config.prefix + "tweet <twitter screen name>`")
-              .addField(config.prefix + "startget", "{}ost a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`")
+              .addField(config.prefix + "startget", "Post a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`")
               .addField(config.prefix + "stopget", "Stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
               .addField(config.prefix + "list", "Print a list of the twitter users you're currently fetching tweets from.")
-              .addField(config.prefix + "list", "Print this help message.")
+              .addField(config.prefix + "help", "Print this help message.")
               .addBlankField()
               .addField("**Get A.I.Kyan**", "Want to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!", true)
               .addField("**Source code**", "You can find me on [GitHub](https://github.com/atomheartother/A-I-kyan)!", true);
