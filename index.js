@@ -8,7 +8,6 @@ var fortune = require('fortune-teller');
 var config = require('./config.json');
 // Passwords file
 var pw = require('./pw.json');
-var stream = null;
 
 var dClient = new Discord.Client();
 
@@ -27,6 +26,9 @@ var tClient = new Twitter({
 //   Get:
 //    channel: channel object
 var users = {};
+
+// Stream object, holds the twitter feed we get posts from
+var stream = null;
 
 // Register the stream with twitter
 function createStream() {
@@ -337,13 +339,19 @@ dClient.on('message', (message) => {
     {
         const embed = new Discord.RichEmbed()
               .setColor(0xD667CF)
-              .setTitle("A.I.kyan's Command List")
-              .setDescription("This is all the things I can currently do:")
+              .setTitle("A.I.kyan")
+              .setDescription("Here is the list of my commands:")
               .setFooter("Issues, suggestions? My creator is Tom'#4242")
-              .addField(config.prefix + "tweet", "This command will get the latest tweet from the given user and post it.\nUsage: `" + config.prefix + "tweet <twitter screen name>`")
-              .addField(config.prefix + "startget", "This command will post a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`")
-              .addField(config.prefix + "stopget", "This command will stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
-              .addField(config.prefix + "list", "Will print out a list of the twitter users you're currently fetching tweets from.");
+              .setDescription("")
+              .addField(config.prefix + "tweet", "Get the latest tweet from the given user and post it.\nUsage: `" + config.prefix + "tweet <twitter screen name>`")
+              .addField(config.prefix + "startget", "{}ost a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`")
+              .addField(config.prefix + "stopget", "Stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
+              .addField(config.prefix + "list", "Print a list of the twitter users you're currently fetching tweets from.")
+              .addField(config.prefix + "list", "Print this help message.")
+              .addBlankField()
+              .addField("**Get A.I.Kyan**", "Want to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!", true)
+              .addField("**Source code**", "You can find me on [GitHub](https://github.com/atomheartother/A-I-kyan)!", true)
+              .addBlankField();
 
         postEmbed(message.channel, {embed}, false);
     }
