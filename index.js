@@ -129,8 +129,6 @@ function loadUsers() {
                 // All users have been registered, we can request the stream from Twitter
                 createStream();
                 saveUsers();
-                console.log("\nLoaded gets:");
-                console.log(users);
             });
         }
     });
