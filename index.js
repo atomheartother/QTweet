@@ -8,6 +8,8 @@ var fortune = require('fortune-teller');
 var config = require('./config.json');
 // Passwords file
 var pw = require('./pw.json');
+// Usage strings
+var usage = require('./usage.js');
 
 var dClient = new Discord.Client();
 
@@ -25,6 +27,7 @@ var tClient = new Twitter({
 //   channels: Array of Gets
 //   Get:
 //    channel: channel object
+//    text: Boolean, defines whether text posts should be sent to this channel
 var users = {};
 
 // Stream object, holds the twitter feed we get posts from
@@ -62,7 +65,7 @@ function createStream() {
             return;
         }
         for (let get of users[tweet.user.id_str].channels) {
-            postTweet(get.channel, tweet);
+            postTweet(get.channel, tweet, get.text);
         }
     });
 
@@ -75,7 +78,7 @@ function createStream() {
 function saveUsers() {
     // We save users as:
     // {
-    //    "userId" : {name: "screen_name", channels: [channelId1, channelId2]}
+    //    "userId" : {name: "screen_name", channels: [{id: channelId, text: bool}]}
     // }
 
     // Create a copy of the channels object, remove all timeouts from it
@@ -87,7 +90,8 @@ function saveUsers() {
             usersCopy[userId].name = users[userId].name;
         }
         for (let get of users[userId].channels) {
-            usersCopy[userId].channels.push(get.channel.id);
+            let txt = get.hasOwnProperty('text') ? get.text : true;
+            usersCopy[userId].channels.push({"id" : get.channel.id, "text" : txt});
         }
     }
     console.log("Saving users:");
@@ -116,19 +120,24 @@ function loadUsers() {
                     if (!usersCopy.hasOwnProperty(userId)) continue;
 
                     let name = usersCopy[userId].hasOwnProperty('name') ? usersCopy[userId].name : null;
-                    let channels = usersCopy[userId].channels;
-                    for (let channelId of channels) { // Iterate over gets in channels
-                        let channel = dClient.channels.get(channelId);
+                    let gets = usersCopy[userId].channels;
+                    for (let get of gets) { // Iterate over gets in channels
+                        let channel = dClient.channels.get(get.id);
+                        let text = true;
+                        if (get.hasOwnProperty('text') && !(get.text)) {
+                            text = false;
+                        }
                         if (channel === undefined) {
-                            console.error("W: Tried to load undefined channel: " + channelId);
+                            console.error("W: Tried to load undefined channel: " + get.id);
                             continue;
                         }
-                        addGet(channel, userId, name);
+                        addGet(channel, userId, name, {"text" : text});
                     }
                 }
                 // All users have been registered, we can request the stream from Twitter
                 createStream();
                 saveUsers();
+                console.log("Users loaded, ready!");
             });
         }
     });
@@ -178,7 +187,8 @@ function postEmbed(channel, embed, react) {
         });
 }
 
-function postTweet(channel, tweet) {
+// text: Boolean. Don't post text tweets if false
+function postTweet(channel, tweet, text) {
     // Author doesn't have a screenName field,
     // we use it for debugging and for error handling
     let embed = {
@@ -200,6 +210,8 @@ function postTweet(channel, tweet) {
           tweet.extended_entities.hasOwnProperty('media') &&
           tweet.extended_entities.media.length > 0))
     {
+        if (!text)
+            return;
         // Text tweet
         embed.color = 0x69B2D6;
     }
@@ -232,7 +244,8 @@ function postTweet(channel, tweet) {
 }
 
 // Add a get to the user list
-function addGet(channel, userId, screenName) {
+// options: {text: boolean}
+function addGet(channel, userId, screenName, options) {
     if (!users.hasOwnProperty(userId)) {
         // Create the user object
         users[userId] = {channels : []};
@@ -249,6 +262,7 @@ function addGet(channel, userId, screenName) {
 
     users[userId].channels.push({
         "channel" : channel,
+        "text" : options.text,
     });
 }
 
@@ -301,7 +315,7 @@ function getLatestPic(channel, screenName) {
                 return;
             }
             let tweet = tweets[0];
-            postTweet(channel, tweet);
+            postTweet(channel, tweet, true);
         })
         .catch(function(error){
             channel.send("Something went wrong fetching this user's last tweet, sorry! :c");
@@ -333,10 +347,10 @@ dClient.on('message', (message) => {
               .setURL("https://github.com/atomheartother/A-I-kyan")
               .setDescription("Hello, I am A.I.kyan, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!\nHere's a list of what I can do:")
               .setFooter("*: Anyone can perform these commands. Issues, suggestions? My creator is Tom'#4242")
-              .addField(config.prefix + "tweet*", "Get the latest tweet from the given user and post it.\nUsage: `" + config.prefix + "tweet <twitter screen name>`")
-              .addField(config.prefix + "startget", "Post a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`")
-              .addField(config.prefix + "stopget", "Stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`")
-              .addField(config.prefix + "list*", "Print a list of the twitter users you're currently fetching tweets from.")
+              .addField(config.prefix + "tweet*", usage["tweet"])
+              .addField(config.prefix + "startget", usage["startget"])
+              .addField(config.prefix + "stopget", usage["stopget"])
+              .addField(config.prefix + "list*", usage["list"])
               .addField(config.prefix + "help*", "Print this help message.");
         postEmbed(message.channel, {embed}, false);
     }
@@ -344,7 +358,7 @@ dClient.on('message', (message) => {
     if (command === "tweet") {
         if (args.length < 1)
         {
-            message.channel.send("This command will get the latest tweet from the given user and post it..\nUsage: `" + config.prefix + "tweet <twitter screen name>`");
+            message.channel.send(usage["tweet"]);
             return;
         }
         let screenName = args[0];
@@ -353,6 +367,10 @@ dClient.on('message', (message) => {
 
     if (command === "startget")
     {
+        if (message.channel.type === "dm") {
+            message.channel.send("Sorry, but I can't automatically post in DMs for now!");
+            return;
+        }
         // Only take commands from guild owner or creator
         if (!(message.author.id === config.ownerId ||
               message.author.id === message.channel.guild.ownerID))
@@ -361,19 +379,23 @@ dClient.on('message', (message) => {
             return;
         }
         if (args.length < 1) {
-            message.channel.send("This command will post a twitter user's tweets in real time.\nUsage: `" + config.prefix + "startget <twitter screen name>`");
+            message.channel.send(usage["startget"]);
             return;
         }
-        if (message.channel.type === "dm") {
-            message.channel.send("Sorry, but I can't automatically post in DMs for now!");
-            return;
-        }
+        let text = true;
         let screenName = args[0];
+        for (let arg of args) {
+            if (arg.substring(0,2) == "--") {
+                let option = arg.substring(2);
+                if (option === "notext")
+                    text = false;
+            }
+        }
         tClient.get('users/lookup', {'screen_name' : screenName})
             .then(function(data) {
                 message.channel.send("I'm starting to get tweets from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
                 let userId = data[0].id_str;
-                addGet(message.channel, userId, screenName);
+                addGet(message.channel, userId, screenName, {"text":text});
                 saveUsers();
             })
             .catch(function(error) {
@@ -395,7 +417,7 @@ dClient.on('message', (message) => {
 
         if (args.length < 1)
         {
-            message.channel.send("This command will stop automatically posting tweets from the given user.\nUsage: `" + config.prefix + "stopget <twitter screen name>`");
+            message.channel.send(usage["stopget"]);
             return;
         }
         let screenName = args[0];
