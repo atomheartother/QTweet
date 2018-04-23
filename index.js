@@ -74,7 +74,6 @@ function createStream() {
             return;
         }
         for (let get of users[tweet.user.id_str].channels) {
-            console.log("Posting to channel " + get.channel.id + " with text setting: " + get.text);
             postTweet(get.channel, tweet, get.text);
         }
     });
@@ -199,7 +198,6 @@ function postEmbed(channel, embed, react) {
 
 // text: Boolean. Don't post text tweets if false
 function postTweet(channel, tweet, text) {
-    console.log(tweet);
     // Author doesn't have a screenName field,
     // we use it for debugging and for error handling
     let embed = {
