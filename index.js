@@ -33,7 +33,16 @@ var users = {};
 // Stream object, holds the twitter feed we get posts from
 var stream = null;
 
-// Register the stream with twitter
+// Default get options
+var defaultOptions = function(){
+    return({
+        "text" : true,
+    });
+};
+
+
+// Register the stream with twitter, unregistering the previous stream if there was one
+// Uses the users variable
 function createStream() {
     if (stream != null)
         stream.destroy();
@@ -65,6 +74,7 @@ function createStream() {
             return;
         }
         for (let get of users[tweet.user.id_str].channels) {
+            console.log("Posting to channel " + get.channel.id + " with text setting: " + get.text);
             postTweet(get.channel, tweet, get.text);
         }
     });
@@ -123,15 +133,15 @@ function loadUsers() {
                     let gets = usersCopy[userId].channels;
                     for (let get of gets) { // Iterate over gets in channels
                         let channel = dClient.channels.get(get.id);
-                        let text = true;
+                        let options = defaultOptions();
                         if (get.hasOwnProperty('text') && !(get.text)) {
-                            text = false;
+                            options.text = false;
                         }
                         if (channel === undefined) {
                             console.error("W: Tried to load undefined channel: " + get.id);
                             continue;
                         }
-                        addGet(channel, userId, name, {"text" : text});
+                        addGet(channel, userId, name, options);
                     }
                 }
                 // All users have been registered, we can request the stream from Twitter
@@ -189,6 +199,7 @@ function postEmbed(channel, embed, react) {
 
 // text: Boolean. Don't post text tweets if false
 function postTweet(channel, tweet, text) {
+    console.log(tweet);
     // Author doesn't have a screenName field,
     // we use it for debugging and for error handling
     let embed = {
@@ -210,9 +221,9 @@ function postTweet(channel, tweet, text) {
           tweet.extended_entities.hasOwnProperty('media') &&
           tweet.extended_entities.media.length > 0))
     {
-        if (!text)
-            return;
         // Text tweet
+        if (!text) // We were told not to post text tweets to this channel
+            return;
         embed.color = 0x69B2D6;
     }
     else if (tweet.extended_entities.media[0].type === "animated_gif" ||
@@ -382,20 +393,27 @@ dClient.on('message', (message) => {
             message.channel.send(usage["startget"]);
             return;
         }
-        let text = true;
-        let screenName = args[0];
+        let options = defaultOptions();
+        let screenName = null;
         for (let arg of args) {
             if (arg.substring(0,2) == "--") {
                 let option = arg.substring(2);
                 if (option === "notext")
-                    text = false;
+                    options.text = false;
+            }
+            else if (screenName == null) {
+                screenName = arg;
+            }
+            else {
+                message.channel.send("Invalid argument: " + arg);
+                return;
             }
         }
         tClient.get('users/lookup', {'screen_name' : screenName})
             .then(function(data) {
                 message.channel.send("I'm starting to get tweets from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
                 let userId = data[0].id_str;
-                addGet(message.channel, userId, screenName, {"text":text});
+                addGet(message.channel, userId, screenName, options);
                 saveUsers();
             })
             .catch(function(error) {
