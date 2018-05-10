@@ -41,6 +41,15 @@ var defaultOptions = function(){
 };
 
 
+function sendMessage(channel, message) {
+    channel.send(message)
+        .catch(function(error) {
+            console.error("Could not send message: " + message);
+            console.error(channel);
+            console.error(error);
+        });
+}
+
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
 function createStream() {
@@ -115,7 +124,7 @@ function saveUsers() {
 };
 
 function loadUsers() {
-        fs.stat(config.getFile, function(err, stat) {
+    fs.stat(config.getFile, function(err, stat) {
         if (err == null) {
             console.log("Loading gets from " + config.getFile);
             fs.readFile(config.getFile, 'utf8', function(err, data) {
@@ -167,7 +176,7 @@ function listUsers(channel) {
     }
 
     if (userIds.length < 1) {
-        channel.send("You aren't fetching tweets from anywhere!");
+        sendMessage(channel, "You aren't fetching tweets from anywhere!");
         return;
     }
     let str = "You're fetching tweets from:";
@@ -178,7 +187,7 @@ function listUsers(channel) {
         else
             str += "\n- ID: " + userId + " (I don't know their name yet, I need a tweet from them!)";
     }
-    channel.send(str);
+    sendMessage(channel, str);
 }
 
 function postEmbed(channel, embed, react) {
@@ -217,16 +226,14 @@ function postTweet(channel, tweet, text) {
     }
     if (!(tweet.hasOwnProperty('extended_entities') &&
           tweet.extended_entities.hasOwnProperty('media') &&
-          tweet.extended_entities.media.length > 0))
-    {
+          tweet.extended_entities.media.length > 0)) {
         // Text tweet
         if (!text) // We were told not to post text tweets to this channel
             return;
         embed.color = 0x69B2D6;
     }
     else if (tweet.extended_entities.media[0].type === "animated_gif" ||
-             tweet.extended_entities.media[0].type === "video")
-    {
+             tweet.extended_entities.media[0].type === "video") {
         // Gif/video. We can't make it clickable, but we can make the tweet redirect to it
         let vidinfo = tweet.extended_entities.media[0].video_info;
         let vidurl = null;
@@ -242,8 +249,7 @@ function postTweet(channel, tweet, text) {
         embed.color = 0x67D67D;
         embed.image = { "url": imgurl };
     }
-    else
-    {
+    else {
         // Image
         let imgurl = tweet.extended_entities.media[0].media_url_https;
         embed.color = 0xD667CF;
@@ -283,7 +289,7 @@ function rmGet(channel, screenName) {
             let userId = data[0].id_str;
             if (!users.hasOwnProperty(userId))
             {
-                channel.send("You're not currently `get`ting this user. Use `" + config.prefix + "startget "+ screenName +"` to do it!");
+                sendMessage(channel, "You're not currently `get`ting this user. Use `" + config.prefix + "startget "+ screenName +"` to do it!");
                 return;
             }
             let idx = -1;
@@ -296,7 +302,7 @@ function rmGet(channel, screenName) {
                 }
             }
             if (idx == -1) {
-                channel.send("You're not currently `get`ting this user. Use `" + config.prefix + "startget "+ screenName +"` to do it!");
+                sendMessage(channel, "You're not currently `get`ting this user. Use `" + config.prefix + "startget "+ screenName +"` to do it!");
                 return;
             }
             // Remove element from channels
@@ -307,12 +313,12 @@ function rmGet(channel, screenName) {
                 // ...and re-register the stream, which will now delete the user
                 createStream();
             }
-            channel.send("It's gone!");
+            sendMessage(channel, "It's gone!");
             saveUsers();
         })
         .catch(function(err) {
             console.error(err);
-            channel.send("I can't find a user by the name of " + screenName);
+            sendMessage(channel, "I can't find a user by the name of " + screenName);
         });
 }
 
@@ -320,14 +326,14 @@ function getLatestPic(channel, screenName) {
     tClient.get('statuses/user_timeline', {screen_name:screenName})
         .then(function(tweets, error){
             if (tweets.length < 1) {
-                channel.send("It doesn't look like " + screenName + " has any tweets... ");
+                sendMessage(channel, "It doesn't look like " + screenName + " has any tweets... ");
                 return;
             }
             let tweet = tweets[0];
             postTweet(channel, tweet, true);
         })
         .catch(function(error){
-            channel.send("Something went wrong fetching this user's last tweet, sorry! :c");
+            sendMessage(channel, "Something went wrong fetching this user's last tweet, sorry! :c");
             console.error(error);
         });
 }
@@ -342,7 +348,7 @@ dClient.on('message', (message) => {
             message.reply(fortune.fortune());
         }
         else if (message.channel.type == "dm")
-            message.channel.send("Hello, I am A.I.kyan! Type " + config.prefix + "help to see a list of my commands! ❤");
+            sendMessage(message.channel, "Hello, I am A.I.kyan! Type " + config.prefix + "help to see a list of my commands! ❤");
         return ;
     }
     let args = message.content.slice(config.prefix.length).trim().split(/ +/g);
@@ -367,7 +373,7 @@ dClient.on('message', (message) => {
     if (command === "tweet") {
         if (args.length < 1)
         {
-            message.channel.send(usage["tweet"]);
+            sendMessage(message.channel, usage["tweet"]);
             return;
         }
         let screenName = args[0];
@@ -377,18 +383,18 @@ dClient.on('message', (message) => {
     if (command === "startget")
     {
         if (message.channel.type === "dm") {
-            message.channel.send("Sorry, but I can't automatically post in DMs for now!");
+            sendMessage(message.channel, "Sorry, but I can't automatically post in DMs for now!");
             return;
         }
         // Only take commands from guild owner or creator
         if (!(message.author.id === config.ownerId ||
               message.author.id === message.channel.guild.ownerID))
         {
-            message.channel.send("Sorry, only my creator and the server owner can do this for now!");
+            sendMessage(message.channel, "Sorry, only my creator and the server owner can do this for now!");
             return;
         }
         if (args.length < 1) {
-            message.channel.send(usage["startget"]);
+            sendMessage(message.channel, usage["startget"]);
             return;
         }
         let options = defaultOptions();
@@ -403,20 +409,20 @@ dClient.on('message', (message) => {
                 screenName = arg;
             }
             else {
-                message.channel.send("Invalid argument: " + arg);
+                sendMessage(message.channel, "Invalid argument: " + arg);
                 return;
             }
         }
         tClient.get('users/lookup', {'screen_name' : screenName})
             .then(function(data) {
-                message.channel.send("I'm starting to get tweets from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
+                sendMessage(message.channel, "I'm starting to get tweets from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
                 let userId = data[0].id_str;
                 addGet(message.channel, userId, screenName, options);
                 saveUsers();
             })
             .catch(function(error) {
                 console.error(error);
-                message.channel.send("I can't find a user by the name of " + screenName);
+                sendMessage(message.channel, "I can't find a user by the name of " + screenName);
                 return;
             });
     }
@@ -427,13 +433,13 @@ dClient.on('message', (message) => {
         if (!(message.author.id === config.ownerId ||
               message.author.id === message.channel.guild.ownerID))
         {
-            message.channel.send("Sorry, only my creator and the server owner can do this for now!");
+            sendMessage(message.channel, "Sorry, only my creator and the server owner can do this for now!");
             return;
         }
 
         if (args.length < 1)
         {
-            message.channel.send(usage["stopget"]);
+            sendMessage(message.channel, usage["stopget"]);
             return;
         }
         let screenName = args[0];
