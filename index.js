@@ -365,7 +365,7 @@ dClient.on('message', (message) => {
                 return;
             }
             // Love aya
-            if (message.author.id === "97147587462721536" && Math.floor(Math.random(10)) === 0) {
+            if (message.author.id === "97147587462721536" && Math.floor(Math.random() * 10) === 0) {
                 message.reply("❤ I LOVE YOU AYA ❤");
                 return;
             }
