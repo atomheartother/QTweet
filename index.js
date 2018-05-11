@@ -359,6 +359,11 @@ dClient.on('message', (message) => {
     if (message.content.indexOf(config.prefix) !== 0)
     {
         if (!!(message.mentions) && !!(message.mentions.members) && message.mentions.members.find(item => item.user.id === dClient.user.id)) {
+            // Call nuen gay
+            if (message.author.id === "120273405814636544") {
+                message.reply(" ur gay");
+                return;
+            }
             message.reply(fortune.fortune());
         }
         else if (message.channel.type == "dm")
