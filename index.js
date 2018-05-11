@@ -364,6 +364,11 @@ dClient.on('message', (message) => {
                 message.reply(" ur gay");
                 return;
             }
+            // Love aya
+            if (message.author.id === "97147587462721536" && Math.random(20) === 0) {
+                message.reply("❤ I LOVE YOU AYA ❤");
+                return;
+            }
             message.reply(fortune.fortune());
         }
         else if (message.channel.type == "dm")
