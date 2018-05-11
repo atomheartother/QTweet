@@ -41,12 +41,26 @@ var defaultOptions = function(){
 };
 
 
+function dmOwner(message) {
+    // AIkyan will attempt to DM her owner
+    let owner = dClient.users.get(config.ownerId);
+    if (owner === undefined) {
+        console.error("Tried to message the owner but could not find them");
+        console.error("Message was: " + message);
+        return;
+    }
+    owner.send(message)
+        .then(msg => console.log(`Sent to owner: $msg.content}`))
+        .catch(console.error);
+}
+
 function sendMessage(channel, message) {
     channel.send(message)
         .catch(function(error) {
             console.error("Could not send message: " + message);
             console.error(channel);
             console.error(error);
+            dmOwner('I failed to send a message!');
         });
 }
 
@@ -456,6 +470,7 @@ dClient.on('error', (error) => {
     console.error("Discord client encountered an error");
     console.error(error);
     console.error("Error occurred on " + new Date());
+    dmOwner('I encountered an error!');
 });
 
 dClient.on('ready', () => {
