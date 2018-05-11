@@ -452,8 +452,15 @@ dClient.on('message', (message) => {
     }
 });
 
+dClient.on('error', (error) => {
+    console.error("Discord client encountered an error");
+    console.error(error);
+    console.error("Error occurred on " + new Date());
+});
+
 dClient.on('ready', () => {
     loadUsers();
 });
 
+console.log("Server launched at " + new Date());
 dClient.login(pw.dToken);
