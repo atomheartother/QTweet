@@ -344,7 +344,7 @@ dClient.on('message', (message) => {
 
     if (message.content.indexOf(config.prefix) !== 0)
     {
-        if (message.mentions.members.find(item => item.user.id === dClient.user.id)) {
+        if (!!(message.mentions) && !!(message.mentions.members) && message.mentions.members.find(item => item.user.id === dClient.user.id)) {
             message.reply(fortune.fortune());
         }
         else if (message.channel.type == "dm")
