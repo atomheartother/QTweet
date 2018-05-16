@@ -41,18 +41,18 @@ var defaultOptions = function(){
 };
 
 
-function dmOwner(message) {
-    // AIkyan will attempt to DM her owner
-    let owner = dClient.users.get(config.ownerId);
-    if (owner === undefined) {
-        console.error("Tried to message the owner but could not find them");
-        console.error("Message was: " + message);
-        return;
-    }
-    owner.send(message)
-        .then(msg => console.log(`Sent to owner: $msg.content}`))
-        .catch(console.error);
-}
+// function dmOwner(message) {
+//     // AIkyan will attempt to DM her owner
+//     let owner = dClient.users.get(config.ownerId);
+//     if (owner === undefined) {
+//         console.error("Tried to message the owner but could not find them");
+//         console.error("Message was: " + message);
+//         return;
+//     }
+//     owner.send(message)
+//         .then(msg => console.log(`Sent to owner: $msg.content}`))
+//         .catch(console.error);
+// }
 
 function sendMessage(channel, message) {
     channel.send(message)
@@ -60,7 +60,6 @@ function sendMessage(channel, message) {
             console.error("Could not send message: " + message);
             console.error(channel);
             console.error(error);
-            dmOwner('I failed to send a message!');
         });
 }
 
@@ -85,6 +84,7 @@ function createStream() {
     // Else, register the stream using our userIds
     stream = tClient.stream('statuses/filter', {follow: userIds.toString()});
     stream.on('data', function(tweet) {
+        console.log(new Date(0) + ": Received twitter data");
         if ((tweet.hasOwnProperty('in_reply_to_user_id')
              && tweet.in_reply_to_user_id !== null) ||
             tweet.hasOwnProperty('retweeted_status'))
@@ -96,13 +96,14 @@ function createStream() {
             console.error(tweet);
             return;
         }
+        console.log("Sending tweet to " + users[tweet.user.id_str].channels.length + " channels");
         for (let get of users[tweet.user.id_str].channels) {
             postTweet(get.channel, tweet, get.text);
         }
     });
 
     stream.on('error', function(err) {
-        console.error("Error getting a stream");
+        console.error("Error getting a stream:");
         console.error(err);
     });
 }
@@ -480,7 +481,6 @@ dClient.on('error', (error) => {
     console.error("Discord client encountered an error");
     console.error(error);
     console.error("Error occurred on " + new Date());
-    dmOwner('I encountered an error!');
 });
 
 dClient.on('ready', () => {
