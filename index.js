@@ -81,15 +81,19 @@ function createStream() {
     if (userIds.length < 1)
         return;
 
+    console.log("A stream is being created");
     // Else, register the stream using our userIds
     stream = tClient.stream('statuses/filter', {follow: userIds.toString()});
+    console.log(stream);
+
     stream.on('data', function(tweet) {
-        console.log(new Date(0) + ": Received twitter data");
+        console.log(new Date() + ": Received twitter data from " + tweet.user.name);
         if ((tweet.hasOwnProperty('in_reply_to_user_id')
              && tweet.in_reply_to_user_id !== null) ||
-            tweet.hasOwnProperty('retweeted_status'))
+            tweet.hasOwnProperty('retweeted_status')) {
             // This is a reply or a retweet, ignore it
             return;
+        }
         if (!users.hasOwnProperty(tweet.user.id_str)) {
             // Somehow we got a tweet from someone we don't follow anymore.
             console.error("We got a tweet from someone we don't follow:");
