@@ -81,10 +81,10 @@ function createStream() {
     if (userIds.length < 1)
         return;
 
-    console.log("A stream is being created");
+    console.log("A stream is being created, registering users:");
+    console.log(userIds);
     // Else, register the stream using our userIds
     stream = tClient.stream('statuses/filter', {follow: userIds.toString()});
-    console.log(stream);
 
     stream.on('data', function(tweet) {
         console.log(new Date() + ": Received twitter data from " + tweet.user.name);
@@ -324,9 +324,14 @@ function rmGet(channel, screenName) {
                 sendMessage(channel, "You're not currently `get`ting this user. Use `" + config.prefix + "startget "+ screenName +"` to do it!");
                 return;
             }
+            console.log("Found element at index: " + idx);
+            console.log(users[userId].channels);
             // Remove element from channels
             users[userId].channels.splice(idx, 1);
+            console.log("Spliced element:");
+            console.log(users[userId].channels);
             if (users[userId].channels.length < 1) {
+                console.log("Deleting one user from list");
                 // If no one needs this user's tweets we can delete the enty
                 delete users[userId];
                 // ...and re-register the stream, which will now delete the user
@@ -446,7 +451,12 @@ dClient.on('message', (message) => {
             .then(function(data) {
                 sendMessage(message.channel, "I'm starting to get tweets from " + screenName + ", remember you can stop me at any time with `" + config.prefix + "stopget " + screenName + "` !");
                 let userId = data[0].id_str;
+                // Re-register the stream if we didn't know the user before
+                let redoStream = !users.hasOwnProperty(userId);
                 addGet(message.channel, userId, screenName, options);
+                if (redoStream) {
+                    createStream();
+                }
                 saveUsers();
             })
             .catch(function(error) {
