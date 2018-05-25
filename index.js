@@ -110,6 +110,11 @@ function createStream() {
         console.error("Error getting a stream:");
         console.error(err);
     });
+
+    stream.on('end', function() {
+        console.log("We got disconnected. Reconnecting...");
+        createStream();
+    });
 }
 
 function saveUsers() {
