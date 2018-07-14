@@ -57,8 +57,7 @@ var defaultOptions = function(){
 function sendMessage(channel, message) {
     channel.send(message)
         .catch(function(error) {
-            console.error("Could not send message: " + message);
-            console.error(channel);
+            console.error(new Date() + ": Sending message to channel " + channel.id + " failed: " + message);
             console.error(error);
         });
 }
@@ -87,32 +86,32 @@ function createStream() {
     stream = tClient.stream('statuses/filter', {follow: userIds.toString()});
 
     stream.on('data', function(tweet) {
-        console.log(new Date() + ": Received twitter data from " + tweet.user.name);
         if ((tweet.hasOwnProperty('in_reply_to_user_id')
              && tweet.in_reply_to_user_id !== null) ||
             tweet.hasOwnProperty('retweeted_status')) {
             // This is a reply or a retweet, ignore it
             return;
         }
+        console.log(new Date() + ": Received twitter data from " + tweet.user.name);
         if (!users.hasOwnProperty(tweet.user.id_str)) {
             // Somehow we got a tweet from someone we don't follow anymore.
-            console.error("We got a tweet from someone we don't follow:");
+            console.error(new Date()+ ": We got a tweet from someone we don't follow:");
             console.error(tweet);
             return;
         }
-        console.log("Sending tweet to " + users[tweet.user.id_str].channels.length + " channels");
+        console.log("Sending tweet to " + users[tweet.user.id_str].channels.length + " channels:");
         for (let get of users[tweet.user.id_str].channels) {
             postTweet(get.channel, tweet, get.text);
         }
     });
 
     stream.on('error', function(err) {
-        console.error("Error getting a stream:");
+        console.error(new Date() + ": Error getting a stream:");
         console.error(err);
     });
 
     stream.on('end', function() {
-        console.log("We got disconnected. Reconnecting...");
+        console.log(new Date() + ": We got disconnected. Reconnecting...");
         createStream();
     });
 }
@@ -221,8 +220,10 @@ function postEmbed(channel, embed, react) {
                 message.react("❤");
         })
         .catch(function(error){
+            console.log(new Date() + ": Trued to post an embed to " + channel.id + ", but it failed. We'll try to warn the user");
+            console.log(error);
             channel.send("I tried to respond but Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n`" + error.name + ": " + error.message + "`")
-                .catch(function(error) {
+                .catch(function(error2) {
                     console.log("It appears that channel " + channel.id + " doesn't exist anymore. Removing it");
                     rmGet(channel, embed.author.screenName);
                 });
@@ -252,8 +253,10 @@ function postTweet(channel, tweet, text) {
           tweet.extended_entities.hasOwnProperty('media') &&
           tweet.extended_entities.media.length > 0)) {
         // Text tweet
-        if (!text) // We were told not to post text tweets to this channel
+        if (!text) { // We were told not to post text tweets to this channel
+            console.log(channel.id + ": Channel asked us to ignore text posts");
             return;
+        }
         embed.color = 0x69B2D6;
     }
     else if (tweet.extended_entities.media[0].type === "animated_gif" ||
@@ -279,6 +282,7 @@ function postTweet(channel, tweet, text) {
         embed.color = 0xD667CF;
         embed.image = { "url": imgurl };
     }
+    console.log(channel.id + ": Sending embed");
     postEmbed(channel, {embed}, true);
 }
 
@@ -497,13 +501,17 @@ dClient.on('message', (message) => {
 });
 
 dClient.on('error', (error) => {
-    console.error("Discord client encountered an error");
+    console.error(new Date() + ": Discord client encountered an error");
     console.error(error);
-    console.error("Error occurred on " + new Date());
 });
 
 dClient.on('ready', () => {
     loadUsers();
+});
+
+process.on('unhandledRejection', function(err) {
+    console.error(new Date() + ": Unhandled exception");
+    console.error(err);
 });
 
 console.log("Server launched at " + new Date());
