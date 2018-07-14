@@ -99,8 +99,10 @@ function createStream() {
             console.error(tweet);
             return;
         }
-        console.log("Sending tweet to " + users[tweet.user.id_str].channels.length + " channels:");
-        for (let get of users[tweet.user.id_str].channels) {
+        let channelsLen = users[tweet.user.id_str].channels.length;
+        console.log("Sending tweet to " + channelsLen + " channels:");
+        for (let i=0 ; i < channelsLen ; i++) {
+            let get = users[tweet.user.id_str].channels[i];
             postTweet(get.channel, tweet, get.text);
         }
     });
