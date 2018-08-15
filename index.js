@@ -193,9 +193,9 @@ function adminListUsers(channel) {
         if (!users.hasOwnProperty(userId)) continue;
 
         let twitterUser = users[userId];
-        str += "\n- " + twitterUser.name + " in the channels:";
+        str += "\n- `" + twitterUser.name + "` in the channels:";
         for (let get of twitterUser.channels) {
-            str += "\n|\t" + get.channel.name + " (guild: " + get.channel.guild.name + ")";
+            str += "\n|\t`" + get.channel.name + "` (guild: `" + get.channel.guild.name + "`)";
         }
     }
     sendMessage(channel, str);
@@ -223,7 +223,7 @@ function listUsers(channel) {
     let str = "You're fetching tweets from:";
     for (let userId of userIds) {
         if (users[userId].hasOwnProperty('name')) {
-            str += "\n- " + users[userId].name;
+            str += "\n- `" + users[userId].name + "`";
         }
         else
             str += "\n- ID: " + userId + " (I don't know their name yet, I need a tweet from them!)";
