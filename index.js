@@ -510,7 +510,7 @@ dClient.on('message', (message) => {
     if (command === "list")
     {
         if (message.author.id === config.ownerId && message.channel.type === "dm") {
-            adminListUsers(message.channe);
+            adminListUsers(message.channel);
         }
         else  {
             listUsers(message.channel);
