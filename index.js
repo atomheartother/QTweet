@@ -195,7 +195,7 @@ function adminListUsers(channel) {
         let twitterUser = users[userId];
         str += "\n- `" + twitterUser.name + "` in the channels:";
         for (let get of twitterUser.channels) {
-            str += "\n|\t`" + get.channel.name + "` (guild: `" + get.channel.guild.name + "`)";
+            str += "\n|\t`" + get.channel.name + "` (guild: `" + get.channel.guild.name + "`, whose owner is `" + get.channel.guild.owner.user.tag +"`)";
         }
     }
     sendMessage(channel, str);
