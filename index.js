@@ -41,7 +41,7 @@ var defaultOptions = function(){
 };
 
 
-function dmOwner(message) {
+/* function dmOwner(message) {
      // AIkyan will attempt to DM her owner
      let owner = dClient.users.get(config.ownerId);
      if (owner === undefined) {
@@ -53,7 +53,7 @@ function dmOwner(message) {
          .then(msg => console.log(`Sent to owner: $msg.content}`))
          .catch(console.error);
 }
-
+ */
 function sendMessage(channel, message) {
     channel.send(message)
         .catch(function(error) {
@@ -188,17 +188,21 @@ function loadUsers() {
 
 // List all gets in every channel, available to the admin only, and in DMs
 function adminListUsers(channel) {
-    let str = "You are fetching tweets from:";
+    const embed = new Discord.RichEmbed()
+    .setColor(0xF26D7A)
+    .setTitle("Users list")
+    .setURL("https://github.com/atomheartother/A-I-kyan")
+    .setDescription("This is a complete list of the twitter users I'm getting, with guild names and owner info!")
     for (let userId in users) {
         if (!users.hasOwnProperty(userId)) continue;
 
         let twitterUser = users[userId];
-        str += "\n- `" + twitterUser.name + "` in the channels:";
         for (let get of twitterUser.channels) {
-            str += "\n|\t`" + get.channel.name + "` (guild: `" + get.channel.guild.name + "`, whose owner is `" + get.channel.guild.owner.user.tag +"`)";
+            str += "\n- `" + get.channel.guild.name + "` (`" + get.channel.guild.owner.user.tag +"`)";
+            embed.addField(twitterUser.name, str);
         }
     }
-    sendMessage(channel, str);
+    postEmbed(channel, {embed}, false);
 }
 
 // List users we're getting in this channel, available to everyone
