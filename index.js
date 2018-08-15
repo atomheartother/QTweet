@@ -197,6 +197,7 @@ function adminListUsers(channel) {
         if (!users.hasOwnProperty(userId)) continue;
 
         let twitterUser = users[userId];
+        let str = "";
         for (let get of twitterUser.channels) {
             str += "\n- `" + get.channel.guild.name + "` (`" + get.channel.guild.owner.user.tag +"`)";
             embed.addField(twitterUser.name, str);
