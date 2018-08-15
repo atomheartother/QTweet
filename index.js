@@ -41,18 +41,18 @@ var defaultOptions = function(){
 };
 
 
-// function dmOwner(message) {
-//     // AIkyan will attempt to DM her owner
-//     let owner = dClient.users.get(config.ownerId);
-//     if (owner === undefined) {
-//         console.error("Tried to message the owner but could not find them");
-//         console.error("Message was: " + message);
-//         return;
-//     }
-//     owner.send(message)
-//         .then(msg => console.log(`Sent to owner: $msg.content}`))
-//         .catch(console.error);
-// }
+function dmOwner(message) {
+     // AIkyan will attempt to DM her owner
+     let owner = dClient.users.get(config.ownerId);
+     if (owner === undefined) {
+         console.error("Tried to message the owner but could not find them");
+         console.error("Message was: " + message);
+         return;
+     }
+     owner.send(message)
+         .then(msg => console.log(`Sent to owner: $msg.content}`))
+         .catch(console.error);
+}
 
 function sendMessage(channel, message) {
     channel.send(message)
@@ -186,6 +186,22 @@ function loadUsers() {
     });
 }
 
+// List all gets in every channel, available to the admin only, and in DMs
+function adminListUsers(channel) {
+    let str = "You are fetching tweets from:";
+    for (let userId in users) {
+        if (!users.hasOwnProperty(userId)) continue;
+
+        let twitterUser = users[userId];
+        str += "\n- " + twitterUser.name + " in the channels:";
+        for (let get of twitterUser.channels) {
+            str += "\n|\t" + get.channel.name + " (guild: " + get.channel.guild.name + ")";
+        }
+    }
+    sendMessage(channel, str);
+}
+
+// List users we're getting in this channel, available to everyone
 function listUsers(channel) {
     let userIds = [];
     for (let userId in users) {
@@ -380,11 +396,6 @@ dClient.on('message', (message) => {
     if (message.content.indexOf(config.prefix) !== 0)
     {
         if (!!(message.mentions) && !!(message.mentions.members) && message.mentions.members.find(item => item.user.id === dClient.user.id)) {
-            // Call nuen gay
-            if (message.author.id === "120273405814636544") {
-                message.reply(" ur gay");
-                return;
-            }
             // Love aya
             if (message.author.id === "97147587462721536" && Math.floor(Math.random() * 10) === 0) {
                 message.reply("❤ I LOVE YOU AYA ❤");
@@ -498,7 +509,12 @@ dClient.on('message', (message) => {
 
     if (command === "list")
     {
-        listUsers(message.channel);
+        if (message.author.id === config.ownerId && message.channel.type === "dm") {
+            adminListUsers(message.channe);
+        }
+        else  {
+            listUsers(message.channel);
+        }
     }
 });
 
