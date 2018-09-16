@@ -59,6 +59,12 @@ function sendMessage(channel, message) {
         .catch(function(error) {
             console.error(new Date() + ": Sending message to channel " + channel.id + " failed: " + message);
             console.error(error);
+            // Try to contact the guild owner
+            channel.guild.owner.send("Hello, I just tried sending a message to your channel '" + channel.name + "', but I couldn't. Did you give me the proper rights?")
+            .catch(function(err) {
+                console.error(new Date() + ": Sending message to guild owner " + channel.guild.owner.tag + " failed too!");
+                console.error(err);
+            });
         });
 }
 
@@ -113,8 +119,8 @@ function createStream() {
     });
 
     stream.on('end', function() {
-        console.log(new Date() + ": We got disconnected. Reconnecting...");
-        createStream();
+        console.log(new Date() + ": We got disconnected. Reconnecting in 5min...");
+        setTimeout(createStream, 5 * 1000 * 50)
     });
 }
 
@@ -171,7 +177,7 @@ function loadUsers() {
                             options.text = false;
                         }
                         if (channel === undefined) {
-                            console.error("W: Tried to load undefined channel: " + get.id);
+                            console.error("W: Tried to load undefined channel: " + get.id + ", we most likely got kicked! :c");
                             continue;
                         }
                         addGet(channel, userId, name, options);
@@ -199,9 +205,9 @@ function adminListUsers(channel) {
         let twitterUser = users[userId];
         let str = "";
         for (let get of twitterUser.channels) {
-            str += "\n- `" + get.channel.guild.name + "` (`" + get.channel.guild.owner.user.tag +"`)";
-            embed.addField(twitterUser.name, str);
+            str += "\n- **G**: `" + get.channel.guild.name + "` || **ID**: `" + get.channel.guild.id + "` || **O**: `" + get.channel.guild.owner.user.tag +"`";
         }
+        embed.addField(twitterUser.name, str);
     }
     postEmbed(channel, {embed}, false);
 }
@@ -243,13 +249,9 @@ function postEmbed(channel, embed, react) {
                 message.react("❤");
         })
         .catch(function(error){
-            console.log(new Date() + ": Trued to post an embed to " + channel.id + ", but it failed. We'll try to warn the user");
+            console.log(new Date() + ": Tried to post an embed to " + channel.id + ", but it failed. We'll try to warn the user. If it fails it'll be reported in the error log.");
             console.log(error);
-            channel.send("I tried to respond but Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n`" + error.name + ": " + error.message + "`")
-                .catch(function(error2) {
-                    console.log("It appears that channel " + channel.id + " doesn't exist anymore. Removing it");
-                    rmGet(channel, embed.author.screenName);
-                });
+            sendMessage(channel, "I tried to respond but Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n`" + error.name + ": " + error.message + "`");
         });
 }
 
@@ -356,14 +358,9 @@ function rmGet(channel, screenName) {
                 sendMessage(channel, "You're not currently `get`ting this user. Use `" + config.prefix + "startget "+ screenName +"` to do it!");
                 return;
             }
-            console.log("Found element at index: " + idx);
-            console.log(users[userId].channels);
             // Remove element from channels
             users[userId].channels.splice(idx, 1);
-            console.log("Spliced element:");
-            console.log(users[userId].channels);
             if (users[userId].channels.length < 1) {
-                console.log("Deleting one user from list");
                 // If no one needs this user's tweets we can delete the enty
                 delete users[userId];
                 // ...and re-register the stream, which will now delete the user
@@ -401,11 +398,6 @@ dClient.on('message', (message) => {
     if (message.content.indexOf(config.prefix) !== 0)
     {
         if (!!(message.mentions) && !!(message.mentions.members) && message.mentions.members.find(item => item.user.id === dClient.user.id)) {
-            // Love aya
-            if (message.author.id === "97147587462721536" && Math.floor(Math.random() * 10) === 0) {
-                message.reply("❤ I LOVE YOU AYA ❤");
-                return;
-            }
             message.reply(fortune.fortune());
         }
         else if (message.channel.type == "dm")
@@ -487,6 +479,7 @@ dClient.on('message', (message) => {
                 saveUsers();
             })
             .catch(function(error) {
+                console.error(new Date() + ": Failed to find the user a client specified (" + screenName + "):");
                 console.error(error);
                 sendMessage(message.channel, "I can't find a user by the name of " + screenName);
                 return;
@@ -521,11 +514,68 @@ dClient.on('message', (message) => {
             listUsers(message.channel);
         }
     }
+    
+    // Admin only commands
+    if (message.author.id === config.ownerId && message.channel.type === "dm")
+    {
+        if (command === "leave") {
+            // Leave the given server
+            if (args.length < 1)
+            {
+                sendMessage(message.channel, "Please give me a guild id");
+                return;
+            }
+            let guild = dClient.guilds.get(args[0]);
+            if (guild == undefined) {
+                sendMessage(message.channel, "I couldn't find guild: " + args[0]);
+                return;
+            }
+            // Leave the guild
+            guild.leave()
+            .then(g => {
+                console.log(`Left the guild ${g}`);
+                sendMessage(messae.channel, `Left the guild ${g}`);
+            })
+            .catch(console.error);
+        }
+    }
 });
 
 dClient.on('error', (error) => {
     console.error(new Date() + ": Discord client encountered an error");
     console.error(error);
+});
+
+dClient.on('guildCreate', (guild) => {
+    // Message the guild owner with useful information
+    guild.owner.send("Hello, I'm A-I-Kyan! Thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a list of my commands with `" + config.prefix + "list`. Please enjoy my services.");
+});
+
+function rmGuild(guild) {
+    // Remove all instances of this guild from our gets
+    Object.keys(users).forEach(userId => {
+        let user = users[userId];
+        var i = user.channels.length;
+        while (i--) {
+            if (guild.id === user.channels[i].channel.guild.id) {
+                // We should remove this get
+                user.channels.splice(i, 1);
+            }
+        }
+        if (user.channels.length < 1) {
+            // If no one needs this user's tweets we can delete the enty
+            delete users[userId];
+        }
+    });
+    // Save any changes we did to the users object
+    saveUsers();
+    // ...and re-register the stream, which will be properly updated
+    createStream();
+}
+
+dClient.on('guildDelete', (guild) => {
+    // We've been removed from a guild
+    rmGuild(guild);
 });
 
 dClient.on('ready', () => {
