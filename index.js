@@ -534,7 +534,7 @@ dClient.on('message', (message) => {
             guild.leave()
             .then(g => {
                 console.log(`Left the guild ${g}`);
-                sendMessage(messae.channel, `Left the guild ${g}`);
+                sendMessage(message.channel, `Left the guild ${g}`);
             })
             .catch(console.error);
         }
