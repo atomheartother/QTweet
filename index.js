@@ -401,7 +401,7 @@ dClient.on('message', (message) => {
             message.reply(fortune.fortune());
         }
         else if (message.channel.type == "dm")
-            sendMessage(message.channel, "Hello, I am A.I.kyan! Type " + config.prefix + "help to see a list of my commands! ❤");
+            sendMessage(message.channel, "Hello, I'm " + config.botName + "! Type " + config.prefix + "help to see a list of my commands! ❤");
         return ;
     }
     let args = message.content.slice(config.prefix.length).trim().split(/ +/g);
@@ -411,9 +411,9 @@ dClient.on('message', (message) => {
     {
         const embed = new Discord.RichEmbed()
               .setColor(0xD667CF)
-              .setTitle("A.I.kyan")
+              .setTitle(config.botName)
               .setURL("https://github.com/atomheartother/A-I-kyan")
-              .setDescription("Hello, I am A.I.kyan, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!\nHere's a list of what I can do:")
+              .setDescription("Hello, I am " + config.botName + ", I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!\nHere's a list of what I can do:")
               .setFooter("*: Anyone can perform these commands. Issues, suggestions? My creator is Tom'#4242")
               .addField(config.prefix + "tweet*", usage["tweet"])
               .addField(config.prefix + "startget", usage["startget"])
