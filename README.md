@@ -1,11 +1,11 @@
-# A.I.kyan
+# QTweet
 ## What do?
 This bot will fetch pictures posted by a Twitter account and link them to Discord. The typical use is to cross-post tweets from a Twitter bot who posts pictures every hour for example, or from  someone you want to stalk, to your preferred Discord server.
 
 It requires **embed link** permission in order to work on a server!
 
 ## Can get?
-If you wanna add A.I.kyan to your server, you can just click [this](
+If you wanna add QTweet to your server, you can just click [this](
 https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)
 
 ## How do?
