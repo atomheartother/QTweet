@@ -579,6 +579,10 @@ dClient.on('guildDelete', (guild) => {
 });
 
 dClient.on('ready', () => {
+    // If our name changed, set it
+    if (dClient.user.username !== config.botName) {
+        dClient.user.setUsername(config.botName);
+    }
     loadUsers();
 });
 
