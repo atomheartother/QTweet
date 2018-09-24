@@ -1,5 +1,6 @@
 {
     "prefix" : "!!",
     "ownerId" : "135712262156451840",
-    "getFile" : "./gets.json"
+    "getFile" : "./gets.json",
+    "botName" : "QTweet"
 }
