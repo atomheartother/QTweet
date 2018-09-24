@@ -412,7 +412,7 @@ dClient.on('message', (message) => {
         const embed = new Discord.RichEmbed()
               .setColor(0xD667CF)
               .setTitle(config.botName)
-              .setURL("https://github.com/atomheartother/A-I-kyan")
+              .setURL(config.githubURL)
               .setDescription("Hello, I am " + config.botName + ", I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!\nHere's a list of what I can do:")
               .setFooter("*: Anyone can perform these commands. Issues, suggestions? My creator is Tom'#4242")
               .addField(config.prefix + "tweet*", usage["tweet"])
@@ -548,7 +548,7 @@ dClient.on('error', (error) => {
 
 dClient.on('guildCreate', (guild) => {
     // Message the guild owner with useful information
-    guild.owner.send("Hello, I'm A-I-Kyan! Thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a list of my commands with `" + config.prefix + "list`. Please enjoy my services.");
+    guild.owner.send("Hello, I'm " + config.botName + ", thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a list of my commands with `" + config.prefix + "help`. Please enjoy my services.");
 });
 
 function rmGuild(guild) {
