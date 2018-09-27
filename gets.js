@@ -4,6 +4,8 @@ let gets = module.exports = {};
 let users = require('./users');
 let twitter = require('./twitter');
 
+var config = require('./config.json');
+
 // Add a get to the user list
 // options: {text: boolean}
 gets.add = (channel, userId, screenName, options) => {
