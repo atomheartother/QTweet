@@ -47,7 +47,6 @@ twitter.createStream = () => {
             // This is a reply or a retweet, ignore it
             return;
         }
-        console.log(new Date() + ": Received twitter data from " + tweet.user.name);
         if (!users.collection.hasOwnProperty(tweet.user.id_str)) {
             // Somehow we got a tweet from someone we don't follow anymore.
             console.error(new Date()+ ": We got a tweet from someone we don't follow:");
@@ -55,7 +54,6 @@ twitter.createStream = () => {
             return;
         }
         let channelsLen = users.collection[tweet.user.id_str].channels.length;
-        console.log("Sending tweet to " + channelsLen + " channels:");
         for (let i=0 ; i < channelsLen ; i++) {
             let get = users.collection[tweet.user.id_str].channels[i];
             post.tweet(get.channel, tweet, get.text);
