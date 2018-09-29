@@ -53,7 +53,6 @@ post.tweet = (channel, tweet, text) => {
         embed.color = 0xD667CF;
         embed.image = { "url": imgurl };
     }
-    console.log(channel.id + ": Sending embed");
     post.embed(channel, {embed}, true);
 }
 // React is a boolean, if true, add a reaction to the message after posting
