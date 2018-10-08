@@ -23,3 +23,4 @@ QTweet is designed to do one thing and do it well, I don't care much to make it 
 - ~~Get actual support for text tweets, I'll do this if there's any interest at all from anyone to do it.~~
 - ~~Notify users more precisely when there's a problem, mostly with permissions.~~
 - Better privilege control etc. Right now QTweet treats all users the same, except for the bot owner (you) who can bypass a few security things for debugging purposes.
+- A !!like command to get a list of posts that you've liked in the past
