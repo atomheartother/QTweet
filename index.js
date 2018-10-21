@@ -1,3 +1,4 @@
+const Discord = require('discord.js');
 var fortune = require('fortune-teller');
 
 // Config file
