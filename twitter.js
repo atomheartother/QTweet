@@ -65,9 +65,10 @@ twitter.createStream = () => {
         console.error(err);
     });
 
-    twitter.stream.on('end', function() {
-        console.log(new Date() + ": We got disconnected from twitter. Reconnecting in 5min...");
-        setTimeout(twitter.createStream, 5 * 1000 * 50)
+    twitter.stream.on('end', function(response) {
+        console.error(new Date() + ": We got disconnected from twitter. Reconnecting in 5min... Response was:");
+        console.error(response);
+        setTimeout(twitter.createStream, 5 * 1000 * 50);
     });
 }
 
