@@ -123,11 +123,13 @@ users.list = (channel) => {
 
 // List all gets in every channel, available to the admin only, and in DMs
 users.adminList = (channel) => {
-    const embed = new Discord.RichEmbed()
+    let page = 1;
+    let embed = new Discord.RichEmbed()
     .setColor(0xF26D7A)
-    .setTitle("Users list")
+    .setTitle(`Users list (page ${page})`)
     .setURL("https://github.com/atomheartother/A-I-kyan")
     .setDescription("This is a complete list of the twitter users I'm getting, with guild names and owner info!")
+    let counter = 0;
     for (let userId in users.collection) {
         if (!users.collection.hasOwnProperty(userId)) continue;
 
@@ -137,6 +139,17 @@ users.adminList = (channel) => {
             str += "\n- **G**: `" + get.channel.guild.name + "` || **ID**: `" + get.channel.guild.id + "` || **O**: `" + get.channel.guild.owner.user.tag +"`";
         }
         embed.addField(twitterUser.name, str);
+        counter++;
+        if (counter > 20) {
+            page++;
+            post.embed(channel, {embed}, false);
+            embed = new Discord.RichEmbed()
+                .setColor(0xF26D7A)
+                .setTitle(`Users list (page ${page})`)
+                .setURL("https://github.com/atomheartother/A-I-kyan")
+                .setDescription("This is a complete list of the twitter users I'm getting, with guild names and owner info!");
+            counter = 0;
+            }
     }
     post.embed(channel, {embed}, false);
 }
