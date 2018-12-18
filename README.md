@@ -1,8 +1,10 @@
-# QTweet
+# QTweet - the Tweeting qt
 This bot will fetch Twitter posts in real time and link them to Discord. The typical use is to cross-post tweets from a Twitter bot who posts pictures every hour for example, to your preferred Discord 
 server.
 
 You never have to use Twitter again, just get the good stuff posted to your Discord server.
+
+![A QT Tweeting](https://raw.githubusercontent.com/atomheartother/QTweet/master/img/example.jpg)
 
 ## Features
 - Get the latest text, image and video tweets from any twitter user, formatted for Discord.
