@@ -1,7 +1,7 @@
 {
-    "prefix" : "!!",
-    "ownerId" : "135712262156451840",
-    "getFile" : "./gets.json",
-    "botName" : "QTweet",
-    "githubURL" : "https://github.com/atomheartother/QTweet"
+  "prefix": "!!",
+  "ownerID": "135712262156451840",
+  "getFile": "./gets.json",
+  "botName": "QTweet",
+  "githubURL": "https://github.com/atomheartother/QTweet"
 }
