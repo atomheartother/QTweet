@@ -21,20 +21,28 @@ handleCommand = (commandName, author, channel, args) => {
   if (command) {
     // Check that there's the right number of args
     if (args.length < command.minArgs) {
-      post.message(usage[commandName], channel);
+      post.message(channel, usage[commandName]);
       return;
     }
+    let validChecks = 0;
     let isValid = true;
     command.checks.forEach(({ f, badB }) => {
       // Check every condition to perform the command
-      if (f(author, channel) === false) {
-        if (badB) post.message(badB, channel); // If it's not met and we were given a bad boy, post it
-        isValid = false;
-      }
+      f(author, channel, passed => {
+        // It's already marked as invalid
+        if (!isValid) return;
+        if (passed) validChecks++;
+        else {
+          isValid = false;
+          if (badB) post.message(channel, badB); // If it's not met and we were given a bad boy, post it
+          return;
+        }
+        if (validChecks === command.checks.length) {
+          // If we get here, everything has succeeded.
+          command.function(args, channel);
+        }
+      });
     });
-    if (!isValid) return;
-    // If we get here, everything has succeeded.
-    command.function(args, channel);
   }
 };
 
