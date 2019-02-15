@@ -31,3 +31,4 @@ I don't like Twitter but I like a few accounts on it. This is my solution.
 - ~~Notify users more precisely when there's a problem, mostly with permissions.~~
 - Better privilege control etc. Right now QTweet treats all users the same, except for the bot owner (you) who can bypass a few security things for debugging purposes.
 - A !!like command to get a list of posts that you've liked in the past
+- Un-shortify twitter links
