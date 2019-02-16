@@ -26,23 +26,25 @@ handleCommand = (commandName, author, channel, args) => {
     }
     let validChecks = 0;
     let isValid = true;
-    command.checks.forEach(({ f, badB }) => {
-      // Check every condition to perform the command
-      f(author, channel, passed => {
-        // It's already marked as invalid
-        if (!isValid) return;
-        if (passed) validChecks++;
-        else {
-          isValid = false;
-          if (badB) post.message(channel, badB); // If it's not met and we were given a bad boy, post it
-          return;
-        }
-        if (validChecks === command.checks.length) {
-          // If we get here, everything has succeeded.
-          command.function(args, channel);
-        }
+    if (commands.length > 0)
+      command.checks.forEach(({ f, badB }) => {
+        // Check every condition to perform the command
+        f(author, channel, passed => {
+          // It's already marked as invalid
+          if (!isValid) return;
+          if (passed) validChecks++;
+          else {
+            isValid = false;
+            if (badB) post.message(channel, badB); // If it's not met and we were given a bad boy, post it
+            return;
+          }
+          if (validChecks === command.checks.length) {
+            // If we get here, everything has succeeded.
+            command.function(args, channel);
+          }
+        });
       });
-    });
+    else command.function(args, channel);
   }
 };
 
