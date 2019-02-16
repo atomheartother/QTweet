@@ -1,65 +1,106 @@
 var post = (module.exports = {});
 
+const { tall } = require("tall");
 let users = require("./users");
 
-// text: Boolean. Don't post text tweets if false
-post.tweet = (channel, tweet, text) => {
+function unshortenUrls(text, callback) {
+  let startIdx = 0;
+  let urls = [];
+  let idx = text.indexOf("https://t.co/");
+  while (idx !== -1) {
+    const endIdx = text.indexOf(" ", idx);
+    const url =
+      endIdx === -1 ? text.substring(idx) : text.substring(idx, endIdx);
+    urls.push(url);
+    startIdx = idx + url.length;
+    idx = text.indexOf("https://t.co/", startIdx);
+  }
+  if (urls.length < 1) {
+    callback(text);
+    return;
+  }
+  let solvedUrls = 0;
+  urls.forEach((shortUrl, idx) => {
+    tall(shortUrl)
+      .then(longUrl => {
+        text = text.replace(
+          shortUrl,
+          idx === urls.length - 1 ? `\n[Tweet](${longUrl})` : longUrl
+        );
+        solvedUrls++;
+        if (solvedUrls === urls.length) {
+          callback(text);
+        }
+      })
+      .catch(() => {
+        solvedUrls++;
+        if (solvedUrls === urls.length) {
+          callback(text);
+        }
+      });
+  });
+}
+
+post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
   // Author doesn't have a screenName field,
   // we use it for debugging and for error handling
   let embed = {
     author: {
-      name: tweet.user.name,
-      screenName: tweet.user.screen_name,
-      url: "https://twitter.com/" + tweet.user.screen_name,
-      icon_url: tweet.user.profile_image_url_https
-    },
-    description: tweet.text
+      name: user.name,
+      screenName: user.screen_name,
+      url: "https://twitter.com/" + user.screen_name,
+      icon_url: user.profile_image_url_https
+    }
   };
   if (
-    users.collection.hasOwnProperty(tweet.user.id_str) &&
-    !users.collection[tweet.user.id_str].hasOwnProperty("name")
+    users.collection.hasOwnProperty(user.id_str) &&
+    !users.collection[user.id_str].hasOwnProperty("name")
   ) {
     // if we don't have that user's name, add it to our list
-    users.collection[tweet.user.id_str].name = tweet.user.screen_name;
+    users.collection[user.id_str].name = user.screen_name;
     users.save();
   }
   if (
     !(
-      tweet.hasOwnProperty("extended_entities") &&
-      tweet.extended_entities.hasOwnProperty("media") &&
-      tweet.extended_entities.media.length > 0
+      extended_entities &&
+      extended_entities.hasOwnProperty("media") &&
+      extended_entities.media.length > 0
     )
   ) {
     // Text tweet
-    if (!text) {
+    if (!postTextTweets) {
       // We were told not to post text tweets to this channel
       return;
     }
     embed.color = 0x69b2d6;
   } else if (
-    tweet.extended_entities.media[0].type === "animated_gif" ||
-    tweet.extended_entities.media[0].type === "video"
+    extended_entities.media[0].type === "animated_gif" ||
+    extended_entities.media[0].type === "video"
   ) {
     // Gif/video. We can't make it clickable, but we can make the tweet redirect to it
-    let vidinfo = tweet.extended_entities.media[0].video_info;
+    let vidinfo = extended_entities.media[0].video_info;
     let vidurl = null;
     for (let vid of vidinfo.variants) {
       if (vid.content_type === "video/mp4") vidurl = vid.url;
     }
-    let imgurl = tweet.extended_entities.media[0].media_url_https;
+    let imgurl = extended_entities.media[0].media_url_https;
     if (vidurl !== null) {
-      embed.title = tweet.text;
+      embed.title = text;
       embed.description = "[Link to video](" + vidurl + ")";
     }
     embed.color = 0x67d67d;
     embed.image = { url: imgurl };
   } else {
     // Image
-    let imgurl = tweet.extended_entities.media[0].media_url_https;
+    let imgurl = extended_entities.media[0].media_url_https;
     embed.color = 0xd667cf;
     embed.image = { url: imgurl };
   }
-  post.embed(channel, { embed }, true);
+  // Unshorten all urls then post
+  unshortenUrls(text, newText => {
+    embed.description = newText;
+    post.embed(channel, { embed }, true);
+  });
 };
 // React is a boolean, if true, add a reaction to the message after posting
 post.embed = (channel, embed, react) => {
