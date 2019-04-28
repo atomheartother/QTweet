@@ -45,6 +45,8 @@ handleCommand = (commandName, author, channel, args) => {
         });
       });
     else command.function(args, channel);
+  } else {
+    console.error(`User tried invalid command ${commandName}`);
   }
 };
 
