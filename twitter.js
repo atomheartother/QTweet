@@ -72,7 +72,8 @@ twitter.createStream = () => {
       new Date() +
         `: We got disconnected from twitter. Reconnecting in ${reconnectDelay}min...`
     );
-    console.error("Twitter said");
+    console.error("Twitter said:");
+    console.error(response.text);
     setTimeout(twitter.createStream, reconnectDelay * 1000 * 50);
     reconnectDelay *= 2;
   });
