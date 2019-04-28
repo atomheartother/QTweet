@@ -26,7 +26,7 @@ handleCommand = (commandName, author, channel, args) => {
     }
     let validChecks = 0;
     let isValid = true;
-    if (commands.length > 0)
+    if (command.checks.length > 0)
       command.checks.forEach(({ f, badB }) => {
         // Check every condition to perform the command
         f(author, channel, passed => {
