@@ -68,13 +68,15 @@ twitter.createStream = () => {
   });
 
   twitter.stream.on("end", function(response) {
-    console.error(
-      new Date() +
-        `: We got disconnected from twitter. Reconnecting in ${reconnectDelay}min...`
-    );
-    console.error(`${response.statusCode}: ${response.statusMessage}`);
-    setTimeout(twitter.createStream, reconnectDelay * 1000 * 50);
-    reconnectDelay *= 2;
+    if (response.statusCode !== 200) {
+      console.error(
+        new Date() +
+          `: We got disconnected from twitter. Reconnecting in ${reconnectDelay}min...`
+      );
+      console.error(`${response.statusCode}: ${response.statusMessage}`);
+      setTimeout(twitter.createStream, reconnectDelay * 1000 * 50);
+      reconnectDelay *= 2;
+    }
   });
 };
 
