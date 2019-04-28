@@ -97,6 +97,7 @@ discord.onMessage(message => {
       .addField(`${config.prefix}list*`, usage["list"])
       .addField(`${config.prefix}help*`, "Print this help message.");
     post.embed(message.channel, { embed }, false);
+    return;
   }
 
   const { author, channel } = message;
