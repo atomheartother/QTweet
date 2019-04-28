@@ -43,6 +43,8 @@ twitter.createStream = () => {
   });
 
   twitter.stream.on("data", function(tweet) {
+    // Reset the reconn delay
+    if (reconnectDelay > 1) reconnectDelay = 1;
     if (
       (tweet.hasOwnProperty("in_reply_to_user_id") &&
         tweet.in_reply_to_user_id !== null) ||
