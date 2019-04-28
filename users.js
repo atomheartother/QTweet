@@ -46,8 +46,7 @@ users.save = () => {
       usersCopy[userId].channels.push({ id: get.channel.id, text: txt });
     }
   }
-  console.log("Saving users:");
-  console.log(usersCopy);
+  console.log(`Saving ${Object.keys(usersCopy).length} users`);
   let json = JSON.stringify(usersCopy);
   fs.writeFile(config.getFile, json, "utf8", function(err) {
     if (err !== null) {
