@@ -119,6 +119,10 @@ const list = (args, channel) => {
   users.list(channel);
 };
 
+const adminList = (args, channel) => {
+  users.adminList(channel);
+};
+
 module.exports = {
   start: {
     function: start,
@@ -148,6 +152,19 @@ module.exports = {
     function: list,
     checks: [],
     minArgs: 0
+  },
+  adminList: {
+    function: adminList,
+    checks: [
+      {
+        f: checks.isAdmin,
+        badB: "Sorry, only my owner can use the adminList command!"
+      },
+      {
+        f: checks.isDm,
+        badB: "For user privacy reasons, this command is only allowed in DMs."
+      }
+    ]
   },
   tweet: {
     function: tweet,
