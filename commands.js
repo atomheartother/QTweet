@@ -153,7 +153,7 @@ module.exports = {
     checks: [],
     minArgs: 0
   },
-  adminList: {
+  adminlist: {
     function: adminList,
     checks: [
       {
@@ -164,7 +164,8 @@ module.exports = {
         f: checks.isDm,
         badB: "For user privacy reasons, this command is only allowed in DMs."
       }
-    ]
+    ],
+    minArgs: 0
   },
   tweet: {
     function: tweet,
