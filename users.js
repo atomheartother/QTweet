@@ -152,9 +152,9 @@ users.adminList = channel => {
       str +=
         "\n- **G**: `" +
         get.channel.guild.name +
-        "` || **ID**: `" +
+        "` -- **ID**: `" +
         get.channel.guild.id +
-        "` || **O**: `" +
+        "` -- **O**: `" +
         get.channel.guild.owner.user.tag +
         "`";
     }
