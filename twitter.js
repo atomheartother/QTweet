@@ -4,6 +4,10 @@ let twitter = (module.exports = {});
 var pw = require("./pw.json");
 let post = require("./post");
 
+// Reconnection time in minutes
+// Will be multiplied by 2 everytime
+let reconnectDelay = 1;
+
 var Twitter = require("twitter");
 var tClient = new Twitter({
   consumer_key: pw.tId,
@@ -33,8 +37,6 @@ twitter.createStream = () => {
   // If there are none, we can just leave stream at null
   if (userIds.length < 1) return;
 
-  console.log("A stream is being created, registering users:");
-  console.log(userIds);
   // Else, register the stream using our userIds
   twitter.stream = tClient.stream("statuses/filter", {
     follow: userIds.toString()
@@ -65,9 +67,12 @@ twitter.createStream = () => {
 
   twitter.stream.on("end", function(response) {
     console.error(
-      new Date() + ": We got disconnected from twitter. Reconnecting in 5min..."
+      new Date() +
+        `: We got disconnected from twitter. Reconnecting in ${reconnectDelay}min...`
     );
-    setTimeout(twitter.createStream, 5 * 1000 * 50);
+    console.error("Twitter said");
+    setTimeout(twitter.createStream, reconnectDelay * 1000 * 50);
+    reconnectDelay *= 2;
   });
 };
 
