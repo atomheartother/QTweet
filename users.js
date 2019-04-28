@@ -103,33 +103,46 @@ users.load = callback => {
 // List users we're getting in this channel, available to everyone
 users.list = channel => {
   let userIds = [];
-  for (let userId in users.collection) {
-    if (!users.collection.hasOwnProperty(userId)) continue;
+  Object.keys(users.collection).forEach(userId => {
+    if (!users.collection.hasOwnProperty(userId)) return;
 
     let twitterUser = users.collection[userId];
-
-    for (let get of twitterUser.channels) {
-      if (get.channel.id === channel.id) {
-        userIds.push(userId);
-      }
+    if (twitterUser.channels.find(get => get.channel.id === channel.id)) {
+      userIds.push(userId);
     }
-  }
+  });
 
   if (userIds.length < 1) {
     post.message(channel, "You aren't fetching tweets from anywhere!");
     return;
   }
-  let str = "You're fetching tweets from:";
+  let page = 1;
+  let embed = new Discord.RichEmbed()
+    .setColor(0xf26d7a)
+    .setTitle(`Tweet sources list (page ${page})`)
+    .setURL("https://github.com/atomheartother/A-I-kyan")
+    .setDescription(
+      "This is a complete list of the accounts you're fetching tweets from"
+    );
+  let counter = 0;
   for (let userId of userIds) {
-    if (users.collection[userId].hasOwnProperty("name")) {
-      str += "\n- `" + users.collection[userId].name + "`";
-    } else
-      str +=
-        "\n- ID: " +
-        userId +
-        " (I don't know their name yet, I need a tweet from them!)";
+    const twitterUser = users.collection[userId];
+    embed.addField(twitterUser.name || twitterUser.id, `(${userId})`);
+    counter++;
+    if (counter > 20) {
+      page++;
+      post.embed(channel, { embed }, false);
+      embed = new Discord.RichEmbed()
+        .setColor(0xf26d7a)
+        .setTitle(`Tweet sources list (page ${page})`)
+        .setURL("https://github.com/atomheartother/A-I-kyan")
+        .setDescription(
+          "This is a complete list of the accounts you're fetching tweets from"
+        );
+      counter = 0;
+    }
   }
-  post.message(channel, str);
+  if (counter > 0) post.embed(channel, { embed }, false);
 };
 
 // List all gets in every channel, available to the admin only, and in DMs
@@ -173,5 +186,5 @@ users.adminList = channel => {
       counter = 0;
     }
   }
-  post.embed(channel, { embed }, false);
+  if (counter > 0) post.embed(channel, { embed }, false);
 };
