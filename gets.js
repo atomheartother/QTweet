@@ -16,10 +16,10 @@ gets.add = (channel, userId, screenName, options) => {
     users.collection[userId].name = screenName;
   }
 
-  for (let get of users.collection[userId].channels) {
-    // Get is already in there for this channel
-    if (get.channel.id == channel.id) return;
-  }
+  if (
+    users.collection[userId].channels.find(get => get.channel.id == channel.id)
+  )
+    return;
 
   users.collection[userId].channels.push({
     channel: channel,
