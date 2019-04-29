@@ -32,7 +32,9 @@ QTweet is designed to do one thing and do it well, I don't care much to make it 
 
 ## Motivation, Philosophy, Privacy notice
 
-I don't like Twitter but I like a few accounts on it. This is my solution. I value privacy above all, and none of your data is being stored anywhere, QTweet only keeps records of what she needs to know (channel ids, twitter usernames, and that's about it), and doesn't record any personal information, nor does she even store a record of which tweets she forwards to your server. I am able to see which servers she's used in, for the purposes of debugging and contacting server owners.
+I don't like Twitter but I like a few accounts on it. This is my solution. I value privacy above all, and none of your personal data or messages are being stored anywhere, QTweet only keeps records of what she needs to know (channel ids, twitter usernames, and that's about it), and doesn't record any personal information, nor does she even store a record of which tweets she forwards to your server.
+
+I am able to see which servers she's used in, for the purposes of debugging and contacting server owners. That's about it.
 
 ## Todo List
 
