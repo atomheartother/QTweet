@@ -158,7 +158,8 @@ discord.onReady(() => {
 });
 
 process.on("unhandledRejection", function(err) {
-  console.error(new Date() + ": Unhandled exception");
+  console.error(new Date() + ": Unhandled exception:");
+  console.error(err);
 });
 
 console.log("Server launched at " + new Date());
