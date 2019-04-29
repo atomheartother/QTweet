@@ -9,7 +9,6 @@ const users = require("./users");
 
 const tweet = (args, channel) => {
   const screenName = args[0];
-  console.log(screenName);
   twitter
     .userTimeline({ screen_name: screenName })
     .then(function(tweets, error) {
