@@ -157,7 +157,7 @@ module.exports = {
     checks: [
       {
         f: checks.isAdmin,
-        badB: "Sorry, only my owner can use the adminList command!"
+        badB: "Sorry, only my owner can use the adminlist command!"
       },
       {
         f: checks.isDm,
