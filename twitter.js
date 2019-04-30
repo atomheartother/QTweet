@@ -65,6 +65,7 @@ twitter.createStream = () => {
 
   twitter.stream.on("error", function(err) {
     console.error(new Date() + ": Error getting a stream:");
+    console.error(err);
   });
 
   twitter.stream.on("end", function(response) {
