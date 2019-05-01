@@ -21,6 +21,11 @@ const tweet = (args, channel) => {
       }
       let tweet = tweets[0];
       post.tweet(channel, tweet, true);
+      console.log(
+        `${Date.now()}: Posted latest tweet from ${screenName} in  ${
+          channel.name
+        } (${channel.guild.name})`
+      );
     })
     .catch(function(error) {
       post.message(
@@ -62,6 +67,11 @@ const start = (args, channel) => {
           screenName +
           "`"
       );
+      console.log(
+        `${Date.now()}: Added ${screenName} to channel ${channel.name} (${
+          channel.guild.name
+        })`
+      );
       let userId = data[0].id_str;
       // Re-register the stream if we didn't know the user before
       let redoStream = !users.collection.hasOwnProperty(userId);
@@ -102,7 +112,7 @@ const leaveGuild = (args, channel) => {
   guild
     .leave()
     .then(g => {
-      console.log(`Left the guild ${g.name}`);
+      console.log(`${Date.now()}: Left the guild ${g.name}`);
       if (checks.isDm(author, channel))
         post.message(channel, `Left the guild ${g}`);
     })
@@ -111,6 +121,11 @@ const leaveGuild = (args, channel) => {
 
 const stop = (args, channel) => {
   const screenName = args[0];
+  console.log(
+    `${Date.now()}: Removed ${screenName} from channel ${channel.name} (${
+      channel.guild.name
+    })`
+  );
   gets.rm(channel, screenName);
 };
 
@@ -134,6 +149,11 @@ const stopchannel = (args, channel) => {
     targetChannel = channel;
   }
   gets.rmChannel(targetChannel);
+  console.log(
+    `${Date.now()}: Removed all gets from channel ${channel.name} (${
+      channel.guild.name
+    })`
+  );
   post.message(
     channel,
     `I have stopped getting tweets from #${targetChannel.name}`
