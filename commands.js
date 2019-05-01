@@ -128,7 +128,9 @@ module.exports = {
     checks: [
       {
         f: checks.isMod,
-        badB: "You're not authorized to start fetching tweets!"
+        badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
+          config.modRole
+        } role!`
       },
       {
         f: checks.isNotDm,
