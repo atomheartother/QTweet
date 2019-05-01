@@ -84,7 +84,7 @@ const start = (args, channel) => {
     });
 };
 
-const leave = (args, channel) => {
+const leaveGuild = (args, channel) => {
   let guild = null;
   if (args.length >= 1 && checks.isDm(null, channel)) {
     guild = discord.getGuild(args[0]);
@@ -102,7 +102,7 @@ const leave = (args, channel) => {
   guild
     .leave()
     .then(g => {
-      console.log(`Left the guild ${g}`);
+      console.log(`Left the guild ${g.name}`);
       if (checks.isDm(author, channel))
         post.message(channel, `Left the guild ${g}`);
     })
@@ -173,8 +173,11 @@ module.exports = {
     checks: [],
     minArgs: 1
   },
-  leave: {
-    function: leave,
+  leavechannel: {
+    function: 
+  },
+  leaveguild: {
+    function: leaveGuild,
     checks: [
       {
         f: checks.isAdmin,

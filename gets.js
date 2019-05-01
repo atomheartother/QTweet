@@ -79,3 +79,47 @@ gets.rm = (channel, screenName) => {
       post.message(channel, "I can't find a user by the name of " + screenName);
     });
 };
+
+gets.rmChannel = channel => {
+  // Remove all instances of this channel from our gets
+  Object.keys(users.collection).forEach(userId => {
+    let user = users.collection[userId];
+    var i = user.channels.length;
+    while (i--) {
+      if (channel.id === user.channels[i].channel.id) {
+        // We should remove this get
+        user.channels.splice(i, 1);
+      }
+    }
+    if (user.channels.length < 1) {
+      // If no one needs this user's tweets we can delete the enty
+      delete users.collection[userId];
+    }
+  });
+  // Save any changes we did to the users object
+  users.save();
+  // ...and re-register the stream, which will be properly updated
+  twitter.createStream();
+};
+
+gets.rmGuild = guild => {
+  // Remove all instances of this guild from our gets
+  Object.keys(users.collection).forEach(userId => {
+    let user = users.collection[userId];
+    var i = user.channels.length;
+    while (i--) {
+      if (guild.id === user.channels[i].channel.guild.id) {
+        // We should remove this get
+        user.channels.splice(i, 1);
+      }
+    }
+    if (user.channels.length < 1) {
+      // If no one needs this user's tweets we can delete the enty
+      delete users.collection[userId];
+    }
+  });
+  // Save any changes we did to the users object
+  users.save();
+  // ...and re-register the stream, which will be properly updated
+  twitter.createStream();
+};

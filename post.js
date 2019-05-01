@@ -1,4 +1,5 @@
 var post = (module.exports = {});
+const config = require("./config.json");
 
 const { tall } = require("tall");
 let users = require("./users");
@@ -139,19 +140,24 @@ post.embed = (channel, embed, react) => {
 post.message = (channel, message) => {
   channel.send(message).catch(function(error) {
     console.error(
-      new Date() +
-        ": Sending message to channel " +
-        channel.id +
-        " failed: " +
-        message
+      `${new Date()}: Sending message to channel ${channel.name} (${
+        channel.guild.name
+      } - ${channel.guild.id}) failed: ${message}`
     );
     // Try to contact the guild owner
     channel.guild.owner
       .send(
         `Hello, I just tried sending a message to #${
           channel.name
-        }, but I couldn't. Did you give me the right to send messages there?`
+        }, but I couldn't.
+        Possible solutions:
+        - Give me the "Send Messages" and "Send Embeds" permissions in that channel (I would also like to be able to post reactions please!)
+        - If you'd like me to stop posting anything to that channel, you can simply use the command: \`${
+          config.prefix
+        }\`leave ${channel.id}.
+        - If you'd like me to leave your server, simply kick me from it, I'll stop trying to post to it`
       )
+      .then(message)
       .catch(function(err) {
         console.error(
           new Date() +
