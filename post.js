@@ -150,7 +150,7 @@ post.message = (channel, message) => {
       .send(
         "Hello, I just tried sending a message to #" +
           channel.name +
-          ", but I couldn't. Did you give me the proper rights?"
+          ", but I couldn't. Did you give me permission to send messages?"
       )
       .catch(function(err) {
         console.error(
