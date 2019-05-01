@@ -18,7 +18,7 @@ You never have to use Twitter again, just get the good stuff posted to your Disc
 
 ## Can I add QTweet to my server?
 
-If you wanna add QTweet to your server, you can just click [this link](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0).
+If you wanna add QTweet to your server, you can just click [this link](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=18496).
 
 ## Can I modify and run your bot?
 
