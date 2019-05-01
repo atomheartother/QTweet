@@ -93,6 +93,7 @@ discord.onMessage(message => {
       .addField(`${config.prefix}tweet*`, usage["tweet"])
       .addField(`${config.prefix}start`, usage["start"])
       .addField(`${config.prefix}stop`, usage["stop"])
+      .addField(`${config.prefix}stopchannel`, usage["stopchannel"])
       .addField(`${config.prefix}list*`, usage["list"])
       .addField(`${config.prefix}help*`, "Print this help message.");
     post.embed(message.channel, { embed }, false);

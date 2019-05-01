@@ -10,6 +10,9 @@ module.exports = {
   stop: `Stop automatically posting tweets from the given user.\nUsage: \`${
     config.prefix
   }stop <twitter screen name>\``,
+  stopchannel: `Exactly like stop but acts on the whole channel.\nUsage: \`${
+    config.prefix
+  }stopchannel [channel ID]\``,
   list:
     "Print a list of the twitter users you're currently fetching tweets from."
 };
