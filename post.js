@@ -93,6 +93,7 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
   } else {
     // Image
     let imgurl = extended_entities.media[0].media_url_https;
+    // console.log(extended_entities.media);
     embed.color = 0xd667cf;
     embed.image = { url: imgurl };
   }
@@ -111,7 +112,7 @@ post.embed = (channel, embed, react) => {
         message.react("❤").catch(err => {
           console.error(
             new Date() +
-              ": Reacting to message in channel " +
+              ": Reacting to message in #" +
               channel.name +
               " failed!"
           );
@@ -125,13 +126,12 @@ post.embed = (channel, embed, react) => {
           ", but it failed. We'll try to warn the user. If it fails it'll be reported in the error log."
       );
       console.log(error);
-      post.message(
-        channel,
-        "I tried to post Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n`" +
-          error.name +
-          ": " +
-          error.message +
-          "`"
+      channel.guild.owner.send(
+        `Hello, I tried to post an embed in #${
+          channel.name
+        } but Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n${
+          error.name
+        }: ${error.message}`
       );
     });
 };
@@ -148,9 +148,9 @@ post.message = (channel, message) => {
     // Try to contact the guild owner
     channel.guild.owner
       .send(
-        "Hello, I just tried sending a message to your channel '" +
+        "Hello, I just tried sending a message to #" +
           channel.name +
-          "', but I couldn't. Did you give me the proper rights?"
+          ", but I couldn't. Did you give me the proper rights?"
       )
       .catch(function(err) {
         console.error(
