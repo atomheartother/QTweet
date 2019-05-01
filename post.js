@@ -152,9 +152,9 @@ post.message = (channel, message) => {
         }, but I couldn't.
         Possible solutions:
         - Give me the "Send Messages" and "Send Embeds" permissions in that channel (I would also like to be able to post reactions please!)
-        - If you'd like me to stop posting anything to that channel, you can simply use the command: \`${
+        - If you'd like me to stop posting anything to that channel, just use the command \`${
           config.prefix
-        }\`leave ${channel.id}.
+        }stopchannel ${channel.id}\` **inside** your server, not here.
         - If you'd like me to leave your server, simply kick me from it, I'll stop trying to post to it`
       )
       .then(message)
