@@ -126,7 +126,7 @@ const stopchannel = (args, channel) => {
     if (!targetChannel) {
       post.message(
         channel,
-        `Something went wrong trying to find the channel ${userInput}. It's been reported to my owner. In the meantime you can run this command from the channel itself, if I can see it.`
+        `Something went wrong trying to find the channel ${userInput}. This shouldn't happen, it would be nice if you could contact my creator Tom'#4242 and tell him about this!\nIn the meantime you can run this command from the channel itself`
       );
       return;
     }
