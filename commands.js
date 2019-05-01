@@ -114,6 +114,32 @@ const stop = (args, channel) => {
   gets.rm(channel, screenName);
 };
 
+const stopchannel = (args, channel) => {
+  let targetChannel = null;
+  if (args.length > 0) {
+    const userInput = args[0];
+    if (!channel.guild.channels.find(c => c.id === userInput)) {
+      post.message(channel, `No such channel in this server: ${userInput}`);
+      return;
+    }
+    targetChannel = discord.getChannel(userInput);
+    if (!targetChannel) {
+      post.message(
+        channel,
+        `Something went wrong trying to find the channel ${userInput}. It's been reported to my owner. In the meantime you can run this command from the channel itself, if I can see it.`
+      );
+      return;
+    }
+  } else {
+    targetChannel = channel;
+  }
+  gets.rmChannel(targetChannel);
+  post.message(
+    channel,
+    `I have stopped getting tweets from #${targetChannel.name}`
+  );
+};
+
 const list = (args, channel) => {
   users.list(channel);
 };
@@ -145,6 +171,10 @@ module.exports = {
       {
         f: checks.isMod,
         badB: "You're not authorized to stop fetching tweets!"
+      },
+      {
+        f: checks.isNotDm,
+        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
       }
     ],
     minArgs: 1
@@ -173,8 +203,20 @@ module.exports = {
     checks: [],
     minArgs: 1
   },
-  leavechannel: {
-    function: 
+  stopchannel: {
+    function: stopchannel,
+    checks: [
+      {
+        f: checks.isMod,
+        badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
+          config.modRole
+        } role!`
+      },
+      {
+        f: checks.isNotDm,
+        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
+      }
+    ]
   },
   leaveguild: {
     function: leaveGuild,
