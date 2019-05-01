@@ -4,5 +4,5 @@
   "getFile": "./gets.json",
   "botName": "QTweet",
   "githubURL": "https://github.com/atomheartother/QTweet",
-  "modRole": "qtweet"
+  "modRole": "qtweet-mod"
 }

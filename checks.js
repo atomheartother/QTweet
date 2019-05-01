@@ -19,8 +19,18 @@ checks.isMod = (author, channel, callback) => {
     channel.guild
       .fetchMember(author)
       .then(member => {
+        // Are they an admin or have global management rights? (means they're a moderator)
+        const modRole = member.permissions
+          .toArray()
+          .find(
+            perm =>
+              perm === "ADMINISTRATOR" ||
+              perm === "MANAGE_GUILD" ||
+              perm === "MANAGE_CHANNELS"
+          );
         // Now we can check if they have the appropriate role
-        const modRole = member.roles.find(role => role.name === config.modRole);
+        if (!modRole)
+          modRole = member.roles.find(role => role.name === config.modRole);
         callback(modRole ? true : false);
       })
       .catch(() => {
