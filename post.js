@@ -149,13 +149,13 @@ post.message = (channel, message) => {
       .send(
         `Hello, I just tried sending a message to #${
           channel.name
-        }, but I couldn't.
-        Possible solutions:
+        }, but I couldn't.\n\nHere's a few ways you can fix this:
         - Give me the "Send Messages" and "Send Embeds" permissions in that channel (I would also like to be able to post reactions please!)
         - If you'd like me to stop posting anything to that channel, just use the command \`${
           config.prefix
         }stopchannel ${channel.id}\` **inside** your server, not here.
-        - If you'd like me to leave your server, simply kick me from it, I'll stop trying to post to it`
+        - If you'd like me to leave your server, simply kick me from it, I'll stop trying to post to it
+        - If I'm somehow still messing up, please contact my creator, Tom'#4242, he'll try his best to help.`
       )
       .then(message)
       .catch(function(err) {
