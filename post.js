@@ -4,6 +4,12 @@ const config = require("./config.json");
 const { tall } = require("tall");
 let users = require("./users");
 
+const postColors = {
+  text: 0x69b2d6,
+  video: 0x67d67d,
+  image: 0xd667cf
+};
+
 function unshortenUrls(text, callback) {
   let startIdx = 0;
   let urls = [];
@@ -53,6 +59,8 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
       icon_url: user.profile_image_url_https
     }
   };
+  // For any additional files
+  let files = null;
   if (
     users.collection.hasOwnProperty(user.id_str) &&
     !users.collection[user.id_str].hasOwnProperty("name")
@@ -73,7 +81,7 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
       // We were told not to post text tweets to this channel
       return;
     }
-    embed.color = 0x69b2d6;
+    embed.color = postColors["text"];
   } else if (
     extended_entities.media[0].type === "animated_gif" ||
     extended_entities.media[0].type === "video"
@@ -89,18 +97,23 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
       embed.title = text;
       embed.description = "[Link to video](" + vidurl + ")";
     }
-    embed.color = 0x67d67d;
+    embed.color = postColors["video"];
     embed.image = { url: imgurl };
   } else {
     // Image
+    console.log(extended_entities.media);
     let imgurl = extended_entities.media[0].media_url_https;
-    embed.color = 0xd667cf;
-    embed.image = { url: imgurl };
+    embed.color = postColors["image"];
+    files = extended_entities.media.map(media => media.media_url_https);
+    if (files.length === 1) {
+      embed.image = { url: files[0] };
+      files = null;
+    }
   }
   // Unshorten all urls then post
   unshortenUrls(text, newText => {
     embed.description = newText;
-    post.embed(channel, { embed }, true);
+    post.embed(channel, { embed, files }, true);
   });
 };
 // React is a boolean, if true, add a reaction to the message after posting
