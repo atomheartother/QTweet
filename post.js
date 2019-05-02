@@ -101,8 +101,6 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
     embed.image = { url: imgurl };
   } else {
     // Image
-    console.log(extended_entities.media);
-    let imgurl = extended_entities.media[0].media_url_https;
     embed.color = postColors["image"];
     files = extended_entities.media.map(media => media.media_url_https);
     if (files.length === 1) {
