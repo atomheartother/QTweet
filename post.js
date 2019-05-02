@@ -7,7 +7,8 @@ let users = require("./users");
 const postColors = {
   text: 0x69b2d6,
   video: 0x67d67d,
-  image: 0xd667cf
+  image: 0xd667cf,
+  images: 0x53a38d
 };
 
 function unshortenUrls(text, callback) {
@@ -100,12 +101,14 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
     embed.color = postColors["video"];
     embed.image = { url: imgurl };
   } else {
-    // Image
-    embed.color = postColors["image"];
+    // Image(s)
     files = extended_entities.media.map(media => media.media_url_https);
     if (files.length === 1) {
       embed.image = { url: files[0] };
       files = null;
+      embed.color = postColors["image"];
+    } else {
+      embed.color = postColors["images"];
     }
   }
   // Unshorten all urls then post
