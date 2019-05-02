@@ -7,8 +7,23 @@ const discord = require("./discord");
 const twitter = require("./twitter");
 const users = require("./users");
 
+const getScreenName = word => {
+  if (word.startsWith("@")) {
+    return word.substring(1);
+  }
+  const urlPrefix = "twitter.com/";
+  if (word.indexOf(urlPrefix) !== -1) {
+    const hasParameters = word.indexOf("?");
+    return word.substring(
+      word.indexOf(urlPrefix) + urlPrefix.length,
+      hasParameters === -1 ? word.length : hasParameters
+    );
+  }
+  return word;
+};
+
 const tweet = (args, channel) => {
-  const screenName = args[0];
+  const screenName = getScreenName(args[0]);
   twitter
     .userTimeline({ screen_name: screenName })
     .then(function(tweets, error) {
@@ -22,7 +37,7 @@ const tweet = (args, channel) => {
       let tweet = tweets[0];
       post.tweet(channel, tweet, true);
       console.log(
-        `${Date.now()}: Posted latest tweet from ${screenName} in  ${
+        `${Date.now()}: Posted latest tweet from ${screenName} in ${
           channel.name
         } (${channel.guild.name})`
       );
@@ -44,7 +59,7 @@ const start = (args, channel) => {
       let option = arg.substring(2);
       if (option === "notext") options.text = false;
     } else if (screenName == null) {
-      screenName = arg;
+      screenName = getScreenName(arg);
     } else {
       post.message(channel, "Invalid argument: " + arg);
       return;
@@ -120,7 +135,7 @@ const leaveGuild = (args, channel) => {
 };
 
 const stop = (args, channel) => {
-  const screenName = args[0];
+  const screenName = getScreenName(args[0]);
   console.log(
     `${Date.now()}: Removed ${screenName} from channel ${channel.name} (${
       channel.guild.name
