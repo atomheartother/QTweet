@@ -65,7 +65,7 @@ twitter.createStream = () => {
       return;
     }
     console.log(
-      `${Date.now()}: Posting tweet from ${tweet.user.id_str} to ${
+      `${Date.now()}: Posting tweet from ${twitterUserObject.name} to ${
         twitterUserObject.channels.length
       } channels`
     );
