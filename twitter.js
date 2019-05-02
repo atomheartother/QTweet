@@ -36,7 +36,9 @@ twitter.createStream = () => {
   }
   // If there are none, we can just leave stream at null
   if (userIds.length < 1) return;
-
+  console.log(
+    `${Date.now()}: Creating a stream with ${userIds.length} registered users`
+  );
   // Else, register the stream using our userIds
   twitter.stream = tClient.stream("statuses/filter", {
     follow: userIds.toString()
@@ -53,14 +55,23 @@ twitter.createStream = () => {
       // This is a reply or a retweet, ignore it
       return;
     }
-    if (!users.collection.hasOwnProperty(tweet.user.id_str)) {
+    const twitterUserObject = users.collection[tweet.user.id_str];
+    if (!twitterUserObject) {
+      console.error(
+        `${Date.now()}: Got a tweet from someone we don't follow: ${
+          tweet.user.id_str
+        }`
+      );
       return;
     }
-    let channelsLen = users.collection[tweet.user.id_str].channels.length;
-    for (let i = 0; i < channelsLen; i++) {
-      let get = users.collection[tweet.user.id_str].channels[i];
+    console.log(
+      `${Date.now()}: Posting tweet from ${tweet.user.id_str} to ${
+        twitterUserObject.channels.length
+      } channels`
+    );
+    twitterUserObject.channels.forEach(get => {
       post.tweet(get.channel, tweet, get.text);
-    }
+    });
   });
 
   twitter.stream.on("error", function(err) {
