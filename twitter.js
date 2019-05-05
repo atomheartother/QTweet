@@ -63,7 +63,7 @@ twitter.createStream = () => {
     }
     if (twitterUserObject.channels.length === 1) {
       log(
-        `Posting tweet from ${twitterUserObject.name}`,
+        `<- ${twitterUserObject.name}`,
         twitterUserObject.channels[0].channel
       );
     } else {
