@@ -147,8 +147,8 @@ const stop = (args, channel) => {
 const stopchannel = (args, channel) => {
   let targetChannel = null;
   if (args.length > 0) {
-    const userInput = args[0];
-    if (!channel.guild.channels.find(c => c.id === userInput)) {
+    targetChannel = args[0];
+    if (!channel.guild.channels.find(c => c.id === targetChannel)) {
       post.message(
         channel,
         `I couldn't find channel ${userInput} in your server. If you deleted it, this is normal, don't panic, I'll try to leave it anyway :)`
