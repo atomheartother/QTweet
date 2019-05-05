@@ -7,6 +7,8 @@ const config = require("./config.json");
 const pw = require("./pw.json");
 // Usage strings
 const usage = require("./usage.js");
+// logging
+const log = require("./log");
 
 // Modules
 const gets = require("./gets");
@@ -105,7 +107,8 @@ discord.onMessage(message => {
 });
 
 discord.onError(error => {
-  console.error(new Date() + ": Discord client encountered an error");
+  log("Discord client encountered an error");
+  console.error(error);
 });
 
 discord.onGuildCreate(guild => {
@@ -116,7 +119,7 @@ discord.onGuildCreate(guild => {
     }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a list of my commands with 
       ${
         config.prefix
-      }help. I hope you are satisfied with my services.\n\nMy creator is Tom'#4242, please don't hesitate to friend him & message him about any issues or feature ideas.`
+      }help. I hope you are satisfied with my services.\n\nMy creator is \`Tom'#4242\`, please don't hesitate to friend him & message him about any issues or feature ideas.`
   );
 });
 
@@ -136,9 +139,9 @@ discord.onReady(() => {
 });
 
 process.on("unhandledRejection", function(err) {
-  console.error(new Date() + ": Unhandled exception:");
+  log("Unhandled exception:");
   console.error(err);
 });
 
-console.log("Server launched at " + new Date());
+log("Server launched");
 discord.login(pw.dToken);
