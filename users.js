@@ -9,6 +9,7 @@ var config = require("./config.json");
 let post = require("./post");
 let gets = require("./gets");
 let discord = require("./discord");
+const log = require("./log");
 
 // Users:
 // Dict of TwitterUser, using userId as key
@@ -58,10 +59,9 @@ users.save = () => {
 users.load = callback => {
   fs.stat(config.getFile, function(err, stat) {
     if (err == null) {
-      console.log("Loading gets from " + config.getFile);
       fs.readFile(config.getFile, "utf8", function(err, data) {
         if (err) {
-          console.error("There was a problem reading the config file");
+          log("There was a problem reading the config file");
           return;
         }
         // Restore the channels object from saved file

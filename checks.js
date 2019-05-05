@@ -1,6 +1,7 @@
 const config = require("./config.json");
 
 let checks = (module.exports = {});
+const log = require("./log");
 
 // Takes an author and returns whether or not they are an admin
 checks.isAdmin = (author, channel, callback) => {
@@ -34,11 +35,7 @@ checks.isMod = (author, channel, callback) => {
         callback(modRole ? true : false);
       })
       .catch(() => {
-        console.error(
-          `${Date.now()}: Couldn't get info for ${author.name} in channel ${
-            channel.name
-          }`
-        );
+        log(`Couldn't get info for ${author.name}`, channel);
         callback(false);
       });
   }
