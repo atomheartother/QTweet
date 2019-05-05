@@ -147,32 +147,23 @@ const stop = (args, channel) => {
 const stopchannel = (args, channel) => {
   let targetChannel = null;
   if (args.length > 0) {
-    const userInput = args[0];
+    const targetChannel = args[0];
     if (!channel.guild.channels.find(c => c.id === userInput)) {
-      post.message(channel, `No such channel in this server: ${userInput}`);
-      return;
-    }
-    targetChannel = discord.getChannel(userInput);
-    if (!targetChannel) {
       post.message(
         channel,
-        `Something went wrong trying to find the channel ${userInput}. This shouldn't happen, it would be nice if you could contact my creator Tom'#4242 and tell him about this!\nIn the meantime you can run this command from the channel itself`
+        `I couldn't find channel ${userInput} in your server. If you deleted it, this is normal, don't panic, I'll try to leave it anyway :)`
       );
-      return;
     }
   } else {
-    targetChannel = channel;
+    targetChannel = channel.id;
   }
-  gets.rmChannel(targetChannel);
+  const count = gets.rmChannel(targetChannel);
   console.log(
-    `${Date.now()}: Removed all gets from channel ${channel.name} (${
+    `${Date.now()}: Removed all gets from channel ID:${targetChannel} (${
       channel.guild.name
     })`
   );
-  post.message(
-    channel,
-    `I have stopped getting tweets from #${targetChannel.name}`
-  );
+  post.message(channel, `I have stopped fetching tweets from ${count} users`);
 };
 
 const list = (args, channel) => {
