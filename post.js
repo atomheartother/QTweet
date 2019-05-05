@@ -188,3 +188,12 @@ post.message = (channel, message) => {
       });
   });
 };
+
+post.announcement = (message, channels) => {
+  if (channels.length <= 0) return;
+  const nextChannel = channels.shift();
+  post.message(nextChannel, message);
+  setTimeout(() => {
+    post.announcement(message, channels);
+  }, 1000);
+};
