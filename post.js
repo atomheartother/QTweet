@@ -89,19 +89,26 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
     extended_entities.media[0].type === "animated_gif" ||
     extended_entities.media[0].type === "video"
   ) {
-    // Gif/video. Download the video and append it
-    let vidinfo = extended_entities.media[0].video_info;
+    // Gif/video.
+    const vidinfo = extended_entities.media[0].video_info;
     let vidurl = null;
     for (let vid of vidinfo.variants) {
+      // Find the best video
       if (vid.content_type === "video/mp4") {
         const paramIdx = vid.url.lastIndexOf("?");
         const hasParam = paramIdx !== -1 && paramIdx > vid.url.lastIndexOf("/");
         vidurl = hasParam ? vid.url.substring(0, paramIdx) : vid.url;
-        break;
       }
     }
     if (vidurl !== null) {
-      files = [vidurl];
+      if (vidinfo.duration_millis < 20000) files = [vidurl];
+      else {
+        embed.image = { url: extended_entities.media[0].media_url_https };
+        text = `[Link to video](${vidurl})\n\n${text}`;
+      }
+    } else {
+      log("Found video tweet with no valid url");
+      log(vidinfo);
     }
     embed.color = postColors["video"];
   } else {
@@ -148,7 +155,9 @@ post.embed = (channel, embed, react) => {
         channel,
         `I tried to post an embed in #${
           channel.name
-        } but Discord won't let me! Did you give me permissions to send embed links?`
+        } but Discord won't let me! Did you give me permissions to send embed links?\n\nThis is the reason Discord gave: ${
+          error.message
+        }`
       );
     });
 };
