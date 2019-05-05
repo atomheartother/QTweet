@@ -3,6 +3,7 @@ const config = require("./config.json");
 
 const { tall } = require("tall");
 let users = require("./users");
+const gets = require("./gets");
 
 const postColors = {
   text: 0x69b2d6,
@@ -133,13 +134,23 @@ post.embed = (channel, embed, react) => {
         });
     })
     .catch(function(error) {
-      console.log(
-        new Date() +
-          ": Tried to post an embed to " +
-          channel.id +
-          ", but it failed. We'll try to warn the user. If it fails it'll be reported in the error log."
-      );
-      console.log(error);
+      if (error.statusCode === 404) {
+        // The channel was deleted, auto-delete it
+        const count = gets.rmChannel(channel.id);
+        channel.guid.owner.send(
+          `Hi! I recently tried to send a message to #${
+            channel.name
+          } but Discord tells me it doesn't exist anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
+        );
+        console.log(
+          `${new Date()}: Auto-deleted ${count} gets from #${channel.name} (${
+            channel.id
+          })`
+        );
+        return;
+      }
+      console.error(`
+        ${new Date()}: Tried to post an embed to ${channel.id}, but it failed. We'll try to warn the user. If it fails it'll be reported in the error log.`);
       post.message(
         channel,
         `Hello, I tried to post an embed in #${
