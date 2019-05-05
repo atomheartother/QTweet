@@ -90,7 +90,6 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
   ) {
     // Gif/video. Download the video and append it
     let vidinfo = extended_entities.media[0].video_info;
-    console.log(vidinfo);
     let vidurl = null;
     for (let vid of vidinfo.variants) {
       if (vid.content_type === "video/mp4") {
