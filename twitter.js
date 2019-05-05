@@ -61,11 +61,18 @@ twitter.createStream = () => {
       log(`Got a tweet from someone we don't follow: ${tweet.user.id_str}`);
       return;
     }
-    log(
-      `Posting tweet from ${twitterUserObject.name} to ${
-        twitterUserObject.channels.length
-      } channels`
-    );
+    if (twitterUserObject.channels.length === 1) {
+      log(
+        `Posting tweet from ${twitterUserObject.name}`,
+        twitterUserObject.channels[0].channel
+      );
+    } else {
+      log(
+        `Posting tweet from ${twitterUserObject.name} to ${
+          twitterUserObject.channels.length
+        } channels`
+      );
+    }
     twitterUserObject.channels.forEach(get => {
       post.tweet(get.channel, tweet, get.text);
     });

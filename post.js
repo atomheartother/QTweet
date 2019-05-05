@@ -128,7 +128,7 @@ post.embed = (channel, embed, react) => {
     .then(function(message) {
       if (react)
         message.react("❤").catch(err => {
-          log("Reacting to message failed", channel);
+          // Don't log this as it's not critical
         });
     })
     .catch(function(error) {
