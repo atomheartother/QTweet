@@ -88,19 +88,22 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
     extended_entities.media[0].type === "animated_gif" ||
     extended_entities.media[0].type === "video"
   ) {
-    // Gif/video. We can't make it clickable, but we can make the tweet redirect to it
+    // Gif/video. Download the video and append it
     let vidinfo = extended_entities.media[0].video_info;
+    console.log(vidinfo);
     let vidurl = null;
     for (let vid of vidinfo.variants) {
-      if (vid.content_type === "video/mp4") vidurl = vid.url;
+      if (vid.content_type === "video/mp4") {
+        const paramIdx = vid.url.lastIndexOf("?");
+        const hasParam = paramIdx !== -1 && paramIdx > vid.url.lastIndexOf("/");
+        vidurl = hasParam ? vid.url.substring(0, paramIdx) : vid.url;
+        break;
+      }
     }
-    let imgurl = extended_entities.media[0].media_url_https;
     if (vidurl !== null) {
-      embed.title = text;
-      embed.description = "[Link to video](" + vidurl + ")";
+      files = [vidurl];
     }
     embed.color = postColors["video"];
-    embed.image = { url: imgurl };
   } else {
     // Image(s)
     files = extended_entities.media.map(media => media.media_url_https);
