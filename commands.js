@@ -151,7 +151,7 @@ const stopchannel = (args, channel) => {
     if (!channel.guild.channels.find(c => c.id === targetChannel)) {
       post.message(
         channel,
-        `I couldn't find channel ${userInput} in your server. If you deleted it, this is normal, don't panic, I'll try to leave it anyway :)`
+        `I couldn't find channel ${targetChannel} in your server. If you deleted it, this is normal, don't panic, I'll try to leave it anyway :)`
       );
     }
   } else {
