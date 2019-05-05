@@ -4,6 +4,7 @@ const config = require("./config.json");
 const { tall } = require("tall");
 let users = require("./users");
 const gets = require("./gets");
+const log = require("./log");
 
 const postColors = {
   text: 0x69b2d6,
@@ -127,12 +128,7 @@ post.embed = (channel, embed, react) => {
     .then(function(message) {
       if (react)
         message.react("❤").catch(err => {
-          console.error(
-            new Date() +
-              ": Reacting to message in channel " +
-              channel.name +
-              " failed!"
-          );
+          log("Reacting to message failed", channel);
         });
     })
     .catch(function(error) {
@@ -144,33 +140,22 @@ post.embed = (channel, embed, react) => {
             channel.name
           } but Discord tells me it doesn't exist anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
         );
-        console.log(
-          `${new Date()}: Auto-deleted ${count} gets from #${channel.name} (${
-            channel.id
-          })`
-        );
+        log(`Auto-deleted ${count} gets, channel removed`, channel);
         return;
       }
-      console.error(`
-        ${new Date()}: Tried to post an embed to ${channel.id}, but it failed. We'll try to warn the user. If it fails it'll be reported in the error log.`);
+      log(`Posting an embed failed: ${error.name}: ${error.message}`, channel);
       post.message(
         channel,
-        `Hello, I tried to post an embed in #${
+        `I tried to post an embed in #${
           channel.name
-        } but Discord won't let me! Did you give me permissions to send embed links?\nDiscord had this to say:\n${
-          error.name
-        }: ${error.message}`
+        } but Discord won't let me! Did you give me permissions to send embed links?`
       );
     });
 };
 
 post.message = (channel, message) => {
   channel.send(message).catch(function(error) {
-    console.error(
-      `${new Date()}: Sending message to channel ${channel.name} (${
-        channel.guild.name
-      } - ${channel.guild.id}) failed: ${message}`
-    );
+    log(`Sending message failed: ${message}`, channel);
     // Try to contact the guild owner
     channel.guild.owner
       .send(
@@ -182,15 +167,12 @@ post.message = (channel, message) => {
           config.prefix
         }stopchannel ${channel.id}\` **inside** your server, not here.
         - If you'd like me to leave your server, simply kick me from it, I'll stop trying to post to it
-        - If I'm somehow still messing up, please contact my creator, Tom'#4242, he'll try his best to help.`
+        - If I'm somehow still messing up, please contact my creator, \`Tom'#4242\`, he'll try his best to help.`
       )
       .then(message)
       .catch(function(err) {
-        console.error(
-          new Date() +
-            ": Sending message to guild owner " +
-            channel.guild.owner.tag +
-            " failed too!"
+        log(
+          `Sending message to guild owner ${channel.guild.owner.tag} failed too`
         );
       });
   });

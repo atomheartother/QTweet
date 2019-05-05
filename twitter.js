@@ -3,6 +3,7 @@ let twitter = (module.exports = {});
 // Passwords file
 var pw = require("./pw.json");
 let post = require("./post");
+const log = require("./log");
 
 // Reconnection time in minutes
 // Will be multiplied by 2 everytime
@@ -36,7 +37,7 @@ twitter.createStream = () => {
   }
   // If there are none, we can just leave stream at null
   if (userIds.length < 1) return;
-  console.log(
+  log(
     `${Date.now()}: Creating a stream with ${userIds.length} registered users`
   );
   // Else, register the stream using our userIds
@@ -57,15 +58,11 @@ twitter.createStream = () => {
     }
     const twitterUserObject = users.collection[tweet.user.id_str];
     if (!twitterUserObject) {
-      console.error(
-        `${Date.now()}: Got a tweet from someone we don't follow: ${
-          tweet.user.id_str
-        }`
-      );
+      log(`Got a tweet from someone we don't follow: ${tweet.user.id_str}`);
       return;
     }
-    console.log(
-      `${Date.now()}: Posting tweet from ${twitterUserObject.name} to ${
+    log(
+      `Posting tweet from ${twitterUserObject.name} to ${
         twitterUserObject.channels.length
       } channels`
     );
@@ -75,17 +72,16 @@ twitter.createStream = () => {
   });
 
   twitter.stream.on("error", function(err) {
-    console.error(new Date() + ": Error getting a stream:");
-    console.error(err);
+    log(`Error getting a stream: ${err.statusCode} ${err.statusMessage}`);
   });
 
   twitter.stream.on("end", function(response) {
     if (response.statusCode !== 200) {
-      console.error(
-        new Date() +
-          `: We got disconnected from twitter. Reconnecting in ${reconnectDelay}min...`
+      log(
+        `: We got disconnected from twitter (${response.statusCode}: ${
+          response.statusMessage
+        }). Reconnecting in ${reconnectDelay}min...`
       );
-      console.error(`${response.statusCode}: ${response.statusMessage}`);
       setTimeout(twitter.createStream, reconnectDelay * 1000 * 50);
       reconnectDelay *= 2;
     }

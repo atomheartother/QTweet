@@ -6,6 +6,7 @@ const post = require("./post");
 const discord = require("./discord");
 const twitter = require("./twitter");
 const users = require("./users");
+const log = require("./log");
 
 const getScreenName = word => {
   if (word.startsWith("@")) {
@@ -36,11 +37,7 @@ const tweet = (args, channel) => {
       }
       let tweet = tweets[0];
       post.tweet(channel, tweet, true);
-      console.log(
-        `${Date.now()}: Posted latest tweet from ${screenName} in ${
-          channel.name
-        } (${channel.guild.name})`
-      );
+      log(`Posted latest tweet from ${screenName}`, channel);
     })
     .catch(function(error) {
       post.message(
@@ -82,11 +79,7 @@ const start = (args, channel) => {
           screenName +
           "`"
       );
-      console.log(
-        `${Date.now()}: Added ${screenName} to channel ${channel.name} (${
-          channel.guild.name
-        })`
-      );
+      log(`Added ${screenName}`, channel);
       let userId = data[0].id_str;
       // Re-register the stream if we didn't know the user before
       let redoStream = !users.collection.hasOwnProperty(userId);
@@ -97,14 +90,10 @@ const start = (args, channel) => {
       users.save();
     })
     .catch(function(error) {
-      console.error(
-        new Date() +
-          ": Failed to find the user a client specified (" +
-          screenName +
-          "):"
+      post.message(
+        channel,
+        `I can't find a user by the name of ${screenName}, you most likely tried using their display name and not their twitter handle.`
       );
-      console.error(error);
-      post.message(channel, "I can't find a user by the name of " + screenName);
       return;
     });
 };
@@ -127,7 +116,7 @@ const leaveGuild = (args, channel) => {
   guild
     .leave()
     .then(g => {
-      console.log(`${Date.now()}: Left the guild ${g.name}`);
+      log(`Left the guild ${g.name}`);
       if (checks.isDm(author, channel))
         post.message(channel, `Left the guild ${g}`);
     })
@@ -136,11 +125,7 @@ const leaveGuild = (args, channel) => {
 
 const stop = (args, channel) => {
   const screenName = getScreenName(args[0]);
-  console.log(
-    `${Date.now()}: Removed ${screenName} from channel ${channel.name} (${
-      channel.guild.name
-    })`
-  );
+  log(`Removed ${screenName}`, channel);
   gets.rm(channel, screenName);
 };
 
@@ -158,11 +143,7 @@ const stopchannel = (args, channel) => {
     targetChannel = channel.id;
   }
   const count = gets.rmChannel(targetChannel);
-  console.log(
-    `${Date.now()}: Removed all gets from channel ID:${targetChannel} (${
-      channel.guild.name
-    })`
-  );
+  log(`Removed all gets from channel ID:${targetChannel}`, channel);
   post.message(channel, `I have stopped fetching tweets from ${count} users`);
 };
 
