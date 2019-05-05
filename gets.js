@@ -80,13 +80,15 @@ gets.rm = (channel, screenName) => {
     });
 };
 
-gets.rmChannel = channel => {
+gets.rmChannel = channelId => {
+  let count = 0;
   // Remove all instances of this channel from our gets
   Object.keys(users.collection).forEach(userId => {
     let user = users.collection[userId];
     var i = user.channels.length;
     while (i--) {
-      if (channel.id === user.channels[i].channel.id) {
+      if (channelId === user.channels[i].channel.id) {
+        count++;
         // We should remove this get
         user.channels.splice(i, 1);
       }
@@ -100,6 +102,7 @@ gets.rmChannel = channel => {
   users.save();
   // ...and re-register the stream, which will be properly updated
   twitter.createStream();
+  return count;
 };
 
 gets.rmGuild = guild => {
