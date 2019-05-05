@@ -113,13 +113,14 @@ discord.onError(error => {
 
 discord.onGuildCreate(guild => {
   // Message the guild owner with useful information
+  log(`Joined guild ${guild.name}`);
   guild.owner.send(
     `Hello, I'm ${
       config.botName
     }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a list of my commands with 
       ${
         config.prefix
-      }help. I hope you are satisfied with my services.\n\nMy creator is \`Tom'#4242\`, please don't hesitate to friend him & message him about any issues or feature ideas.`
+      }help. I hope you are satisfied with my services.\n\nMy creator is \`Tom'#4242\`, please don't hesitate to friend him & message him about any issues or feature ideas.\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info here: https://github.com/atomheartother/QTweet`
   );
 });
 
