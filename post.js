@@ -92,16 +92,18 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
     // Gif/video.
     const vidinfo = extended_entities.media[0].video_info;
     let vidurl = null;
+    let bitrate = null;
     for (let vid of vidinfo.variants) {
       // Find the best video
-      if (vid.content_type === "video/mp4") {
+      if (vid.content_type === "video/mp4" && vid.bitrate < 1000000) {
         const paramIdx = vid.url.lastIndexOf("?");
         const hasParam = paramIdx !== -1 && paramIdx > vid.url.lastIndexOf("/");
         vidurl = hasParam ? vid.url.substring(0, paramIdx) : vid.url;
+        bitrate = vid.bitrate;
       }
     }
     if (vidurl !== null) {
-      if (vidinfo.duration_millis < 20000) files = [vidurl];
+      if (vidinfo.duration_millis < 20000 || bitrate === 0) files = [vidurl];
       else {
         embed.image = { url: extended_entities.media[0].media_url_https };
         text = `[Link to video](${vidurl})\n\n${text}`;
