@@ -147,7 +147,7 @@ const stop = (args, channel) => {
 const stopchannel = (args, channel) => {
   let targetChannel = null;
   if (args.length > 0) {
-    const targetChannel = args[0];
+    const userInput = args[0];
     if (!channel.guild.channels.find(c => c.id === userInput)) {
       post.message(
         channel,
