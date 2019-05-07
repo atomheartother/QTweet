@@ -55,9 +55,10 @@ twitter.createStream = () => {
     // Reset the last tweet timeout
     if (lastTweetTimeout) clearTimeout(lastTweetTimeout);
     lastTweetTimeout = setTimeout(() => {
+      lastTweetTimeout = null;
       log("### No tweets in a while, re-creating stream ###");
       twitter.createStream();
-    });
+    }, lastTweetDelay);
     if (
       (tweet.hasOwnProperty("in_reply_to_user_id") &&
         tweet.in_reply_to_user_id !== null) ||
