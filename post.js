@@ -17,6 +17,7 @@ function unshortenUrls(text, callback) {
   let startIdx = 0;
   let urls = [];
   let idx = text.indexOf("https://t.co/");
+  log(`Shortening urls in text: ${text}`);
   while (idx !== -1) {
     const endIdx = text.indexOf(" ", idx);
     const url =
@@ -31,6 +32,7 @@ function unshortenUrls(text, callback) {
   }
   let solvedUrls = 0;
   urls.forEach((shortUrl, idx) => {
+    log(`Looking up url for ${shortUrl}`);
     tall(shortUrl)
       .then(longUrl => {
         text = text.replace(
@@ -132,12 +134,9 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
 };
 // React is a boolean, if true, add a reaction to the message after posting
 post.embed = (channel, embed, react) => {
-  log("Sending embed", channel);
-  log(embed, channel);
   channel
     .send(embed)
     .then(function(message) {
-      log("Embed successfully sent", channel);
       if (react)
         message.react("❤").catch(err => {
           // Don't log this as it's not critical
