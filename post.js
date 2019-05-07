@@ -14,17 +14,13 @@ const postColors = {
 };
 
 function unshortenUrls(text, callback) {
-  let startIdx = 0;
   let urls = [];
-  let idx = text.indexOf("https://t.co/");
   log(`Shortening urls in text: ${text}`);
-  while (idx !== -1) {
-    const endIdx = text.indexOf(" ", idx);
-    const url =
-      endIdx === -1 ? text.substring(idx) : text.substring(idx, endIdx);
+  let re = /https:\/\/t\.co\/[\w]+/g;
+  let match = {};
+  while ((match = re.exec(text))) {
+    const url = text.substring(match.index, re.lastIndex);
     urls.push(url);
-    startIdx = idx + url.length;
-    idx = text.indexOf("https://t.co/", startIdx);
   }
   if (urls.length < 1) {
     callback(text);
