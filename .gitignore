@@ -3,3 +3,4 @@ pw.json.qtweet
 node_modules/
 gets.json
 logs/
+.vscode/
