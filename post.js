@@ -132,9 +132,12 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
 };
 // React is a boolean, if true, add a reaction to the message after posting
 post.embed = (channel, embed, react) => {
+  log("Sending embed", channel);
+  log(embed, channel);
   channel
     .send(embed)
     .then(function(message) {
+      log("Embed successfully sent", channel);
       if (react)
         message.react("❤").catch(err => {
           // Don't log this as it's not critical
