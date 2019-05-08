@@ -15,7 +15,6 @@ const postColors = {
 
 function unshortenUrls(text, callback) {
   let urls = [];
-  log(`Shortening urls in text: ${text}`);
   let re = /https:\/\/t\.co\/[\w]+/g;
   let match = {};
   while ((match = re.exec(text))) {
@@ -28,7 +27,6 @@ function unshortenUrls(text, callback) {
   }
   let solvedUrls = 0;
   urls.forEach((shortUrl, idx) => {
-    log(`Looking up url for ${shortUrl}`);
     tall(shortUrl)
       .then(longUrl => {
         text = text.replace(
