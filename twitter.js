@@ -60,6 +60,11 @@ twitter.createStream = () => {
     // Reset the reconn delay
     if (reconnectDelay > 1) reconnectDelay = 1;
     // Reset the last tweet timeout
+    if (!tweet.user) {
+      log("Got tweet without username");
+      log(tweet);
+      return;
+    }
     log(`Got tweet from ${tweet.user.screen_name}`);
     if (lastTweetTimeout) {
       clearTimeout(lastTweetTimeout);
