@@ -64,6 +64,8 @@ twitter.createStream = () => {
       if (!tweet.delete) {
         log("Got tweet without username");
         log(tweet);
+      } else {
+        log("Got delete tweet");
       }
       return;
     }
