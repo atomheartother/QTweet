@@ -13,7 +13,7 @@ let reconnectDelay = 1;
 let lastTweetTimeout = null;
 const lastTweetDelay = 1000 * 60 * 5;
 
-var Twitter = require("twitter");
+var Twitter = require("twitter-lite");
 var tClient = new Twitter({
   consumer_key: pw.tId,
   consumer_secret: pw.tSecret,
@@ -41,12 +41,19 @@ twitter.createStream = () => {
   }
   // If there are none, we can just leave stream at null
   if (userIds.length < 1) return;
-  log(
-    `${Date.now()}: Creating a stream with ${userIds.length} registered users`
-  );
+  log(`Creating a stream with ${userIds.length} registered users`);
   // Else, register the stream using our userIds
   twitter.stream = tClient.stream("statuses/filter", {
     follow: userIds.toString()
+  });
+
+  twitter.stream.on("start", response => {
+    log("Stream successfully started");
+    lastTweetTimeout = setTimeout(() => {
+      lastTweetTimeout = null;
+      log("⚠️ TIMEOUT: No tweets in a while, re-creating stream");
+      twitter.createStream();
+    }, lastTweetDelay);
   });
 
   twitter.stream.on("data", function(tweet) {
@@ -55,7 +62,6 @@ twitter.createStream = () => {
     // Reset the last tweet timeout
     log(`Got tweet from ${tweet.user.screen_name}`);
     if (lastTweetTimeout) {
-      log("Clearing timeout");
       clearTimeout(lastTweetTimeout);
     }
     lastTweetTimeout = setTimeout(() => {
@@ -63,17 +69,11 @@ twitter.createStream = () => {
       log("⚠️ TIMEOUT: No tweets in a while, re-creating stream");
       twitter.createStream();
     }, lastTweetDelay);
-    log(`Created a timeout in ${lastTweetDelay / 1000}s`);
     if (
       (tweet.hasOwnProperty("in_reply_to_user_id") &&
         tweet.in_reply_to_user_id !== null) ||
       tweet.hasOwnProperty("retweeted_status")
     ) {
-      log(
-        `Ignoring reply or retweet: ${tweet.in_reply_to_user_id} -- ${
-          tweet.retweeted_status
-        }`
-      );
       return;
     }
     const twitterUserObject = users.collection[tweet.user.id_str];
