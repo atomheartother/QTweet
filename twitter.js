@@ -11,7 +11,7 @@ let reconnectDelay = 1;
 
 // Timeout detecting when there haven't been new tweets in the past 10min
 let lastTweetTimeout = null;
-const lastTweetDelay = 1000 * 60 * 10;
+const lastTweetDelay = 1000 * 60 * 5;
 
 var Twitter = require("twitter");
 var tClient = new Twitter({
@@ -53,18 +53,27 @@ twitter.createStream = () => {
     // Reset the reconn delay
     if (reconnectDelay > 1) reconnectDelay = 1;
     // Reset the last tweet timeout
-    if (lastTweetTimeout) clearTimeout(lastTweetTimeout);
+    log(`Got tweet from ${tweet.user.screen_name}`);
+    if (lastTweetTimeout) {
+      log("Clearing timeout");
+      clearTimeout(lastTweetTimeout);
+    }
     lastTweetTimeout = setTimeout(() => {
       lastTweetTimeout = null;
-      log("### No tweets in a while, re-creating stream ###");
+      log("⚠️ TIMEOUT: No tweets in a while, re-creating stream");
       twitter.createStream();
     }, lastTweetDelay);
+    log(`Created a timeout in ${lastTweetDelay / 1000}s`);
     if (
       (tweet.hasOwnProperty("in_reply_to_user_id") &&
         tweet.in_reply_to_user_id !== null) ||
       tweet.hasOwnProperty("retweeted_status")
     ) {
-      // This is a reply or a retweet, ignore it
+      log(
+        `Ignoring reply or retweet: ${tweet.in_reply_to_user_id} -- ${
+          tweet.retweeted_status
+        }`
+      );
       return;
     }
     const twitterUserObject = users.collection[tweet.user.id_str];
@@ -91,7 +100,7 @@ twitter.createStream = () => {
 
   twitter.stream.on("error", function(err) {
     if (lastTweetTimeout) clearTimeout(lastTweetTimeout);
-    log(`Error getting a stream: ${err.statusCode} ${err.statusMessage}`);
+    log(`Error getting a stream: ${err}`);
   });
 
   twitter.stream.on("end", function(response) {
