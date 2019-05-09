@@ -12,6 +12,6 @@
     "discord.js": "latest",
     "fortune-teller": "latest",
     "tall": "^2.2.0",
-    "twitter": "latest"
+    "twitter-lite": "^0.9.4"
   }
 }
