@@ -7,7 +7,7 @@ const log = require("./log");
 
 // Reconnection time in minutes
 // Will be multiplied by 2 everytime
-let reconnectDelay = 1;
+let reconnectDelay = 250;
 
 // Timeout detecting when there haven't been new tweets in the past 10min
 let lastTweetTimeout = null;
@@ -58,7 +58,7 @@ twitter.createStream = () => {
 
   twitter.stream.on("data", function(tweet) {
     // Reset the reconn delay
-    if (reconnectDelay > 1) reconnectDelay = 1;
+    if (reconnectDelay > 250) reconnectDelay = 250;
     // Reset the last tweet timeout
     if (!tweet.user) {
       if (!tweet.delete) {
@@ -112,15 +112,11 @@ twitter.createStream = () => {
 
   twitter.stream.on("end", function(response) {
     if (lastTweetTimeout) clearTimeout(lastTweetTimeout);
-    if (response.statusCode !== 200) {
-      log(
-        `: We got disconnected from twitter (${response.statusCode}: ${
-          response.statusMessage
-        }). Reconnecting in ${reconnectDelay}min...`
-      );
-      setTimeout(twitter.createStream, reconnectDelay * 1000 * 50);
-      reconnectDelay *= 2;
-    }
+    log(
+      `: We got disconnected from twitter (${response}). Reconnecting in ${reconnectDelay}ms...`
+    );
+    setTimeout(twitter.createStream, reconnectDelay);
+    reconnectDelay *= 2;
   });
 };
 
