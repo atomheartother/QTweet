@@ -1,27 +1,27 @@
 let twitter = (module.exports = {});
 
 // Passwords file
-var pw = require("./pw.json");
-let post = require("./post");
+const pw = require("./pw.json");
+const post = require("./post");
 const log = require("./log");
+const users = require("./users");
 
-// Reconnection time in minutes
-// Will be multiplied by 2 everytime
+// Reconnection time in ms
+// Will be multiplied by 2 everytime we fail
 let reconnectDelay = 250;
 
-// Timeout detecting when there haven't been new tweets in the past 10min
+// Timeout detecting when there haven't been new tweets in the past 5min
 let lastTweetTimeout = null;
 const lastTweetDelay = 1000 * 60 * 5;
 
 var Twitter = require("twitter-lite");
+
 var tClient = new Twitter({
   consumer_key: pw.tId,
   consumer_secret: pw.tSecret,
   access_token_key: pw.tToken,
   access_token_secret: pw.tTokenS
 });
-
-let users = require("./users");
 
 // Stream object, holds the twitter feed we get posts from
 twitter.stream = null;
