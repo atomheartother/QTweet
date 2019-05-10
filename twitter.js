@@ -6,15 +6,15 @@ const post = require("./post");
 const log = require("./log");
 const users = require("./users");
 
+var Twitter = require("twitter-lite");
+
 // Reconnection time in ms
 // Will be multiplied by 2 everytime we fail
 let reconnectDelay = 250;
 
-// Timeout detecting when there haven't been new tweets in the past 5min
+// Timeout detecting when there haven't been new tweets in the past min
 let lastTweetTimeout = null;
-const lastTweetDelay = 1000 * 60 * 5;
-
-var Twitter = require("twitter-lite");
+const lastTweetDelay = 1000 * 60;
 
 var tClient = new Twitter({
   consumer_key: pw.tId,
@@ -24,13 +24,29 @@ var tClient = new Twitter({
 });
 
 // Stream object, holds the twitter feed we get posts from
-twitter.stream = null;
+let stream = null;
+
+const resetTimeout = () => {
+  if (lastTweetTimeout) {
+    clearTimeout(lastTweetTimeout);
+    lastTweetTimeout = null;
+  }
+};
+
+const startTimeout = () => {
+  resetTimeout();
+  lastTweetTimeout = setTimeout(() => {
+    lastTweetTimeout = null;
+    log("⚠️ TIMEOUT: No tweets in a while, re-creating stream");
+    twitter.createStream();
+  }, lastTweetDelay);
+};
 
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
 twitter.createStream = () => {
-  if (twitter.stream != null) twitter.stream.destroy();
-  twitter.stream = null;
+  if (stream != null) stream.destroy();
+  stream = null;
 
   let userIds = [];
   // Get all the user IDs
@@ -43,41 +59,29 @@ twitter.createStream = () => {
   if (userIds.length < 1) return;
   log(`Creating a stream with ${userIds.length} registered users`);
   // Else, register the stream using our userIds
-  twitter.stream = tClient.stream("statuses/filter", {
+  stream = tClient.stream("statuses/filter", {
     follow: userIds.toString()
   });
 
-  twitter.stream.on("start", response => {
+  stream.on("start", response => {
     log("Stream successfully started");
-    lastTweetTimeout = setTimeout(() => {
-      lastTweetTimeout = null;
-      log("⚠️ TIMEOUT: No tweets in a while, re-creating stream");
-      twitter.createStream();
-    }, lastTweetDelay);
+    startTimeout();
   });
 
-  twitter.stream.on("data", function(tweet) {
+  stream.on("data", function(tweet) {
     // Reset the reconn delay
     if (reconnectDelay > 250) reconnectDelay = 250;
     // Reset the last tweet timeout
+    startTimeout();
+
+    // Ignore deletion notifications
     if (!tweet.user) {
       if (!tweet.delete) {
         log("Got tweet without username");
         log(tweet);
-      } else {
-        log("Got delete tweet");
       }
       return;
     }
-    log(`Got tweet from ${tweet.user.screen_name}`);
-    if (lastTweetTimeout) {
-      clearTimeout(lastTweetTimeout);
-    }
-    lastTweetTimeout = setTimeout(() => {
-      lastTweetTimeout = null;
-      log("⚠️ TIMEOUT: No tweets in a while, re-creating stream");
-      twitter.createStream();
-    }, lastTweetDelay);
     if (
       (tweet.hasOwnProperty("in_reply_to_user_id") &&
         tweet.in_reply_to_user_id !== null) ||
@@ -107,18 +111,20 @@ twitter.createStream = () => {
     });
   });
 
-  twitter.stream.on("error", function(err) {
-    if (lastTweetTimeout) clearTimeout(lastTweetTimeout);
+  stream.on("error", function(err) {
+    // We simply can't get a stream, don't retry
+    resetTimeout();
     log(`Error getting a stream: ${err}`);
   });
 
-  twitter.stream.on("end", function(response) {
-    if (lastTweetTimeout) clearTimeout(lastTweetTimeout);
+  stream.on("end", function(response) {
+    // The backup exponential algorithm will take care of reconnecting
+    resetTimeout();
     log(
       `: We got disconnected from twitter (${response}). Reconnecting in ${reconnectDelay}ms...`
     );
     setTimeout(twitter.createStream, reconnectDelay);
-    reconnectDelay *= 2;
+    if (reconnectDelay < 16000) reconnectDelay *= 2;
   });
 };
 
