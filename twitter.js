@@ -75,7 +75,7 @@ twitter.createStream = () => {
     startTimeout();
 
     // Ignore deletion notifications and null values, which we get somehow
-    if (!tweet || tweet.user) {
+    if (!tweet || !tweet.user) {
       if (!tweet) {
         log(`Got null tweet: ${tweet}`);
       } else if (!tweet.delete) {
