@@ -44,7 +44,7 @@ const tweet = (args, channel) => {
         channel,
         "Something went wrong fetching this user's last tweet, sorry! :c"
       );
-      log("Couldn't get an user's tweet:", channel);
+      log(`Couldn't get latest tweet from ${screenName}:`, channel);
       log(error, channel);
     });
 };
