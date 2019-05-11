@@ -74,9 +74,11 @@ twitter.createStream = () => {
     // Reset the last tweet timeout
     startTimeout();
 
-    // Ignore deletion notifications
-    if (!tweet.user) {
-      if (!tweet.delete) {
+    // Ignore deletion notifications and null values, which we get somehow
+    if (!tweet || tweet.user) {
+      if (!tweet) {
+        log(`Got null tweet: ${tweet}`);
+      } else if (!tweet.delete) {
         log("Got tweet without username");
         log(tweet);
       }
