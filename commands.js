@@ -44,7 +44,8 @@ const tweet = (args, channel) => {
         channel,
         "Something went wrong fetching this user's last tweet, sorry! :c"
       );
-      console.error(error);
+      log("Couldn't get an user's tweet:", channel);
+      log(error, channel);
     });
 };
 
@@ -120,7 +121,10 @@ const leaveGuild = (args, channel) => {
       if (checks.isDm(author, channel))
         post.message(channel, `Left the guild ${g}`);
     })
-    .catch(console.error);
+    .catch(err => {
+      log("Could not leave guild", channel);
+      log(err);
+    });
 };
 
 const stop = (args, channel) => {
