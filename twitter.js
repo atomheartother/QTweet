@@ -5,6 +5,7 @@ const pw = require("./pw.json");
 const post = require("./post");
 const log = require("./log");
 const users = require("./users");
+const Backup = require("./backup");
 
 var Twitter = require("twitter-lite");
 
@@ -22,16 +23,11 @@ var tClient = new Twitter({
 // Stream object, holds the twitter feed we get posts from
 let stream = null;
 
-// Reconnection time after error in ms
-let reconnectDelay = 0;
-
-const resetReconnectDelay = () => {
-  reconnectDelay = 0;
-};
-
-const incrementReconnectDelay = () => {
-  if (reconnectDelay < 16000) reconnectDelay += 250;
-};
+const reconnectionDelay = new Backup({
+  mode: "linear",
+  increment: 250,
+  maxValue: 16000
+});
 
 const resetTimeout = () => {
   if (lastTweetTimeout) {
@@ -72,7 +68,7 @@ twitter.createStream = () => {
 
   stream.on("start", response => {
     log("Stream successfully started");
-    resetReconnectDelay();
+    reconnectionDelay.reset();
     startTimeout();
   });
 
@@ -134,8 +130,8 @@ twitter.createStream = () => {
     log(
       `: We got disconnected from twitter. Reconnecting in ${reconnectDelay}ms...`
     );
-    setTimeout(twitter.createStream, reconnectDelay);
-    incrementReconnectDelay();
+    setTimeout(twitter.createStream, reconnectionDelay.value());
+    reconnectionDelay.increment();
   });
 };
 
