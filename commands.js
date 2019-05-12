@@ -40,7 +40,7 @@ const tweet = (args, channel) => {
       log(`Posted latest tweet from ${screenName}`, channel);
     })
     .catch(function(response) {
-      const { code } = response.errors[0];
+      const { code, message } = response.errors[0];
       if (code === 34)
         // Not found
         post.message(
@@ -50,7 +50,7 @@ const tweet = (args, channel) => {
       else {
         post.message(
           channel,
-          `There was a problem getting @${screenName}'s latest tweet, it's possible Twitter is temporarily down.`
+          `There was a problem getting @${screenName}'s latest tweet, it's possible Twitter is temporarily down.\nTwitter had this to say: \`${message}\``
         );
         log(
           `Couldn't get latest tweet from ${screenName}, user input was ${
@@ -58,7 +58,7 @@ const tweet = (args, channel) => {
           }:`,
           channel
         );
-        log(error, channel);
+        log(response, channel);
       }
     });
 };
