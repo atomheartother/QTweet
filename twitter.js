@@ -8,10 +8,6 @@ const users = require("./users");
 
 var Twitter = require("twitter-lite");
 
-// Reconnection time in ms
-// Will be multiplied by 2 everytime we fail
-let reconnectDelay = 250;
-
 // Timeout detecting when there haven't been new tweets in the past min
 let lastTweetTimeout = null;
 const lastTweetDelay = 1000 * 60;
@@ -25,6 +21,17 @@ var tClient = new Twitter({
 
 // Stream object, holds the twitter feed we get posts from
 let stream = null;
+
+// Reconnection time after error in ms
+let reconnectDelay = 0;
+
+const resetReconnectDelay = () => {
+  reconnectDelay = 0;
+};
+
+const incrementReconnectDelay = () => {
+  if (reconnectDelay < 16000) reconnectDelay += 250;
+};
 
 const resetTimeout = () => {
   if (lastTweetTimeout) {
@@ -65,12 +72,11 @@ twitter.createStream = () => {
 
   stream.on("start", response => {
     log("Stream successfully started");
+    resetReconnectDelay();
     startTimeout();
   });
 
   stream.on("data", function(tweet) {
-    // Reset the reconn delay
-    if (reconnectDelay > 250) reconnectDelay = 250;
     // Reset the last tweet timeout
     startTimeout();
 
@@ -91,6 +97,7 @@ twitter.createStream = () => {
     ) {
       return;
     }
+
     const twitterUserObject = users.collection[tweet.user.id_str];
     if (!twitterUserObject) {
       log(`Got a tweet from someone we don't follow: ${tweet.user.id_str}`);
@@ -116,17 +123,19 @@ twitter.createStream = () => {
   stream.on("error", function(err) {
     // We simply can't get a stream, don't retry
     resetTimeout();
-    log(`Error getting a stream: ${err}`);
+    log(`Error getting a stream`);
+    log(err);
   });
 
   stream.on("end", function(response) {
     // The backup exponential algorithm will take care of reconnecting
     resetTimeout();
+    log(response);
     log(
-      `: We got disconnected from twitter (${response}). Reconnecting in ${reconnectDelay}ms...`
+      `: We got disconnected from twitter. Reconnecting in ${reconnectDelay}ms...`
     );
     setTimeout(twitter.createStream, reconnectDelay);
-    if (reconnectDelay < 16000) reconnectDelay *= 2;
+    incrementReconnectDelay();
   });
 };
 
