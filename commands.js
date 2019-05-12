@@ -39,13 +39,27 @@ const tweet = (args, channel) => {
       post.tweet(channel, tweet, true);
       log(`Posted latest tweet from ${screenName}`, channel);
     })
-    .catch(function(error) {
-      post.message(
-        channel,
-        "Something went wrong fetching this user's last tweet, sorry! :c"
-      );
-      log(`Couldn't get latest tweet from ${screenName}:`, channel);
-      log(error, channel);
+    .catch(function(response) {
+      const { code } = response.errors[0];
+      if (code === 34)
+        // Not found
+        post.message(
+          channel,
+          `Twitter tells me @${screenName} doesn't exist! Make sure you enter the screen name and not the display name.`
+        );
+      else {
+        post.message(
+          channel,
+          `There was a problem getting @${screenName}'s latest tweet, it's possible Twitter is temporarily down.`
+        );
+        log(
+          `Couldn't get latest tweet from ${screenName}, user input was ${
+            args[0]
+          }:`,
+          channel
+        );
+        log(error, channel);
+      }
     });
 };
 
