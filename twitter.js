@@ -45,10 +45,75 @@ const startTimeout = () => {
   }, lastTweetDelay);
 };
 
+const streamStart = response => {
+  log("Stream successfully started");
+  reconnectionDelay.reset();
+  startTimeout();
+};
+
+const streamData = tweet => {
+  // Reset the last tweet timeout
+  startTimeout();
+
+  // Ignore deletion notifications and null values, which we get somehow
+  if (!tweet || !tweet.user) {
+    if (!tweet) {
+      log(`Got null tweet: ${tweet}`);
+    } else if (!tweet.delete) {
+      log("Got tweet without username");
+      log(tweet);
+    }
+    return;
+  }
+  if (
+    (tweet.hasOwnProperty("in_reply_to_user_id") &&
+      tweet.in_reply_to_user_id !== null) ||
+    tweet.hasOwnProperty("retweeted_status")
+  ) {
+    return;
+  }
+
+  const twitterUserObject = users.collection[tweet.user.id_str];
+  if (!twitterUserObject) {
+    log(`Got a tweet from someone we don't follow: ${tweet.user.id_str}`);
+    return;
+  }
+  if (twitterUserObject.channels.length === 1) {
+    log(`<- ${twitterUserObject.name}`, twitterUserObject.channels[0].channel);
+  } else {
+    log(
+      `Posting tweet from ${twitterUserObject.name} to ${
+        twitterUserObject.channels.length
+      } channels`
+    );
+  }
+  twitterUserObject.channels.forEach(get => {
+    post.tweet(get.channel, tweet, get.text);
+  });
+};
+
+const streamEnd = response => {
+  // The backup exponential algorithm will take care of reconnecting
+  resetTimeout();
+  log(response);
+  log(
+    `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`
+  );
+  setTimeout(twitter.createStream, reconnectionDelay.value());
+  reconnectionDelay.increment();
+};
+
+const streamError = err => {
+  // We simply can't get a stream, don't retry
+  resetTimeout();
+  log(`Error getting a stream`);
+  log(err);
+};
+
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
 twitter.createStream = () => {
-  if (stream != null) stream.destroy();
+  if (stream !== null) stream.destroy();
   stream = null;
 
   let userIds = [];
@@ -62,77 +127,25 @@ twitter.createStream = () => {
   if (userIds.length < 1) return;
   log(`Creating a stream with ${userIds.length} registered users`);
   // Else, register the stream using our userIds
-  stream = tClient.stream("statuses/filter", {
-    follow: userIds.toString()
-  });
-
-  stream.on("start", response => {
-    log("Stream successfully started");
-    reconnectionDelay.reset();
-    startTimeout();
-  });
-
-  stream.on("data", function(tweet) {
-    // Reset the last tweet timeout
-    startTimeout();
-
-    // Ignore deletion notifications and null values, which we get somehow
-    if (!tweet || !tweet.user) {
-      if (!tweet) {
-        log(`Got null tweet: ${tweet}`);
-      } else if (!tweet.delete) {
-        log("Got tweet without username");
-        log(tweet);
-      }
-      return;
-    }
-    if (
-      (tweet.hasOwnProperty("in_reply_to_user_id") &&
-        tweet.in_reply_to_user_id !== null) ||
-      tweet.hasOwnProperty("retweeted_status")
-    ) {
-      return;
-    }
-
-    const twitterUserObject = users.collection[tweet.user.id_str];
-    if (!twitterUserObject) {
-      log(`Got a tweet from someone we don't follow: ${tweet.user.id_str}`);
-      return;
-    }
-    if (twitterUserObject.channels.length === 1) {
+  // Give it a bit so twitter understands the stream was destroyed
+  setTimeout(() => {
+    if (stream !== null) {
+      // Another stream was created in the meantime, wait a while and re-register this one so we know for sure everything is fine
       log(
-        `<- ${twitterUserObject.name}`,
-        twitterUserObject.channels[0].channel
+        "A second stream was created while we were waiting, queueing a new stream in 5s"
       );
-    } else {
-      log(
-        `Posting tweet from ${twitterUserObject.name} to ${
-          twitterUserObject.channels.length
-        } channels`
-      );
+      setTimeout(twitter.createStream, 5000);
+      return;
     }
-    twitterUserObject.channels.forEach(get => {
-      post.tweet(get.channel, tweet, get.text);
-    });
-  });
-
-  stream.on("error", function(err) {
-    // We simply can't get a stream, don't retry
-    resetTimeout();
-    log(`Error getting a stream`);
-    log(err);
-  });
-
-  stream.on("end", function(response) {
-    // The backup exponential algorithm will take care of reconnecting
-    resetTimeout();
-    log(response);
-    log(
-      `: We got disconnected from twitter. Reconnecting in ${reconnectDelay}ms...`
-    );
-    setTimeout(twitter.createStream, reconnectionDelay.value());
-    reconnectionDelay.increment();
-  });
+    stream = tClient
+      .stream("statuses/filter", {
+        follow: userIds.toString()
+      })
+      .on("start", streamStart)
+      .on("data", streamData)
+      .on("error", streamError)
+      .on("end", streamEnd);
+  }, 250);
 };
 
 twitter.userLookup = params => {
