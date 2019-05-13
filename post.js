@@ -148,12 +148,17 @@ post.embed = (channel, embed, react) => {
         log(`Auto-deleted ${count} gets, channel removed`, channel);
         return;
       }
-      log(`Posting an embed failed: ${error.name}: ${error.message}`, channel);
+      log(
+        `Posting an embed failed: ${error.name} ${error.statusCode}: ${
+          error.message
+        }`,
+        channel
+      );
       post.message(
         channel,
         `I tried to post an embed in #${
           channel.name
-        } but Discord won't let me! Did you give me permissions to send embed links?\n\nThis is the reason Discord gave: ${
+        } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${
           error.message
         }`
       );
