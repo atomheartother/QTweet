@@ -1,40 +1,27 @@
+// Direct mappings for discord.js methods
 const Discord = require("discord.js");
-var dClient = new Discord.Client();
 
-var discord = (module.exports = {});
+// Passwords file
+const pw = require("./pw.json");
 
-discord.onMessage = callback => {
-  dClient.on("message", callback);
-};
+let dClient = new Discord.Client();
 
-discord.onError = callback => {
-  dClient.on("error", callback);
-};
+module.exports = {
+  getClient: () => {
+    return dClient;
+  },
+  login: () => {
+    return dClient.login(pw.dToken);
+  },
+  user: () => {
+    return dClient.user;
+  },
 
-discord.onGuildCreate = callback => {
-  dClient.on("guildCreate", callback);
-};
+  getChannel: id => {
+    return dClient.channels.get(id);
+  },
 
-discord.onGuildDelete = callback => {
-  dClient.on("guildDelete", callback);
-};
-
-discord.onReady = callback => {
-  dClient.on("ready", callback);
-};
-
-discord.login = token => {
-  return dClient.login(token);
-};
-
-discord.user = () => {
-  return dClient.user;
-};
-
-discord.getChannel = id => {
-  return dClient.channels.get(id);
-};
-
-discord.getGuild = id => {
-  return dClient.guilds.get(id);
+  getGuild: id => {
+    return dClient.guilds.get(id);
+  }
 };

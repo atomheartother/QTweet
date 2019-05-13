@@ -6,9 +6,9 @@ var fs = require("fs");
 // Config file
 var config = require("./config.json");
 
-let post = require("./post");
-let gets = require("./gets");
-let discord = require("./discord");
+const post = require("./post");
+const gets = require("./gets");
+const discord = require("./discord");
 const log = require("./log");
 
 // Users:
