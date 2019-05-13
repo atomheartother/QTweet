@@ -291,7 +291,7 @@ snekfetch@^3.6.4:
   resolved "https://registry.yarnpkg.com/snekfetch/-/snekfetch-3.6.4.tgz#d13e80a616d892f3d38daae4289f4d258a645120"
   integrity sha512-NjxjITIj04Ffqid5lqr7XdgwM7X61c/Dns073Ly170bPQHLm6jkmelye/eglS++1nfTWktpP6Y2bFXjdPlQqdw==
 
-tall@^2.2.0:
+tall@latest:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/tall/-/tall-2.2.0.tgz#df2bc4a91cba24179f79c41272ae64bba146ac84"
   integrity sha512-XdVkwGSfe2cvIgF388DIhYm/EdRs3SzRs0kkP7/XfXXwYNSCOyG8q+lwe/6yikZGobM7CwpQo57K6JBVo3tOeA==
@@ -305,7 +305,7 @@ tweetnacl@^1.0.0:
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.1.tgz#2594d42da73cd036bd0d2a54683dd35a6b55ca17"
   integrity sha512-kcoMoKTPYnoeS50tzoqjPY3Uv9axeuuFAZY9M/9zFnhoVvRfxz9K29IMPD7jGmt2c8SW7i3gT9WqDl2+nV7p4A==
 
-twitter-lite@^0.9.4:
+twitter-lite@latest:
   version "0.9.4"
   resolved "https://registry.yarnpkg.com/twitter-lite/-/twitter-lite-0.9.4.tgz#c19123d43519ccb87cc6617167a4f19ada9719a2"
   integrity sha512-PpElcyKOk+0/8+6dBRqTKIICfTCZe6PyqJvbKI3OfPJzCO3luY+Q6MVyqoFnNxY+xnMgoA1E8PSEoyAmVNaXDA==

@@ -25,26 +25,32 @@ function unshortenUrls(text, callback) {
     callback(text);
     return;
   }
-  let solvedUrls = 0;
-  urls.forEach((shortUrl, idx) => {
-    tall(shortUrl)
-      .then(longUrl => {
+
+  const promises = urls.map((shortUrl, idx) =>
+    tall(shortUrl).then(longUrl => ({
+      shortUrl,
+      longUrl,
+      idx
+    }))
+  );
+  Promise.all(promises)
+    .then(results => {
+      results.forEach(({ shortUrl, longUrl, idx }) => {
         text = text.replace(
           shortUrl,
-          idx === urls.length - 1 ? `\n[Tweet](${longUrl})` : longUrl
+          urls.length > 1 && idx === urls.length - 1
+            ? `\n[Tweet](${longUrl})`
+            : longUrl
         );
-        solvedUrls++;
-        if (solvedUrls === urls.length) {
-          callback(text);
-        }
-      })
-      .catch(() => {
-        solvedUrls++;
-        if (solvedUrls === urls.length) {
-          callback(text);
-        }
       });
-  });
+      callback(text);
+    })
+    .catch(e => {
+      log("The elusive buggerino!");
+      log(`Total message: ${text}`);
+      log(`URL we tried shortening: ${shortUrl}`);
+      log(e);
+    });
 }
 
 post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
