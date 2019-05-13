@@ -21,6 +21,7 @@ class Backup {
       switch (this.mode) {
         case "linear":
           this.val += this.inc;
+          break;
         default:
           this.val *= this.inc;
       }
