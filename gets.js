@@ -105,13 +105,13 @@ gets.rmChannel = channelId => {
   return count;
 };
 
-gets.rmGuild = guild => {
+gets.rmGuild = id => {
   // Remove all instances of this guild from our gets
   Object.keys(users.collection).forEach(userId => {
     let user = users.collection[userId];
     var i = user.channels.length;
     while (i--) {
-      if (guild.id === user.channels[i].channel.guild.id) {
+      if (id === user.channels[i].channel.guild.id) {
         // We should remove this get
         user.channels.splice(i, 1);
       }
