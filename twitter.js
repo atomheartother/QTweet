@@ -25,7 +25,7 @@ let stream = null;
 
 const reconnectionDelay = new Backup({
   mode: "linear",
-  increment: 250,
+  inc: 250,
   maxValue: 16000
 });
 
