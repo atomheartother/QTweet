@@ -16,7 +16,7 @@ class Backup {
     this.val = this.startValue;
   }
 
-  increment = () => {
+  increment() {
     if (this.maxValue >= 0 && this.val < this.maxValue) {
       switch (this.mode) {
         case "linear":
@@ -28,7 +28,7 @@ class Backup {
         this.val = this.maxValue;
       }
     }
-  };
+  }
 
   value() {
     return this.val;
