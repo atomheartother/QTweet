@@ -17,7 +17,7 @@ class Stream {
   }
 
   checkNewUsers() {
-    if (!!this.stream && this.newUserIds === true) {
+    if (this.newUserIds === true) {
       this.newUserIds = false;
       if (!!this.stream) {
         this.stream.destroy();
