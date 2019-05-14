@@ -85,6 +85,7 @@ const streamData = tweet => {
 
 const streamEnd = response => {
   // The backup exponential algorithm will take care of reconnecting
+  stream = null;
   resetTimeout();
   log(
     `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`
@@ -95,6 +96,7 @@ const streamEnd = response => {
 
 const streamError = err => {
   // We simply can't get a stream, don't retry
+  stream = null;
   resetTimeout();
   log(`Error getting a stream (${err.status}: ${err.statusText})`);
 };
