@@ -24,8 +24,8 @@ var tClient = new Twitter({
 let stream = null;
 
 const reconnectionDelay = new Backup({
-  mode: "linear",
-  inc: 250,
+  mode: "exponential",
+  startValue: 500,
   maxValue: 16000
 });
 
