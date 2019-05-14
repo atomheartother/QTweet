@@ -6,12 +6,13 @@ const post = require("./post");
 const log = require("./log");
 const users = require("./users");
 const Backup = require("./backup");
+const Stream = require("./twitterStream");
 
 var Twitter = require("twitter-lite");
 
 // Timeout detecting when there haven't been new tweets in the past min
 let lastTweetTimeout = null;
-const lastTweetDelay = 1000 * 60;
+const lastTweetDelay = 1000 * 60 * 10;
 
 var tClient = new Twitter({
   consumer_key: pw.tId,
@@ -20,12 +21,9 @@ var tClient = new Twitter({
   access_token_secret: pw.tTokenS
 });
 
-// Stream object, holds the twitter feed we get posts from
-let stream = null;
-
 const reconnectionDelay = new Backup({
   mode: "exponential",
-  startValue: 500,
+  startValue: 2000,
   maxValue: 16000
 });
 
@@ -85,7 +83,7 @@ const streamData = tweet => {
 
 const streamEnd = response => {
   // The backup exponential algorithm will take care of reconnecting
-  stream = null;
+  stream.disconnected();
   resetTimeout();
   log(
     `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`
@@ -96,17 +94,23 @@ const streamEnd = response => {
 
 const streamError = err => {
   // We simply can't get a stream, don't retry
-  stream = null;
+  stream.disconnected();
   resetTimeout();
   log(`Error getting a stream (${err.status}: ${err.statusText})`);
 };
 
+// Stream object, holds the twitter feed we get posts from
+let stream = new Stream(
+  tClient,
+  streamStart,
+  streamData,
+  streamError,
+  streamEnd
+);
+
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
-twitter.createStream = () => {
-  if (stream !== null) stream.destroy();
-  stream = null;
-
+twitter.createStream = async () => {
   let userIds = [];
   // Get all the user IDs
   for (let id in users.collection) {
@@ -116,27 +120,7 @@ twitter.createStream = () => {
   }
   // If there are none, we can just leave stream at null
   if (userIds.length < 1) return;
-  log(`Creating a stream with ${userIds.length} registered users`);
-  // Else, register the stream using our userIds
-  // Give it a bit so twitter understands the stream was destroyed
-  setTimeout(() => {
-    if (stream !== null) {
-      // Another stream was created in the meantime, wait a while and re-register this one so we know for sure everything is fine
-      log(
-        "A second stream was created while we were waiting, queueing a new stream in 5s"
-      );
-      setTimeout(twitter.createStream, 5000);
-      return;
-    }
-    stream = tClient
-      .stream("statuses/filter", {
-        follow: userIds.toString()
-      })
-      .on("start", streamStart)
-      .on("data", streamData)
-      .on("error", streamError)
-      .on("end", streamEnd);
-  }, 1000);
+  stream.create(userIds);
 };
 
 twitter.userLookup = params => {
