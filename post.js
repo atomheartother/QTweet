@@ -126,11 +126,11 @@ post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
       embed.color = postColors["images"];
     }
   }
-  // Unshorten all urls then post
-  unshortenUrls(text, newText => {
-    embed.description = newText;
-    post.embed(channel, { embed, files }, true);
-  });
+  // // Unshorten all urls then post
+  // unshortenUrls(text, newText => {
+  embed.description = text;
+  post.embed(channel, { embed, files }, true);
+  // });
 };
 // React is a boolean, if true, add a reaction to the message after posting
 post.embed = (channel, embed, react) => {
