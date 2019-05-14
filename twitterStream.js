@@ -44,12 +44,12 @@ class Stream {
 
   create(userIds) {
     const originalUserIdCount = this.userIds.length;
+    this.userIds = userIds;
     if (originalUserIdCount === 0) {
       this.doCreate();
     } else {
       this.newUserIds = true;
     }
-    this.userIds = userIds;
   }
 
   // We've been disconnected, discard all info we have
