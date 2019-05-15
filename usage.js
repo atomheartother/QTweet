@@ -6,7 +6,7 @@ module.exports = {
   }tweet <twitter screen name>\``,
   start: `Post a twitter user's tweets in real time.\nUsage: \`${
     config.prefix
-  }start <twitter screen name> [--notext]\``,
+  }start <twitter screen name> [--notext]\`\nI might take up to a minute to start posting their tweets.`,
   stop: `Stop automatically posting tweets from the given user.\nUsage: \`${
     config.prefix
   }stop <twitter screen name>\``,
