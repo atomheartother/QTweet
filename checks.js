@@ -11,7 +11,8 @@ checks.isAdmin = (author, channel, callback) => {
 // Takes an author. checks that they're able to perform mod-level commands
 checks.isMod = (author, channel, callback) => {
   const isSomeOwner =
-    author.id === config.ownerID || author.id === channel.guild.ownerID;
+    author.id === config.ownerID ||
+    (!!channel.guild && author.id === channel.guild.ownerID);
   if (isSomeOwner)
     // The user is either the channel owner or us. We can just accept their command
     callback(true);
