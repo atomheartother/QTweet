@@ -21,6 +21,19 @@ const log = require("./log");
 //    text: Boolean, defines whether text posts should be sent to this channel
 users.collection = {};
 
+// Returns a list of channel objects, each in an unique guild
+users.getUniqueChannels = () => {
+  const channels = [];
+  Object.keys(users.collection).forEach(userId => {
+    const user = users.collection[userId];
+    user.channels.forEach(get => {
+      if (!channels.find(channel => channel.guild.id === get.channel.guild.id))
+        channels.push(get.channel);
+    });
+  });
+  return channels;
+};
+
 users.defaultOptions = function() {
   return {
     text: true
@@ -150,26 +163,15 @@ users.adminList = channel => {
     .setColor(0xf26d7a)
     .setTitle(`Users list (page ${page})`)
     .setURL("https://github.com/atomheartother/A-I-kyan")
-    .setDescription(
-      "This is a complete list of the twitter users I'm getting, with guild names and owner info!"
-    );
+    .setDescription("This is a complete list of every guild I'm in!");
+  const guilds = users.getUniqueChannels().map(c => c.guild);
+  // We now have an object for every guild we're in
   let counter = 0;
-  for (let userId in users.collection) {
-    if (!users.collection.hasOwnProperty(userId)) continue;
-
-    let twitterUser = users.collection[userId];
-    let str = "";
-    for (let get of twitterUser.channels) {
-      str +=
-        "\n- **G**: `" +
-        get.channel.guild.name +
-        "` -- **ID**: `" +
-        get.channel.guild.id +
-        "` -- **O**: `" +
-        get.channel.guild.owner.user.tag +
-        "`";
-    }
-    embed.addField(twitterUser.name, str);
+  guilds.forEach(g => {
+    embed.addField(
+      g.name,
+      `Guild ID: \`${g.id}\`\nOwner name: \`${g.owner.user.tag}\``
+    );
     counter++;
     if (counter > 20) {
       page++;
@@ -183,6 +185,6 @@ users.adminList = channel => {
         );
       counter = 0;
     }
-  }
+  });
   if (counter > 0) post.embed(channel, { embed }, false);
 };

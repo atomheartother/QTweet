@@ -37,6 +37,7 @@ checks.isMod = (author, channel, callback) => {
       })
       .catch(() => {
         log(`Couldn't get info for ${author.name}`, channel);
+        log(author);
         callback(false);
       });
   }
