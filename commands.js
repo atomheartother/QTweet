@@ -86,13 +86,9 @@ const start = (args, channel) => {
     .then(function(data) {
       post.message(
         channel,
-        "I'm starting to get tweets from " +
-          screenName +
-          ", remember you can stop me at any time with `" +
-          config.prefix +
-          "stop " +
-          screenName +
-          "`"
+        `I'm starting to get tweets from ${screenName}, remember you can stop me at any time with \`${
+          config.prefix
+        }stop ${screenName}\`\nGetting new tweets from them can take up to a few minutes, but don't worry, I'm on the job!`
       );
       log(`Added ${screenName}`, channel);
       let userId = data[0].id_str;

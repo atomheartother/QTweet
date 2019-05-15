@@ -23,7 +23,6 @@ class Stream {
   checkNewUsers() {
     if (this.newUserIds === true) {
       this.newUserIds = false;
-      this.delay = longDelay;
       // Increment by another minute
       if (!!this.stream) {
         this.stream.destroy();
