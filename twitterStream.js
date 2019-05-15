@@ -1,5 +1,12 @@
 const log = require("./log");
 
+// Idle delay
+const shortDelay = 1000 * 60;
+// Long delay, when we just created a stream, we put this in before we create the next one
+const longDelay = 1000 * 60 * 5;
+// Destroying delay, delay between stream destruction and stream re-creation
+const destroyDelay = 1000 * 1;
+
 // Manages stream creation and makes a queue for creation so we don't spam twitter with requests
 class Stream {
   constructor(tClient, streamStart, streamData, streamError, streamEnd) {
@@ -11,23 +18,27 @@ class Stream {
     this.streamData = streamData;
     this.streamError = streamError;
     this.streamEnd = streamEnd;
-    this.interval = setInterval(() => {
-      this.checkNewUsers();
-    }, 60000);
   }
 
   checkNewUsers() {
     if (this.newUserIds === true) {
       this.newUserIds = false;
+      this.delay = longDelay;
+      // Increment by another minute
       if (!!this.stream) {
         this.stream.destroy();
         setTimeout(() => {
           this.doCreate();
-        }, 5000);
+        }, destroyDelay);
       } else {
         this.doCreate();
       }
+      return;
     }
+    this.timeout = setTimeout(() => {
+      this.timeout = null;
+      this.checkNewUsers();
+    }, shortDelay);
   }
 
   doCreate() {
@@ -40,6 +51,10 @@ class Stream {
       .on("data", this.streamData)
       .on("error", this.streamError)
       .on("end", this.streamEnd);
+    this.timeout = setTimeout(() => {
+      this.timeout = null;
+      this.checkNewUsers();
+    }, longDelay);
   }
 
   create(userIds) {
