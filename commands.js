@@ -88,7 +88,7 @@ const start = (args, channel) => {
         channel,
         `I'm starting to get tweets from ${screenName}, remember you can stop me at any time with \`${
           config.prefix
-        }stop ${screenName}\`\nGetting new tweets from them can take up to a few minutes, but don't worry, I'm on the job!`
+        }stop ${screenName}\`\nIt can take up to a few minutes to start getting tweets from them, but once it starts, it'll be in real time!`
       );
       log(`Added ${screenName}`, channel);
       let userId = data[0].id_str;
