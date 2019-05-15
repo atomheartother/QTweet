@@ -172,15 +172,8 @@ const adminList = (args, channel) => {
 const announce = args => {
   const message = args.join(" ");
   const channels = [];
-  Object.keys(users.collection).forEach(userId => {
-    const user = users.collection[userId];
-    user.channels.forEach(get => {
-      if (!channels.find(channel => channel.guild.id === get.channel.guild.id))
-        channels.push(get.channel);
-    });
-  });
   log(`Posting announcement to ${channels.length} channels`);
-  post.announcement(message, channels);
+  post.announcement(message, users.getUniqueChannels());
 };
 
 module.exports = {
