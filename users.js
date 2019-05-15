@@ -158,13 +158,15 @@ users.list = channel => {
 
 // List all gets in every channel, available to the admin only, and in DMs
 users.adminList = channel => {
+  const guilds = users.getUniqueChannels().map(c => c.guild);
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
     .setTitle(`Users list (page ${page})`)
     .setURL("https://github.com/atomheartother/A-I-kyan")
-    .setDescription("This is a complete list of every guild I'm in!");
-  const guilds = users.getUniqueChannels().map(c => c.guild);
+    .setDescription(
+      `This is a complete list of all ${guilds.length} guilds I'm in!`
+    );
   // We now have an object for every guild we're in
   let counter = 0;
   guilds.forEach(g => {
