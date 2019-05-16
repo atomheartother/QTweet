@@ -40,10 +40,14 @@ const tweet = (args, channel) => {
       log(`Posted latest tweet from ${screenName}`, channel);
     })
     .catch(function(response) {
-      const err = response && response.errors && response.errors.length > 0 && response.errors[0];
+      const err =
+        response &&
+        response.errors &&
+        response.errors.length > 0 &&
+        response.errors[0];
       if (!err) {
-        log("Exception thrown without error", channel)
-        log(response, channel)
+        log("Exception thrown without error", channel);
+        log(response, channel);
         post.message(
           channel,
           `Hm, something went wrong getting tweets from ${screenName}, I'm looking into it, sorry for the trouble!`
@@ -199,7 +203,7 @@ module.exports = {
         badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
           config.modRole
         } role!`
-      },
+      }
     ],
     minArgs: 1
   },
@@ -213,7 +217,7 @@ module.exports = {
       {
         f: checks.isMod,
         badB: "You're not authorized to stop fetching tweets!"
-      },
+      }
     ],
     minArgs: 1
   },
@@ -232,7 +236,7 @@ module.exports = {
       {
         f: checks.isAdmin,
         badB: "Sorry, only my owner can use the adminlist command!"
-      },
+      }
     ],
     minArgs: 0
   },
@@ -247,13 +251,13 @@ module.exports = {
       {
         f: checks.isNotDm,
         badB: "I can't post tweets automatically to DMs, I'm very sorry!"
-      }
+      },
       {
         f: checks.isMod,
         badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
           config.modRole
         } role!`
-      },
+      }
     ]
   },
   leaveguild: {
