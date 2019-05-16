@@ -12,11 +12,11 @@ checks.isAdmin = (author, channel, callback) => {
 checks.isMod = (author, channel, callback) => {
   const isSomeOwner =
     author.id === config.ownerID ||
-    (!!channel.guild && author.id === channel.guild.ownerID);
+    (!!channel && !!channel.guild && author.id === channel.guild.ownerID);
   if (isSomeOwner)
     // The user is either the channel owner or us. We can just accept their command
     callback(true);
-  else {
+  else if (channel && channel.guild) {
     // Less fun part. We need to get their GuildMember object first of all
     channel.guild
       .fetchMember(author)
@@ -40,6 +40,8 @@ checks.isMod = (author, channel, callback) => {
         log(author);
         callback(false);
       });
+  } else {
+    callback(false);
   }
 };
 

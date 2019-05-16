@@ -40,7 +40,17 @@ const tweet = (args, channel) => {
       log(`Posted latest tweet from ${screenName}`, channel);
     })
     .catch(function(response) {
-      const { code, message } = response.errors[0];
+      const err = response && response.errors && response.errors.length > 0 && response.errors[0];
+      if (!err) {
+        log("Exception thrown without error", channel)
+        log(response, channel)
+        post.message(
+          channel,
+          `Hm, something went wrong getting tweets from ${screenName}, I'm looking into it, sorry for the trouble!`
+        );
+        return;
+      }
+      const { code, message } = err;
       if (code === 34)
         // Not found
         post.message(
@@ -181,15 +191,15 @@ module.exports = {
     function: start,
     checks: [
       {
+        f: checks.isNotDm,
+        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
+      },
+      {
         f: checks.isMod,
         badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
           config.modRole
         } role!`
       },
-      {
-        f: checks.isNotDm,
-        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
-      }
     ],
     minArgs: 1
   },
@@ -197,13 +207,13 @@ module.exports = {
     function: stop,
     checks: [
       {
+        f: checks.isNotDm,
+        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
+      },
+      {
         f: checks.isMod,
         badB: "You're not authorized to stop fetching tweets!"
       },
-      {
-        f: checks.isNotDm,
-        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
-      }
     ],
     minArgs: 1
   },
@@ -216,13 +226,13 @@ module.exports = {
     function: adminList,
     checks: [
       {
+        f: checks.isDm,
+        badB: "For user privacy reasons, this command is only allowed in DMs."
+      },
+      {
         f: checks.isAdmin,
         badB: "Sorry, only my owner can use the adminlist command!"
       },
-      {
-        f: checks.isDm,
-        badB: "For user privacy reasons, this command is only allowed in DMs."
-      }
     ],
     minArgs: 0
   },
@@ -235,15 +245,15 @@ module.exports = {
     function: stopchannel,
     checks: [
       {
+        f: checks.isNotDm,
+        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
+      }
+      {
         f: checks.isMod,
         badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
           config.modRole
         } role!`
       },
-      {
-        f: checks.isNotDm,
-        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
-      }
     ]
   },
   leaveguild: {
