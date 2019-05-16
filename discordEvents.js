@@ -25,7 +25,7 @@ const handleCommand = (commandName, author, channel, args) => {
       post.message(channel, usage[commandName]);
       return;
     }
-    log(`Executing command: ${command}`, channel);
+    log(`Executing command: ${commandName} ${args}`, channel);
     let validChecks = 0;
     let isValid = true;
     if (command.checks.length > 0)
