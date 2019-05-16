@@ -160,6 +160,7 @@ post.embed = (channel, embed, react) => {
         }`,
         channel
       );
+      log(error, channel);
       post.message(
         channel,
         `I tried to post an embed in #${
