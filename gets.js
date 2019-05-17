@@ -82,6 +82,7 @@ gets.rm = (channel, screenName) => {
 
 gets.rmChannel = channelId => {
   let count = 0;
+  let usersChanged = false;
   // Remove all instances of this channel from our gets
   Object.keys(users.collection).forEach(userId => {
     let user = users.collection[userId];
@@ -96,16 +97,18 @@ gets.rmChannel = channelId => {
     if (user.channels.length < 1) {
       // If no one needs this user's tweets we can delete the enty
       delete users.collection[userId];
+      usersChanged = true;
     }
   });
   // Save any changes we did to the users object
   users.save();
   // ...and re-register the stream, which will be properly updated
-  twitter.createStream();
+  if (usersChanged) twitter.createStream();
   return count;
 };
 
 gets.rmGuild = id => {
+  let usersChanged = false;
   // Remove all instances of this guild from our gets
   Object.keys(users.collection).forEach(userId => {
     let user = users.collection[userId];
@@ -117,6 +120,7 @@ gets.rmGuild = id => {
       }
     }
     if (user.channels.length < 1) {
+      usersChanged = true;
       // If no one needs this user's tweets we can delete the enty
       delete users.collection[userId];
     }
@@ -124,5 +128,5 @@ gets.rmGuild = id => {
   // Save any changes we did to the users object
   users.save();
   // ...and re-register the stream, which will be properly updated
-  twitter.createStream();
+  if (usersChanged) twitter.createStream();
 };
