@@ -53,13 +53,16 @@ function unshortenUrls(text, callback) {
     });
 }
 
+const getChannelOwner = channel =>
+  channel.type === "dm" ? channel.recipient : channel.guild.owner;
+
 const handleDiscordPostError = (error, channel, type) => {
   const errCode = error.statusCode || error.code || error.status;
   if (errCode === 404 || errCode === 10003) {
     // The channel was deleted or we don't have access to it, auto-delete it
     const count = gets.rmChannel(channel.id);
     post.dm(
-      channel.guild.owner,
+      getChannelOwner(channel),
       `Hi! I tried to #${
         channel.name
       } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
@@ -70,7 +73,7 @@ const handleDiscordPostError = (error, channel, type) => {
   if (errCode === 403 || errCode === 50013) {
     // Discord MissingPermissions error
     post.dm(
-      channel.guild.owner,
+      getChannelOwner(channel),
       `Hi! I just tried sending a message to #${
         channel.name
       } but Discord tells me I don't have permissions to post there.\nYou can either ${
@@ -88,14 +91,15 @@ const handleDiscordPostError = (error, channel, type) => {
     channel
   );
   log(error, channel);
-  post.dm(
-    channel.guild.owner,
-    `I'm trying to send a message in #${
-      channel.name
-    } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${
-      error.message
-    }`
-  );
+  if (channel.type !== "dm")
+    post.dm(
+      channel.guild.owner,
+      `I'm trying to send a message in #${
+        channel.name
+      } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${
+        error.message
+      }`
+    );
 };
 
 post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
@@ -208,13 +212,8 @@ post.announcement = (message, channels) => {
 };
 
 post.dm = (author, message) => {
-  author
-    .send(message)
-    .then(({ channel: authorDmChannel }) => {
-      log(`Sent DM: ${message}`, authorDmChannel);
-    })
-    .catch(err => {
-      log(`Couldn't sent a message to ${author.username}`);
-      log(err);
-    });
+  author.send(message).catch(err => {
+    log(`Couldn't sent a message to ${author.username}`);
+    log(err);
+  });
 };
