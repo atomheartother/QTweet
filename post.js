@@ -53,6 +53,51 @@ function unshortenUrls(text, callback) {
     });
 }
 
+const handleDiscordPostError = (error, channel, type) => {
+  const errCode = error.statusCode || error.code || error.status;
+  if (errCode === 404 || errCode === 10003) {
+    // The channel was deleted or we don't have access to it, auto-delete it
+    const count = gets.rmChannel(channel.id);
+    post.dm(
+      channel.guild.owner,
+      `Hi! I tried to #${
+        channel.name
+      } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
+    );
+    log(`Auto-deleted ${count} gets, channel removed`, channel);
+    return;
+  }
+  if (errCode === 403 || errCode === 50013) {
+    // Discord MissingPermissions error
+    post.dm(
+      channel.guild.owner,
+      `Hi! I just tried sending a message to #${
+        channel.name
+      } but Discord tells me I don't have permissions to post there.\nYou can either ${
+        config.prefix
+      }stop me from posting there or you can give me permissions to stop getting this message.`
+    );
+    log(
+      "Tried to post an embed but didn't have permissions, notified owner",
+      channel
+    );
+    return;
+  }
+  log(
+    `Posting ${type} failed (${errCode} ${error.name}): ${error.message}`,
+    channel
+  );
+  log(error, channel);
+  post.dm(
+    channel.guild.owner,
+    `I'm trying to send a message in #${
+      channel.name
+    } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${
+      error.message
+    }`
+  );
+};
+
 post.tweet = (channel, { user, text, extended_entities }, postTextTweets) => {
   // Author doesn't have a screenName field,
   // we use it for debugging and for error handling
@@ -142,71 +187,14 @@ post.embed = (channel, embed, react) => {
           // Don't log this as it's not critical
         });
     })
-    .catch(function(error) {
-      const errCode = error.statusCode || error.code || error.status;
-      if (errCode === 404 || errCode === 10003) {
-        // The channel was deleted or we don't have access to it, auto-delete it
-        const count = gets.rmChannel(channel.id);
-        channel.guild.owner.send(
-          `Hi! I recently tried to send a message to #${
-            channel.name
-          } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
-        );
-        log(`Auto-deleted ${count} gets, channel removed`, channel);
-        return;
-      }
-      if (errCode === 403 || errCode === 50013) {
-        // Discord MissingPermissions error
-        channel.guild.owner.send(
-          `Hi! I just tried sending an embed to #${
-            channel.name
-          } but Discord tells me I don't have permissions to post there.\nYou can either ${
-            config.prefix
-          }stop me from posting there or you can give me permissions to stop getting this message.`
-        );
-        log(
-          "Tried to post an embed but didn't have permissions, notified owner",
-          channel
-        );
-        return;
-      }
-      log(
-        `Posting an embed failed (${errCode} ${error.name}): ${error.message}`,
-        channel
-      );
-      log(error, channel);
-      post.message(
-        channel,
-        `I tried to post an embed in #${
-          channel.name
-        } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${
-          error.message
-        }`
-      );
+    .catch(err => {
+      handleDiscordPostError(err, channel, "embed");
     });
 };
 
 post.message = (channel, message) => {
-  channel.send(message).catch(function(error) {
-    log(`Sending message failed: ${message}`, channel);
-    // Try to contact the guild owner
-    channel.guild.owner
-      .send(
-        `Hello, I just tried sending a message to #${
-          channel.name
-        }, but I couldn't.\n\nHere's a few ways you can fix this:
-        - If you'd like me to stop posting anything to that channel, just use the command \`${
-          config.prefix
-        }stopchannel ${channel.id}\` **inside** your server, not here.
-        - If you'd like me to leave your server, simply kick me from it, I'll stop trying to post to it
-        - If I'm somehow still messing up, please contact my creator, \`Tom'#4242\`, he'll try his best to help.`
-      )
-      .then(message)
-      .catch(function(err) {
-        log(
-          `Sending message to guild owner ${channel.guild.owner.tag} failed too`
-        );
-      });
+  channel.send(message).catch(err => {
+    handleDiscordPostError(err, channel, "message");
   });
 };
 
@@ -217,4 +205,16 @@ post.announcement = (message, channels) => {
   setTimeout(() => {
     post.announcement(message, channels);
   }, 1000);
+};
+
+post.dm = (author, message) => {
+  author
+    .send(message)
+    .then(({ channel: authorDmChannel }) => {
+      log(`Sent DM: ${message}`, authorDmChannel);
+    })
+    .catch(err => {
+      log(`Couldn't sent a message to ${author.username}`);
+      log(err);
+    });
 };
