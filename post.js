@@ -143,8 +143,8 @@ post.embed = (channel, embed, react) => {
         });
     })
     .catch(function(error) {
-      const errCode = error.statusCode || error.code;
-      if (errCode === 404) {
+      const errCode = error.statusCode || error.code || error.status;
+      if (errCode === 404 || errCode === 10003) {
         // The channel was deleted or we don't have access to it, auto-delete it
         const count = gets.rmChannel(channel.id);
         channel.guild.owner.send(
@@ -155,7 +155,7 @@ post.embed = (channel, embed, react) => {
         log(`Auto-deleted ${count} gets, channel removed`, channel);
         return;
       }
-      if (errCode === 50013) {
+      if (errCode === 403 || errCode === 50013) {
         // Discord MissingPermissions error
         channel.guild.owner.send(
           `Hi! I just tried sending an embed to #${
