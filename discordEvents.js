@@ -102,7 +102,6 @@ handleMessage = message => {
   }
 
   const { author, channel } = message;
-  console.log(author);
   handleCommand(command, author, channel, args);
 };
 
