@@ -35,9 +35,9 @@ checks.isMod = (author, channel, callback) => {
           modRole = member.roles.find(role => role.name === config.modRole);
         callback(modRole ? true : false);
       })
-      .catch(() => {
-        log(`Couldn't get info for ${author.name}`, channel);
-        log(author);
+      .catch(err => {
+        log(`Couldn't get info for ${author.username}`, channel);
+        log(err);
         callback(false);
       });
   } else {
