@@ -143,21 +143,35 @@ post.embed = (channel, embed, react) => {
         });
     })
     .catch(function(error) {
-      if (error.statusCode === 404) {
-        // The channel was deleted, auto-delete it
+      const errCode = error.statusCode || error.code;
+      if (errCode === 404) {
+        // The channel was deleted or we don't have access to it, auto-delete it
         const count = gets.rmChannel(channel.id);
-        channel.guid.owner.send(
+        channel.guild.owner.send(
           `Hi! I recently tried to send a message to #${
             channel.name
-          } but Discord tells me it doesn't exist anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
+          } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
         );
         log(`Auto-deleted ${count} gets, channel removed`, channel);
         return;
       }
+      if (errCode === 50013) {
+        // Discord MissingPermissions error
+        channel.guild.owner.send(
+          `Hi! I just tried sending an embed to #${
+            channel.name
+          } but Discord tells me I don't have permissions to post there.\nYou can either ${
+            config.prefix
+          }stop me from posting there or you can give me permissions to stop getting this message.`
+        );
+        log(
+          "Tried to post an embed but didn't have permissions, notified owner",
+          channel
+        );
+        return;
+      }
       log(
-        `Posting an embed failed: ${error.name} ${error.statusCode}: ${
-          error.message
-        }`,
+        `Posting an embed failed (${errCode} ${error.name}): ${error.message}`,
         channel
       );
       log(error, channel);
@@ -181,7 +195,6 @@ post.message = (channel, message) => {
         `Hello, I just tried sending a message to #${
           channel.name
         }, but I couldn't.\n\nHere's a few ways you can fix this:
-        - Give me the "Send Messages" and "Send Embeds" permissions in that channel (I would also like to be able to post reactions please!)
         - If you'd like me to stop posting anything to that channel, just use the command \`${
           config.prefix
         }stopchannel ${channel.id}\` **inside** your server, not here.
