@@ -38,6 +38,9 @@ const handleCommand = (commandName, author, channel, args) => {
           else {
             isValid = false;
             if (badB) post.message(channel, badB); // If it's not met and we were given a bad boy, post it
+            log(
+              `Rejected command "${commandName} ${args}" with reason: ${badB}`
+            );
             return;
           }
           if (validChecks === command.checks.length) {
