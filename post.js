@@ -81,7 +81,7 @@ const handleDiscordPostError = (error, channel, type) => {
       }stop me from posting there or you can give me permissions to stop getting this message.`
     );
     log(
-      "Tried to post an embed but didn't have permissions, notified owner",
+      `Tried to post ${type} but didn't have permissions, notified owner`,
       channel
     );
     return;
