@@ -56,7 +56,7 @@ function unshortenUrls(text, callback) {
 const getChannelOwner = channel =>
   channel.type === "dm" ? channel.recipient : channel.guild.owner;
 
-const handleDiscordPostError = (error, channel, type) => {
+const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
   const errCode = error.statusCode || error.code || error.status;
   if (errCode === 404 || errCode === 10003) {
     // The channel was deleted or we don't have access to it, auto-delete it
@@ -69,8 +69,7 @@ const handleDiscordPostError = (error, channel, type) => {
     );
     log(`Auto-deleted ${count} gets, channel removed`, channel);
     return;
-  }
-  if (errCode === 403 || errCode === 50013) {
+  } else if (errCode === 403 || errCode === 50013) {
     // Discord MissingPermissions error
     post.dm(
       getChannelOwner(channel),
@@ -84,6 +83,26 @@ const handleDiscordPostError = (error, channel, type) => {
       `Tried to post ${type} but didn't have permissions, notified owner`,
       channel
     );
+    return;
+  } else if (errCode === "ECONNRESET") {
+    // Discord servers fucked up
+    if (errorCount >= 2) {
+      log(
+        `Discord servers failed receiving ${type} ${errorCount}times, giving up`,
+        channel
+      );
+      return;
+    }
+    log(
+      `Discord servers failed when I tried to send ${type} (attempt #${errorCount +
+        1})`,
+      channel
+    );
+    setTimeout(() => {
+      channel.send(msg).catch(err => {
+        handleDiscordPostError(err, channel, type, msg, errorCount + 1);
+      });
+    }, 1000);
     return;
   }
   log(
@@ -192,13 +211,13 @@ post.embed = (channel, embed, react) => {
         });
     })
     .catch(err => {
-      handleDiscordPostError(err, channel, "embed");
+      handleDiscordPostError(err, channel, "embed", embed);
     });
 };
 
 post.message = (channel, message) => {
   channel.send(message).catch(err => {
-    handleDiscordPostError(err, channel, "message");
+    handleDiscordPostError(err, channel, "message", message);
   });
 };
 
