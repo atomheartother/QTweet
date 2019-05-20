@@ -67,7 +67,7 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
         channel.name
       } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
     );
-    log(`Auto-deleted ${count} gets, channel removed`, channel);
+    log(`${errCode}: Auto-deleted ${count} gets, channel removed`, channel);
     return;
   } else if (errCode === 403 || errCode === 50013) {
     // Discord MissingPermissions error
@@ -80,7 +80,7 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
       }stop me from posting there or you can give me permissions to stop getting this message.`
     );
     log(
-      `Tried to post ${type} but didn't have permissions, notified owner`,
+      `${errCode}: Tried to post ${type} but didn't have permissions, notified owner`,
       channel
     );
     return;
@@ -88,13 +88,13 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
     // Discord servers fucked up, gatweay timeout
     if (errorCount >= 2) {
       log(
-        `Discord servers failed receiving ${type} ${errorCount} times, giving up`,
+        `${errCode}: Discord servers failed receiving ${type} ${errorCount} times, giving up`,
         channel
       );
       return;
     }
     log(
-      `Discord servers failed when I tried to send ${type} (attempt #${errorCount +
+      `${errCode}: Discord servers failed when I tried to send ${type} (attempt #${errorCount +
         1})`,
       channel
     );
