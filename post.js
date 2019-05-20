@@ -84,11 +84,11 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
       channel
     );
     return;
-  } else if (errCode === "ECONNRESET") {
-    // Discord servers fucked up
+  } else if (errCode === "ECONNRESET" || errCode === 504) {
+    // Discord servers fucked up, gatweay timeout
     if (errorCount >= 2) {
       log(
-        `Discord servers failed receiving ${type} ${errorCount}times, giving up`,
+        `Discord servers failed receiving ${type} ${errorCount} times, giving up`,
         channel
       );
       return;
@@ -102,7 +102,7 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
       channel.send(msg).catch(err => {
         handleDiscordPostError(err, channel, type, msg, errorCount + 1);
       });
-    }, 1000);
+    }, 5000);
     return;
   }
   log(
