@@ -5,6 +5,7 @@ const { tall } = require("tall");
 let users = require("./users");
 const gets = require("./gets");
 const log = require("./log");
+const discord = require("./discord");
 
 const postColors = {
   text: 0x69b2d6,
@@ -71,18 +72,40 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
     return;
   } else if (errCode === 403 || errCode === 50013) {
     // Discord MissingPermissions error
-    post.dm(
-      getChannelOwner(channel),
-      `Hi! I just tried sending a message to #${
-        channel.name
-      } but Discord tells me I don't have permissions to post there.\nYou can either ${
-        config.prefix
-      }stop me from posting there or you can give me permissions to stop getting this message.`
-    );
-    log(
-      `${errCode}: Tried to post ${type} but didn't have permissions, notified owner`,
-      channel
-    );
+    // Try to find the 1st channel we can post in
+    log(`Tried to post ${type} but lacked permissions`, channel);
+    const permissionsMsg = `Hello!\nI'm trying to post a message in #${
+      channel.name
+    }, but Discord says I don't have any rights to it.\n\nIf a mod could give me the right to **Send Messages** and **Send Embeds** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
+      config.prefix
+    }stopchannel ${channel.id}\`. Thanks!`;
+    if (channel.type === "text" && errorCount === 0) {
+      const postableChannel = discord.canPostIn(channel)
+        ? channel
+        : channel.guild.channels
+            .filter(c => c.type === "text")
+            .find(c => discord.canPostIn(c));
+      if (postableChannel) {
+        postableChannel
+          .send(permissionsMsg)
+          .then(
+            log("Sent a message asking to get permissions", postableChannel)
+          )
+          .catch(err => {
+            handleDiscordPostError(
+              err,
+              postableChannel,
+              "message",
+              permissionsMsg,
+              1
+            );
+          });
+        return;
+      }
+    }
+    // If it was a message, just try and msg the owner
+    post.dm(getChannelOwner(channel), permissionsMsg);
+    log(`${errCode}: Owner has been notified`, channel);
     return;
   } else if (errCode === "ECONNRESET" || errCode === 504) {
     // Discord servers fucked up, gatweay timeout
