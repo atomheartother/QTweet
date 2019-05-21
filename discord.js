@@ -23,5 +23,10 @@ module.exports = {
 
   getGuild: id => {
     return dClient.guilds.get(id);
+  },
+
+  canPostIn: channel => {
+    const permissions = channel.permissionsFor(dClient.user);
+    return permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES);
   }
 };
