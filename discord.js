@@ -27,6 +27,9 @@ module.exports = {
 
   canPostIn: channel => {
     const permissions = channel.permissionsFor(dClient.user);
-    return permissions.hasPermission(Discord.Permissions.FLAGS.SEND_MESSAGES);
+    return (
+      permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES) &&
+      permissions.has(Discord.Permissions.FLAGS.VIEW_CHANNEL)
+    );
   }
 };
