@@ -250,7 +250,7 @@ module.exports = {
     checks: [
       {
         f: checks.isNotDm,
-        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
+        badB: "You should use this command on the concerned server, not in DMs"
       },
       {
         f: checks.isMod,
