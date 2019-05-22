@@ -85,7 +85,7 @@ handleMessage = message => {
     const embed = new Discord.RichEmbed()
       .setColor(0xd667cf)
       .setTitle(config.botName)
-      .setURL(config.githubURL)
+      .setURL(config.profileURL)
       .setDescription(
         `Hello, I am ${
           config.botName

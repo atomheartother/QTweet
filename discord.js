@@ -18,14 +18,17 @@ module.exports = {
   },
 
   getChannel: id => {
+    console.log(`Getting channel object for id ${id}`);
     return dClient.channels.get(id);
   },
 
   getGuild: id => {
+    console.log(`Getting guild object for id ${id}`);
     return dClient.guilds.get(id);
   },
 
   canPostIn: channel => {
+    console.log(`Checking if we can post in channel ${channel.name}`);
     const permissions = channel.permissionsFor(dClient.user);
     return (
       permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES) &&
