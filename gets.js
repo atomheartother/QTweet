@@ -7,13 +7,13 @@ var config = require("./config.json");
 
 // Add a get to the user list
 // options: {text: boolean}
-gets.add = (channel, userId, screenName, options) => {
+gets.add = (channel, userId, name, options) => {
   if (!users.collection.hasOwnProperty(userId)) {
     // Create the user object
     users.collection[userId] = { channels: [] };
   }
-  if (screenName != null && !users.collection[userId].hasOwnProperty("name")) {
-    users.collection[userId].name = screenName;
+  if (name != null && !users.collection[userId].hasOwnProperty("name")) {
+    users.collection[userId].name = name;
   }
 
   if (
