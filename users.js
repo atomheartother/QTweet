@@ -40,16 +40,12 @@ users.getGuildGets = guildId =>
     (acc, userId) =>
       acc.concat(
         users.collection[userId].channels
-          .filter(get => {
-            if (
+          .filter(
+            get =>
               get.channel &&
               get.channel.guild &&
               get.channel.guild.id === guildId
-            )
-              return true;
-            console.log(get);
-            return false;
-          })
+          )
           .map(get => ({
             ...get,
             userId
@@ -216,7 +212,7 @@ users.adminListGuild = (channel, guildId) => {
     if (counter > 20) {
       page++;
       post.embed(channel, { embed }, false);
-      let embed = new Discord.RichEmbed()
+      embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
         .setTitle(`Guild gets list (page ${page})`)
         .setURL(config.profileURL)
