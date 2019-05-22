@@ -34,6 +34,45 @@ users.getUniqueChannels = () => {
   return channels;
 };
 
+// Returns a list of get objects matching this guild, with added userId of the get
+users.getGuildGets = guildId =>
+  Object.keys(users.collection).reduce(
+    (acc, userId) =>
+      acc.concat(
+        users.collection[userId].channels
+          .filter(get => {
+            if (
+              get.channel &&
+              get.channel.guild &&
+              get.channel.guild.id === guildId
+            )
+              return true;
+            console.log(get);
+            return false;
+          })
+          .map(get => ({
+            ...get,
+            userId
+          }))
+      ),
+    []
+  );
+
+// Returns a list of get objects matching this channel, with added userid of the get
+users.getChannelGets = channelId =>
+  Object.keys(users.collection).reduce(
+    (acc, userId) =>
+      acc.concat(
+        users.collection[userId].channels
+          .filter(get => get.channel.id === channelId)
+          .map(get => ({
+            ...get,
+            userId
+          }))
+      ),
+    []
+  );
+
 users.defaultOptions = function() {
   return {
     text: true
@@ -113,32 +152,31 @@ users.load = callback => {
 
 // List users we're getting in this channel, available to everyone
 users.list = channel => {
-  let userIds = [];
-  Object.keys(users.collection).forEach(userId => {
-    if (!users.collection.hasOwnProperty(userId)) return;
-
-    let twitterUser = users.collection[userId];
-    if (twitterUser.channels.find(get => get.channel.id === channel.id)) {
-      userIds.push(userId);
-    }
-  });
-
-  if (userIds.length < 1) {
-    post.message(channel, "You aren't fetching tweets from anywhere!");
+  const gets = users.getChannelGets(channel.id);
+  if (gets.length < 1) {
+    post.message(
+      channel,
+      `You aren't fetching tweets from anywhere!\nUse \`${
+        config.prefix
+      }start <twitter handle>\`to begin!`
+    );
     return;
   }
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`Tweet sources list (page ${page})`)
-    .setURL("https://github.com/atomheartother/A-I-kyan")
+    .setTitle(`Tweet sources list`)
+    .setURL(config.profileURL)
     .setDescription(
-      "This is a complete list of the accounts you're fetching tweets from"
+      `This is all ${gets.length} accounts you're getting tweets from`
     );
   let counter = 0;
-  for (let userId of userIds) {
+  gets.forEach(({ userId, text }) => {
     const twitterUser = users.collection[userId];
-    embed.addField(twitterUser.name || twitterUser.id, `(${userId})`);
+    embed.addField(
+      twitterUser.name || twitterUser.id,
+      text ? "With text posts" : "No text posts"
+    );
     counter++;
     if (counter > 20) {
       page++;
@@ -146,13 +184,48 @@ users.list = channel => {
       embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
         .setTitle(`Tweet sources list (page ${page})`)
-        .setURL("https://github.com/atomheartother/A-I-kyan")
+        .setURL(config.profileURL)
         .setDescription(
-          "This is a complete list of the accounts you're fetching tweets from"
+          `This is all ${gets.length} accounts you're getting tweets from`
         );
       counter = 0;
     }
+  });
+  if (counter > 0) post.embed(channel, { embed }, false);
+};
+
+users.adminListGuild = (channel, guildId) => {
+  const gets = users.getGuildGets(guildId);
+  if (gets.length < 1) {
+    post.message(channel, `I'm not getting any tweets from guild ${guildId}!`);
+    return;
   }
+  let page = 1;
+  let embed = new Discord.RichEmbed()
+    .setColor(0xf26d7a)
+    .setTitle(`Guild gets list`)
+    .setURL(config.profileURL)
+    .setDescription(
+      `This is a complete list of all ${gets.length} gets for this guild!`
+    );
+  let counter = 0;
+  gets.forEach(({ userId, channel: c, text }) => {
+    const user = users.collection[userId];
+    embed.addField(user.name, `#${c.name}, ${text ? "With text" : "No text"}`);
+    counter++;
+    if (counter > 20) {
+      page++;
+      post.embed(channel, { embed }, false);
+      let embed = new Discord.RichEmbed()
+        .setColor(0xf26d7a)
+        .setTitle(`Guild gets list (page ${page})`)
+        .setURL(config.profileURL)
+        .setDescription(
+          `This is a complete list of all ${gets.length} gets for this guild!`
+        );
+      counter = 0;
+    }
+  });
   if (counter > 0) post.embed(channel, { embed }, false);
 };
 
@@ -162,8 +235,8 @@ users.adminList = channel => {
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`Users list (page ${page})`)
-    .setURL("https://github.com/atomheartother/A-I-kyan")
+    .setTitle(`Global guild list`)
+    .setURL(config.profileURL)
     .setDescription(
       `This is a complete list of all ${guilds.length} guilds I'm in!`
     );
@@ -181,7 +254,7 @@ users.adminList = channel => {
       embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
         .setTitle(`Users list (page ${page})`)
-        .setURL("https://github.com/atomheartother/A-I-kyan")
+        .setURL(config.profileURL)
         .setDescription(
           "This is a complete list of the twitter users I'm getting, with guild names and owner info!"
         );

@@ -180,7 +180,11 @@ const list = (args, channel) => {
 };
 
 const adminList = (args, channel) => {
-  users.adminList(channel);
+  if (args.length > 0) {
+    users.adminListGuild(channel, args[0]);
+  } else {
+    users.adminList(channel);
+  }
 };
 
 const announce = args => {

@@ -107,7 +107,11 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
     post.dm(getChannelOwner(channel), permissionsMsg);
     log(`${errCode}: Owner has been notified`, channel);
     return;
-  } else if (errCode === "ECONNRESET" || errCode === 504) {
+  } else if (
+    errCode === "ECONNRESET" ||
+    errCode === "read ECONNRESET" ||
+    errCode === 504
+  ) {
     // Discord servers fucked up, gatweay timeout
     if (errorCount >= 2) {
       log(
