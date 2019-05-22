@@ -103,7 +103,7 @@ const start = (args, channel) => {
         channel,
         `I'm starting to get tweets from ${name}, remember you can stop me at any time with \`${
           config.prefix
-        }stop ${screenName}\`\nIt can take up to a few minutes to start getting tweets from them, but once it starts, it'll be in real time!`
+        }stop ${name}\`\nIt can take a few minutes to start getting tweets from them, but once it starts, it'll be in real time!`
       );
       log(`Added ${name}`, channel);
       // Re-register the stream if we didn't know the user before
