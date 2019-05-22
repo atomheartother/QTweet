@@ -104,11 +104,11 @@ const start = (args, channel) => {
           config.prefix
         }stop ${screenName}\`\nIt can take up to a few minutes to start getting tweets from them, but once it starts, it'll be in real time!`
       );
-      log(`Added ${screenName}`, channel);
-      let userId = data[0].id_str;
+      const { id_str: userId, screen_name: name } = data[0];
       // Re-register the stream if we didn't know the user before
       let redoStream = !users.collection.hasOwnProperty(userId);
-      gets.add(channel, userId, screenName, options);
+      gets.add(channel, userId, name, options);
+      log(`Added ${name}`, channel);
       if (redoStream) {
         twitter.createStream();
       }
