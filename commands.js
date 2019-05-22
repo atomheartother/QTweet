@@ -98,17 +98,17 @@ const start = (args, channel) => {
   twitter
     .userLookup({ screen_name: screenName })
     .then(function(data) {
+      const { id_str: userId, screen_name: name } = data[0];
       post.message(
         channel,
-        `I'm starting to get tweets from ${screenName}, remember you can stop me at any time with \`${
+        `I'm starting to get tweets from ${name}, remember you can stop me at any time with \`${
           config.prefix
         }stop ${screenName}\`\nIt can take up to a few minutes to start getting tweets from them, but once it starts, it'll be in real time!`
       );
-      const { id_str: userId, screen_name: name } = data[0];
+      log(`Added ${name}`, channel);
       // Re-register the stream if we didn't know the user before
       let redoStream = !users.collection.hasOwnProperty(userId);
       gets.add(channel, userId, name, options);
-      log(`Added ${name}`, channel);
       if (redoStream) {
         twitter.createStream();
       }
