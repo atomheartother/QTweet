@@ -1,5 +1,6 @@
 // Direct mappings for discord.js methods
 const Discord = require("discord.js");
+const log = require("./log");
 
 // Passwords file
 const pw = require("./pw.json");
@@ -22,12 +23,12 @@ module.exports = {
   },
 
   getGuild: id => {
-    console.log(`Getting guild object for id ${id}`);
+    log(`Getting guild object for id ${id}`);
     return dClient.guilds.get(id);
   },
 
   canPostIn: channel => {
-    console.log(`Checking if we can post in channel ${channel.name}`);
+    log(`Checking if we can post in channel ${channel.name}`);
     const permissions = channel.permissionsFor(dClient.user);
     return (
       permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES) &&
