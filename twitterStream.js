@@ -1,9 +1,9 @@
 const log = require("./log");
 
 // Idle delay
-const shortDelay = 1000 * 60 * 2;
+const shortDelay = 1000 * 60 * 5;
 // Long delay, when we just created a stream, we put this in before we create the next one
-const longDelay = 1000 * 60 * 10;
+const longDelay = 1000 * 60 * 15;
 // Destroying delay, delay between stream destruction and stream re-creation
 const destroyDelay = 1000 * 1;
 
@@ -23,7 +23,6 @@ class Stream {
   checkNewUsers() {
     if (this.newUserIds === true) {
       this.newUserIds = false;
-      // Increment by another minute
       if (!!this.stream) {
         this.stream.destroy();
         setTimeout(() => {
@@ -70,7 +69,6 @@ class Stream {
   disconnected() {
     this.stream = null;
     this.userIds = [];
-    this.stream = null;
     this.newUserIds = false;
   }
 }
