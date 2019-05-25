@@ -35,7 +35,16 @@ const tweet = (args, channel) => {
         );
         return;
       }
-      let tweet = tweets[0];
+      let tweet = tweets.find(t => !!t && !!t.user);
+      if (!tweet) {
+        post.message(
+          channel,
+          "Weird, this user has some tweets but something went wrong when i tried to get them...\nYou might want to try again, maybe Twitter messed up!"
+        );
+        log("Invalid tweets from timeline", channel);
+        log(tweets, channel);
+        return;
+      }
       post.tweet(channel, tweet, true);
       log(`Posted latest tweet from ${screenName}`, channel);
     })
