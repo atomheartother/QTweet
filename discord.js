@@ -18,7 +18,6 @@ module.exports = {
   },
 
   getChannel: id => {
-    console.log(`Getting channel object for id ${id}`);
     return dClient.channels.get(id);
   },
 
