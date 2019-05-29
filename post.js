@@ -70,15 +70,26 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
     );
     log(`${errCode}: Auto-deleted ${count} gets, channel removed`, channel);
     return;
-  } else if (errCode === 403 || errCode === 50013) {
+  } else if (
+    errCode === 403 ||
+    errCode === 50013 ||
+    errCode === 50001 ||
+    errCode === 50004 ||
+    errCode === 40001
+  ) {
     // Discord MissingPermissions error
     // Try to find the 1st channel we can post in
-    log(`Tried to post ${type} but lacked permissions`, channel);
-    const permissionsMsg = `Hello!\nI'm trying to post a message in #${
+    log(
+      `Tried to post ${type} but lacked permissions: ${errCode} ${err.name}`,
+      channel
+    );
+    const permissionsMsg = `Hello!\nI just tried to post a message in #${
       channel.name
     }, but Discord says I don't have any rights to it.\n\nIf a mod could give me the right to **Send Messages** and **Send Embeds** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
       config.prefix
-    }stopchannel ${channel.id}\`. Thanks!`;
+    }stopchannel ${
+      channel.id
+    }\`.\nIf you think you've done everything right but keep getting this message, please contact my creator (\`Tom'#4242\`) about this so he can look into it with you. Thanks!`;
     if (channel.type === "text" && errorCount === 0) {
       const postableChannel = discord.canPostIn(channel)
         ? channel
