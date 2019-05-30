@@ -67,7 +67,7 @@ twitter.isValid = tweet =>
 
 // Takes a tweet and formats it for posting.
 twitter.formatTweet = (tweet, callback) => {
-  const { user, text, extended_entities } = tweet;
+  let { user, text, extended_entities } = tweet;
   // Author doesn't have a screenName field,
   // we use it for debugging and for error handling
   let embed = {
