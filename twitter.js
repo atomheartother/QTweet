@@ -34,6 +34,12 @@ const resetTimeout = () => {
   }
 };
 
+// Checks if a tweet has any media attached. If false, it's a text tweet
+const hasMedia = ({ extended_entities }) =>
+  extended_entities &&
+  extended_entities.hasOwnProperty("media") &&
+  extended_entities.media.length > 0;
+
 const startTimeout = () => {
   resetTimeout();
   lastTweetTimeout = setTimeout(() => {
@@ -49,35 +55,107 @@ const streamStart = response => {
   startTimeout();
 };
 
+// Validation function for tweets
+twitter.isValid = tweet =>
+  !(
+    !tweet || // Ignore null tweets
+    !tweet.user || // Ignore tweets without authors
+    (tweet.hasOwnProperty("in_reply_to_user_id") &&
+      tweet.in_reply_to_user_id !== null) || // Ignore replies
+    tweet.hasOwnProperty("retweeted_status")
+  ); // Ignore retweets
+
+// Takes a tweet and formats it for posting.
+twitter.formatTweet = (tweet, callback) => {
+  const { user, text, extended_entities } = tweet;
+  // Author doesn't have a screenName field,
+  // we use it for debugging and for error handling
+  let embed = {
+    author: {
+      name: user.name,
+      screenName: user.screen_name,
+      url: "https://twitter.com/" + user.screen_name,
+      icon_url: user.profile_image_url_https
+    }
+  };
+  // For any additional files
+  let files = null;
+  if (
+    users.collection.hasOwnProperty(user.id_str) &&
+    (!users.collection[user.id_str].hasOwnProperty("name") ||
+      users.collection[user.id_str].name !== user.screen_name)
+  ) {
+    // Add or update the username from that user
+    users.collection[user.id_str].name = user.screen_name;
+    users.save();
+  }
+  if (!hasMedia(tweet)) {
+    // Text tweet
+    embed.color = post.colors["text"];
+  } else if (
+    extended_entities.media[0].type === "animated_gif" ||
+    extended_entities.media[0].type === "video"
+  ) {
+    // Gif/video.
+    const vidinfo = extended_entities.media[0].video_info;
+    let vidurl = null;
+    let bitrate = null;
+    for (let vid of vidinfo.variants) {
+      // Find the best video
+      if (vid.content_type === "video/mp4" && vid.bitrate < 1000000) {
+        const paramIdx = vid.url.lastIndexOf("?");
+        const hasParam = paramIdx !== -1 && paramIdx > vid.url.lastIndexOf("/");
+        vidurl = hasParam ? vid.url.substring(0, paramIdx) : vid.url;
+        bitrate = vid.bitrate;
+      }
+    }
+    if (vidurl !== null) {
+      if (vidinfo.duration_millis < 20000 || bitrate === 0) files = [vidurl];
+      else {
+        embed.image = { url: extended_entities.media[0].media_url_https };
+        text = `[Link to video](${vidurl})\n\n${text}`;
+      }
+    } else {
+      log("Found video tweet with no valid url");
+      log(vidinfo);
+    }
+    embed.color = post.colors["video"];
+  } else {
+    // Image(s)
+    files = extended_entities.media.map(media => media.media_url_https);
+    if (files.length === 1) {
+      embed.image = { url: files[0] };
+      files = null;
+      embed.color = post.colors["image"];
+    } else {
+      embed.color = post.colors["images"];
+    }
+  }
+  // // Unshorten all urls then post
+  // unshortenUrls(text, newText => {
+  embed.description = text;
+  callback({ embed, files });
+  // });
+};
+
 const streamData = tweet => {
+  // Ignore invalid tweets
+  if (!twitter.isValid(tweet)) return;
+
   // Reset the last tweet timeout
   startTimeout();
 
-  // Ignore deletion notifications and null values, which we get somehow
-  if (!tweet || !tweet.user) {
-    if (!tweet) {
-      log(`Got null tweet: ${tweet}`);
-    } else if (!tweet.delete) {
-      log("Got tweet without username");
-      log(tweet);
-    }
-    return;
-  }
-  if (
-    (tweet.hasOwnProperty("in_reply_to_user_id") &&
-      tweet.in_reply_to_user_id !== null) ||
-    tweet.hasOwnProperty("retweeted_status")
-  ) {
-    return;
-  }
-
   const twitterUserObject = users.collection[tweet.user.id_str];
   if (!twitterUserObject) {
-    log(`Got a tweet from someone we don't follow: ${tweet.user.id_str}`);
     return;
   }
-  twitterUserObject.channels.forEach(get => {
-    post.tweet(get.channel, tweet, get.text);
+  twitter.formatTweet(tweet, embed => {
+    const isTextTweet = !hasMedia(tweet);
+    twitterUserObject.channels
+      .filter(({ text }) => !isTextTweet || text)
+      .forEach(({ channel }) => {
+        post.embed(channel, embed, true);
+      });
   });
 };
 
@@ -97,6 +175,7 @@ const streamError = err => {
   stream.disconnected();
   resetTimeout();
   log(`Error getting a stream (${err.status}: ${err.statusText})`);
+  log(err);
 };
 
 // Stream object, holds the twitter feed we get posts from

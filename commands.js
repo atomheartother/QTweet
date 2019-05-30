@@ -35,17 +35,19 @@ const tweet = (args, channel) => {
         );
         return;
       }
-      let tweet = tweets.find(t => !!t && !!t.user);
+      let tweet = tweets.find(t => twitter.isValid(t));
       if (!tweet) {
         post.message(
           channel,
-          "Weird, this user has some tweets but something went wrong when i tried to get them...\nYou might want to try again, maybe Twitter messed up!"
+          "This user doesn't seem to have any original valid tweets...\nYou might want to try again, maybe Twitter messed up?"
         );
         log("Invalid tweets from timeline", channel);
         log(tweets, channel);
         return;
       }
-      post.tweet(channel, tweet, true);
+      twitter.formatTweet(tweet, embed => {
+        post.embed(channel, embed, true);
+      });
       log(`Posted latest tweet from ${screenName}`, channel);
     })
     .catch(function(response) {
