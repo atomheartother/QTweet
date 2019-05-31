@@ -218,9 +218,9 @@ const adminList = (args, channel) => {
 
 const announce = args => {
   const message = args.join(" ");
-  const channels = [];
+  const channels = users.getUniqueChannels();
   log(`Posting announcement to ${channels.length} channels`);
-  post.announcement(message, users.getUniqueChannels());
+  post.announcement(message, channels);
 };
 
 module.exports = {
