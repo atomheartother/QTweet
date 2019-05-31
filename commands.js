@@ -90,46 +90,64 @@ const tweet = (args, channel) => {
 
 const start = (args, channel) => {
   let options = users.defaultOptions();
-  let screenName = null;
+  let screenNames = [];
   for (let arg of args) {
     if (arg.substring(0, 2) == "--") {
       let option = arg.substring(2);
       if (option === "notext") options.text = false;
-    } else if (screenName == null) {
-      screenName = getScreenName(arg);
     } else {
-      post.message(channel, "Invalid argument: " + arg);
-      return;
+      screenNames.push(getScreenName(arg));
     }
   }
-  if (!screenName) {
+  if (screenNames.length < 1) {
     post.message(channel, usage["start"]);
     return;
   }
   twitter
-    .userLookup({ screen_name: screenName })
+    .userLookup({ screen_name: screenNames.toString() })
     .then(function(data) {
-      const { id_str: userId, screen_name: name } = data[0];
-      post.message(
-        channel,
-        `I'm starting to get tweets from ${name}, remember you can stop me at any time with \`${
-          config.prefix
-        }stop ${name}\`\nIt can take a few minutes to start getting tweets from them, but once it starts, it'll be in real time!`
-      );
-      log(`Added ${name}`, channel);
+      let redoStream = false;
+      const addedObjectName =
+        data.length === 1
+          ? data[0].screen_name
+          : `${data.length} accounts: ${data
+              .map(({ screen_name }) => screen_name)
+              .toString()}`;
+      data.forEach(({ id_str: userId, screen_name: name }) => {
+        gets.add(channel, userId, name, options);
+        if (!redoStream && !users.collection.hasOwnProperty(userId))
+          redoStream = true;
+      });
+      let channelMsg = `I'm starting to get tweets from ${addedObjectName}! Remember you can stop me at any time with \`${
+        config.prefix
+      }stop ${
+        data.length === 1 ? data[0].screen_name : "<screen_name>"
+      }\`.\nIt can take a few minutes to start getting tweets from them, but once it starts, it'll be in real time!`;
+      if (screenNames.length !== data.length) {
+        channelMsg += `\n\nOh, also it appears I was unable to find some of the users you specified, make sure you used their screen name!`;
+      }
+      post.message(channel, channelMsg);
+      log(`Added ${addedObjectName}`, channel);
       // Re-register the stream if we didn't know the user before
-      let redoStream = !users.collection.hasOwnProperty(userId);
-      gets.add(channel, userId, name, options);
       if (redoStream) {
         twitter.createStream();
       }
       users.save();
     })
     .catch(function(error) {
-      post.message(
-        channel,
-        `I can't find a user by the name of ${screenName}, you most likely tried using their display name and not their twitter handle.`
-      );
+      if (screenNames.length === 1) {
+        post.message(
+          channel,
+          `I can't find a user by the name of ${
+            screenNames[0]
+          }, you most likely tried using their display name and not their twitter handle.`
+        );
+      } else {
+        log(
+          channel,
+          `I can't find users by the names of "${screenNames.toString()}", you most likely tried using their display names and not their twitter handles.`
+        );
+      }
       return;
     });
 };
