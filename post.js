@@ -80,7 +80,7 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
     // Discord MissingPermissions error
     // Try to find the 1st channel we can post in
     log(
-      `Tried to post ${type} but lacked permissions: ${errCode} ${err.name}`,
+      `Tried to post ${type} but lacked permissions: ${errCode} ${error.name}`,
       channel
     );
     const permissionsMsg = `Hello!\nI just tried to post a message in #${
