@@ -28,6 +28,24 @@ const tweet = (args, channel) => {
   twitter
     .userTimeline({ screen_name: screenName })
     .then(function(tweets, error) {
+      if (tweets.error) {
+        if (tweets.error === "Not authorized.") {
+          post.message(
+            channel,
+            `I tried getting a tweet from ${screenName} but Twitter tells me that's unauthorized. This is usually caused by a blocked account.`
+          );
+        } else {
+          post.message(
+            channel,
+            `${screenName} does exist but something seems wrong with their profile, I can't get their timeline...\nTwitter had this to day: ${
+              tweets.error
+            }`
+          );
+          log("Unknown error on twitter timeline", channel);
+          log(tweets.error, channel);
+        }
+        return;
+      }
       if (tweets.length < 1) {
         post.message(
           channel,
@@ -39,7 +57,7 @@ const tweet = (args, channel) => {
       if (!tweet) {
         post.message(
           channel,
-          "This user doesn't seem to have any original valid tweets...\nYou might want to try again, maybe Twitter messed up?"
+          "This user doesn't seem to have any valid tweets...\nYou might want to try again, maybe Twitter messed up?"
         );
         log("Invalid tweets from timeline", channel);
         log(tweets, channel);
