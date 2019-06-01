@@ -1,6 +1,5 @@
 // Direct mappings for discord.js methods
 const Discord = require("discord.js");
-const log = require("./log");
 
 // Passwords file
 const pw = require("./pw.json");
