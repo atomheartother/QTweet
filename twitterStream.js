@@ -24,15 +24,20 @@ class Stream {
     if (this.newUserIds === true) {
       this.newUserIds = false;
       if (!!this.stream) {
+        log(
+          `New users found and has stream, destroying stream and creating it in ${destroyDelay}ms`
+        );
         this.stream.destroy();
         setTimeout(() => {
           this.doCreate();
         }, destroyDelay);
       } else {
+        log("New users found and no stream, launching new stream");
         this.doCreate();
       }
       return;
     }
+    log(`No new users found, waiting ${shortDelay}ms`);
     this.timeout = setTimeout(() => {
       this.timeout = null;
       this.checkNewUsers();
@@ -61,6 +66,7 @@ class Stream {
     if (originalUserIdCount === 0) {
       this.doCreate();
     } else {
+      log("Queued up new users");
       this.newUserIds = true;
     }
   }
