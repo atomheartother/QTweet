@@ -132,12 +132,10 @@ const start = (args, channel) => {
               .map(({ screen_name }) => screen_name)
               .toString()}`;
       data.forEach(({ id_str: userId, screen_name: name }) => {
-        gets.add(channel, userId, name, options);
-        log(`Added get for ${userId}`);
         if (!redoStream && !users.collection.hasOwnProperty(userId)) {
-          log(`Should redo stream`);
           redoStream = true;
         }
+        gets.add(channel, userId, name, options);
       });
       let channelMsg = `I'm starting to get tweets from ${addedObjectName}! Remember you can stop me at any time with \`${
         config.prefix
