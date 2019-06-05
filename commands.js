@@ -133,8 +133,11 @@ const start = (args, channel) => {
               .toString()}`;
       data.forEach(({ id_str: userId, screen_name: name }) => {
         gets.add(channel, userId, name, options);
-        if (!redoStream && !users.collection.hasOwnProperty(userId))
+        log(`Added get for ${userId}`);
+        if (!redoStream && !users.collection.hasOwnProperty(userId)) {
+          log(`Should redo stream`);
           redoStream = true;
+        }
       });
       let channelMsg = `I'm starting to get tweets from ${addedObjectName}! Remember you can stop me at any time with \`${
         config.prefix
@@ -148,6 +151,7 @@ const start = (args, channel) => {
       log(`Added ${addedObjectName}`, channel);
       // Re-register the stream if we didn't know the user before
       if (redoStream) {
+        log(`Redoing stream...`);
         twitter.createStream();
       }
       users.save();

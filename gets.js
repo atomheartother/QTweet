@@ -12,7 +12,7 @@ gets.add = (channel, userId, name, options) => {
     // Create the user object
     users.collection[userId] = { channels: [] };
   }
-  if (name != null && !users.collection[userId].hasOwnProperty("name")) {
+  if (name !== null && !users.collection[userId].name !== name) {
     users.collection[userId].name = name;
   }
 

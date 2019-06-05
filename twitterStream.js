@@ -37,7 +37,6 @@ class Stream {
       }
       return;
     }
-    log(`No new users found, waiting ${shortDelay}ms`);
     this.timeout = setTimeout(() => {
       this.timeout = null;
       this.checkNewUsers();
