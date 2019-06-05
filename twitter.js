@@ -197,7 +197,6 @@ twitter.createStream = async () => {
 
     userIds.push(id);
   }
-  log(`twitter.createStream: ${userIds.length} users`);
   // If there are none, we can just leave stream at null
   if (userIds.length < 1) return;
   stream.create(userIds);

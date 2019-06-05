@@ -24,15 +24,11 @@ class Stream {
     if (this.newUserIds === true) {
       this.newUserIds = false;
       if (!!this.stream) {
-        log(
-          `New users found and has stream, destroying stream and creating it in ${destroyDelay}ms`
-        );
         this.stream.destroy();
         setTimeout(() => {
           this.doCreate();
         }, destroyDelay);
       } else {
-        log("New users found and no stream, launching new stream");
         this.doCreate();
       }
       return;
