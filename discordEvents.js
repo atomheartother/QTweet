@@ -89,7 +89,7 @@ handleMessage = message => {
       .setDescription(
         `Hello, I am ${
           config.botName
-        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0)!\nHere's a list of what I can do:`
+        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0) !\nHere's a list of what I can do:`
       )
       .setFooter(
         "*: Anyone can perform these commands. Issues, suggestions? My creator is Tom'#4242"
@@ -125,7 +125,7 @@ handleGuildCreate = guild => {
         config.prefix
       }help. If I'm useful to your server please remember to upvote me at ${
       config.profileURL
-    }!\nMy creator is \`Tom'#4242\`, please don't hesitate to friend him & message him about any issues or feature ideas.\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info here: https://github.com/atomheartother/QTweet`
+    } !\nMy creator is \`Tom'#4242\`, please don't hesitate to friend him & message him about any issues or feature ideas.\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info here: https://github.com/atomheartother/QTweet`
   );
 };
 
