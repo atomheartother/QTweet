@@ -58,7 +58,7 @@ class Stream {
   create(userIds) {
     const originalUserIdCount = this.userIds.length;
     this.userIds = userIds;
-    if (originalUserIdCount === 0) {
+    if (originalUserIdCount === 0 && !this.stream) {
       this.doCreate();
     } else {
       this.newUserIds = true;
