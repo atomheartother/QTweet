@@ -61,6 +61,7 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
   const errCode = error.statusCode || error.code || error.status;
   if (errCode === 404 || errCode === 10003) {
     // The channel was deleted or we don't have access to it, auto-delete it
+    log(`${errCode}: Auto-deleting ${count} gets, channel removed`, channel);
     const count = gets.rmChannel(channel.id);
     post.dm(
       getChannelOwner(channel),
@@ -68,7 +69,6 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
         channel.name
       } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
     );
-    log(`${errCode}: Auto-deleted ${count} gets, channel removed`, channel);
     return;
   } else if (
     errCode === 403 ||

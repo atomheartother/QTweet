@@ -11,9 +11,6 @@ dbl.registerClient = () => {
     return;
   }
   dblClient = new DBL(pw.DBLToken, discord.getClient())
-    .on("posted", () => {
-      log("Sent our client stats to DBL");
-    })
     .on("error", err => {
       log("Error registering DBL client:");
       log(err);
