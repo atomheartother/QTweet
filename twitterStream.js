@@ -67,6 +67,7 @@ class Stream {
 
   // We've been disconnected, discard all info we have
   disconnected() {
+    this.stream.destroy();
     this.stream = null;
     this.userIds = [];
     this.newUserIds = false;
