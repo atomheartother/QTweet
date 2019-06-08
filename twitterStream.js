@@ -61,7 +61,6 @@ class Stream {
     if (originalUserIdCount === 0) {
       this.doCreate();
     } else {
-      log("Queued up new users");
       this.newUserIds = true;
     }
   }
