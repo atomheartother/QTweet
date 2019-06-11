@@ -4,7 +4,7 @@ let users = (module.exports = {});
 var fs = require("fs");
 
 // Config file
-var config = require("./config.json");
+var config = require("../config.json");
 
 const post = require("./post");
 const gets = require("./gets");
@@ -154,7 +154,7 @@ users.list = channel => {
       channel,
       `You aren't fetching tweets from anywhere!\nUse \`${
         config.prefix
-      }start <twitter handle>\`to begin!`
+      }start <twitter handle>\` to begin!`
     );
     return;
   }

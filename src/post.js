@@ -1,5 +1,5 @@
 var post = (module.exports = {});
-const config = require("./config.json");
+const config = require("../config.json");
 
 const { tall } = require("tall");
 let users = require("./users");

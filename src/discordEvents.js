@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 var fortune = require("fortune-teller");
 
 // Config file
-const config = require("./config.json");
+const config = require("../config.json");
 // Usage strings
 const usage = require("./usage.js");
 // logging

@@ -1,7 +1,7 @@
 let twitter = (module.exports = {});
 
 // Passwords file
-const pw = require("./pw.json");
+const pw = require("../pw.json");
 const post = require("./post");
 const log = require("./log");
 const users = require("./users");

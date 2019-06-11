@@ -1,4 +1,4 @@
-var config = require("./config.json");
+var config = require("../config.json");
 
 module.exports = {
   tweet: `Get the latest tweet from the given user and post it.\nUsage: \`${

@@ -1,4 +1,4 @@
-const config = require("./config.json");
+const config = require("../config.json");
 const usage = require("./usage.js");
 const checks = require("./checks");
 const gets = require("./gets");
