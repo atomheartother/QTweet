@@ -1,0 +1,6 @@
+node_modules/
+img/
+LICENSE.md
+pw.json.example
+.gitignore
+README.md

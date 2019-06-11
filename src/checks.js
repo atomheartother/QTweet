@@ -1,4 +1,4 @@
-const config = require("./config.json");
+const config = require("../config.json");
 
 let checks = (module.exports = {});
 const log = require("./log");

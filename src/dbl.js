@@ -1,7 +1,7 @@
 const DBL = require("dblapi.js");
 let dblClient = null;
 const discord = require("./discord");
-const pw = require("./pw.json");
+const pw = require("../pw.json");
 const log = require("./log");
 
 let dbl = (module.exports = {});

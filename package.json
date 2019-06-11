@@ -1,13 +1,13 @@
 {
-  "name": "aikyan",
+  "name": "qtweet",
   "version": "1.0.0",
   "description": "A bot who posts images from a twitter profile",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "node index.js"
+    "start": "node src/index.js"
   },
   "author": "Thomas N",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "dblapi.js": "^2.3.0",
     "discord.js": "latest",

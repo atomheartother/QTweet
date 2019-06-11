@@ -3,7 +3,7 @@ let gets = (module.exports = {});
 let users = require("./users");
 let twitter = require("./twitter");
 const post = require("./post");
-var config = require("./config.json");
+var config = require("../config.json");
 
 // Add a get to the user list
 // options: {text: boolean}
