@@ -61,8 +61,8 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
   const errCode = error.statusCode || error.code || error.status;
   if (errCode === 404 || errCode === 10003) {
     // The channel was deleted or we don't have access to it, auto-delete it
-    log(`${errCode}: Auto-deleting ${count} gets, channel removed`, channel);
     const count = gets.rmChannel(channel.id);
+    log(`${errCode}: Auto-deleted ${count} gets, channel removed`, channel);
     post.dm(
       getChannelOwner(channel),
       `Hi! I tried to #${
