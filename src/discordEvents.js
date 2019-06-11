@@ -148,7 +148,9 @@ handleReady = () => {
   });
 };
 
-handleRateLimit = rateLimit => {};
+handleRateLimit = ({limit, timeDifference, path, method}) => {
+  log(`Discord is rate-limiting us at ${method} ${path}. ${limit} requests max`);
+};
 
 module.exports = {
   registerCallbacks: () => {
