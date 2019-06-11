@@ -22,7 +22,9 @@ If you wanna add QTweet to your server, you can just click [this link](https://d
 
 ## Can I modify and run your bot?
 
-Yes, unlike a lot of Discord bots, QTweet is open source. It'd be nice if you credited me. It runs like any old node package. You just need to fill in the `pw.json` file with your keys, then run `node index.js` and you're good to go. The code isn't commented enough to my liking but it should be understandable enough, if you have a question feel free to file an issue.
+Yes, unlike a lot of Discord bots, QTweet is open source. It'd be nice if you credited me. It runs like any old node package. You just need to fill in the `pw.json` file with your keys, then run `yarn start` (or `npm run start` if you're lame) and you're good to go. The code isn't commented enough to my liking but it should be understandable enough, if you have a question feel free to file an issue.
+
+You can also deploy it to docker, that's more kinda up to you, you'll have to make a volume mounted on the `data/` folder. DM me or file an issue for more info.
 
 Some stuff is already variable, you can change the configuration variables in `config.json` like the command prefix and the `get` file location.
 
