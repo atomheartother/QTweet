@@ -1,0 +1,12 @@
+version: "3.7"
+
+services:
+  qtweet:
+    build: .
+    image: navenn_t/qtweet
+    volumes:
+      - qtweetData:/usr/src/app/data/
+
+volumes:
+  qtweetData:
+    external: true
