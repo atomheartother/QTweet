@@ -125,17 +125,17 @@ users.load = callback => {
           for (let get of getsList) {
             // Iterate over gets in channels
             let channel = discord.getChannel(get.id);
-            let options = users.defaultOptions();
-            if (get.hasOwnProperty("text") && !get.text) {
-              options.text = false;
-            }
             if (channel === undefined) {
-              console.error(
-                "W: Tried to load undefined channel: " +
+              log(
+                "Tried to load undefined channel: " +
                   get.id +
                   ", we most likely got kicked! :c"
               );
               continue;
+            }
+            let options = users.defaultOptions();
+            if (get.hasOwnProperty("text") && !get.text) {
+              options.text = false;
             }
             gets.add(channel, userId, name, options);
           }
