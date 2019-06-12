@@ -140,6 +140,11 @@ handleReady = () => {
   if (discord.user().username !== config.botName) {
     discord.user().setUsername(config.botName);
   }
+  // if we already have users loaded, we're recovering from an error
+  // We don't need to load from file
+  if (Object.keys(users.collection).length > 0) {
+    return;
+  }
   users.load(() => {
     // All users have been registered, we can request the stream from Twitter
     twitter.createStream();
