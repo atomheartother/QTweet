@@ -11,8 +11,7 @@ dbl.registerClient = () => {
     return;
   }
   dblClient = new DBL(pw.DBLToken, discord.getClient())
-    .on("error", err => {
-      log("Error registering DBL client:");
-      log(err);
+    .on("error", ({status}) => {
+      log(`Error with DBL client: ${status}`);
     });
 };
