@@ -6,6 +6,8 @@ services:
     image: navenn_t/qtweet
     volumes:
       - qtweetData:/usr/src/app/data/
+    environment:
+      - TZ=Europe/Paris
 
 volumes:
   qtweetData:
