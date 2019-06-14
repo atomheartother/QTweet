@@ -119,12 +119,12 @@ handleGuildCreate = guild => {
     guild.owner,
     `Hello, I'm ${
       config.botName
-    }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a list of my commands with 
-      ${
+    }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a short list of my commands with 
+      \`${
         config.prefix
-      }help. If I'm useful to your server please remember to upvote me at ${
+      }help\`. If I'm useful to your server please remember to upvote me at ${
       config.profileURL
-    } !\nMy creator is \`Tom'#4242\`, please don't hesitate to friend him & message him about any issues or feature ideas.\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info here: https://github.com/atomheartother/QTweet`
+    } !\nMy creator is \`Tom'#4242\`, please don't hesitate to friend him & message him about any issues or feature ideas.\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info and an exhaustive documentation can be found [here](${config.docsURL})`
   );
 };
 
