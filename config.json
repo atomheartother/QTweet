@@ -4,5 +4,6 @@
   "getFile": "data/gets.json",
   "botName": "QTweet",
   "profileURL": "https://discordbots.org/bot/433615162394804224",
-  "modRole": "qtweet-mod"
+  "modRole": "qtweet-mod",
+  "inviteLink": "https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=18496"
 }

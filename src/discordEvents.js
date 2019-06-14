@@ -87,9 +87,9 @@ handleMessage = message => {
       .setTitle(config.botName)
       .setURL(config.profileURL)
       .setDescription(
-        `Hello, I am ${
+        `Hello, I'm ${
           config.botName
-        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=0) !\nHere's a list of what I can do:`
+        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](${config.inviteLink}) !\nHere's a list of what I can do:`
       )
       .setFooter(
         "*: Anyone can perform these commands. Issues, suggestions? My creator is Tom'#4242"
