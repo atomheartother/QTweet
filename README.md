@@ -46,7 +46,7 @@ You can allow anyone to be a QTweet mod by giving them the `qtweet-mod` role.
 #### start
 Usage: `!!start <screen_name> [screen_name2 screen_name3 ...] [--notext]`
 
-This command will cause QTweet to start posting tweets from this user (or these users) automatically into this discord channel, in real-time. Doesn't work in DMs (for now).
+This command will cause QTweet to start posting tweets from this user (or these users) automatically into this discord channel, in real-time. Doesn't work in DMs (for now). It will take her a bit (between 5 and 20min) to start posting them because of twitter rate limits, but once she gets started they will be real-time.
 
 Notes:
 - Extra screen names are separated by spaces.
@@ -75,7 +75,7 @@ Examples:
 - `!!stopchannel`: Will stop getting posting any tweets in this channel.
 - `!!stopchannel 464858170259406850`: Will stop posting any tweets in the channel with ID #464858170259406850. This command must be ran **in the server this channel is in**, it cannot be run in DMs!
 
-### Bot owners
+### Bot Owner
 This is only for me at the moment, it could be for you if you run **your own instance of QTweet**. QTweet knows who her owner is from the owner ID in `config.json`.
 
 #### adminlist
