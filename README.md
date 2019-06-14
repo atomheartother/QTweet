@@ -25,8 +25,7 @@ Everyone who can send messages in a channel QTweet is in can use these commands.
 #### tweet
 Usage: `!!tweet <screen_name>`
 Gets the latest tweet from a twitter user and posts it in this channel. Works in DMs.
-Example:
-- `!!tweet HamsterFragment` will post the latest tweet from https://twitter.com/HamsterFragment.
+Example: `!!tweet HamsterFragment` will post the latest tweet from https://twitter.com/HamsterFragment.
 
 #### list
 Usage: `!!list`
@@ -53,8 +52,10 @@ Notes:
 - `--notext` indicates that you don't want plain text posts, just posts with media in them.
 
 Examples:
-- `!!start HamsterFragment --notext`: Will start posting tweets from @HamsterFragment, but not their text posts.
-- `!!start HamsterFragment billwurtz`: Will start posting tweets from @HamsterFragment and @billwurtz.
+
+`!!start HamsterFragment --notext`: Will start posting tweets from @HamsterFragment, but not their text posts.
+
+`!!start HamsterFragment billwurtz`: Will start posting tweets from @HamsterFragment and @billwurtz.
 
 #### stop
 Usage: `!!stop <screen_name>`
@@ -72,8 +73,10 @@ Acts like `!!stop` but on the whole channel. This is a command I made for two ca
 - If you stopped giving QTweet the right to post in a channel but she keeps trying to post to it and she keeps asking you for permission.
 
 Examples:
-- `!!stopchannel`: Will stop getting posting any tweets in this channel.
-- `!!stopchannel 464858170259406850`: Will stop posting any tweets in the channel with ID #464858170259406850. This command must be ran **in the server this channel is in**, it cannot be run in DMs!
+
+`!!stopchannel`: Will stop getting posting any tweets in this channel.
+
+`!!stopchannel 464858170259406850`: Will stop posting any tweets in the channel with ID #464858170259406850. This command must be ran **in the server this channel is in**, it cannot be run in DMs!
 
 ### Bot Owner
 This is only for me at the moment, it could be for you if you run **your own instance of QTweet**. QTweet knows who her owner is from the owner ID in `config.json`.
