@@ -22,18 +22,18 @@ Here's a detailed breakdown of QTweet's commands. I break them down in three per
 ### Everyone
 Everyone who can send messages in a channel QTweet is in can use these commands. So basically, if you don't want users to be able to do these, don't let them send messages in that channel.
 
-#### !!tweet
+#### tweet
 Usage: `!!tweet <screen_name>`
 Gets the latest tweet from a twitter user and posts it in this channel. Works in DMs.
 Example:
 - `!!tweet HamsterFragment` will post the latest tweet from https://twitter.com/HamsterFragment.
 
-#### !!list
+#### list
 Usage: `!!list`
 
 Lists all the users whose tweets you're getting automatically **in the current channel**.
 
-#### !!help
+#### help
 Usage: `!!help`
 
 Posts a simple help message with some basic command usage.
@@ -43,7 +43,7 @@ I consider a mod anyone who has elevated powers over QTweet in a channel. By def
 
 You can allow anyone to be a QTweet mod by giving them the `qtweet-mod` role.
 
-#### !!start
+#### start
 Usage: `!!start <screen_name> [screen_name2 screen_name3 ...] [--notext]`
 
 This command will cause QTweet to start posting tweets from this user (or these users) automatically into this discord channel, in real-time. Doesn't work in DMs (for now).
@@ -56,7 +56,7 @@ Examples:
 - `!!start HamsterFragment --notext`: Will start posting tweets from @HamsterFragment, but not their text posts.
 - `!!start HamsterFragment billwurtz`: Will start posting tweets from @HamsterFragment and @billwurtz.
 
-#### !!stop
+#### stop
 Usage: `!!stop <screen_name>`
 
 Causes QTweet to stop sending you tweets from this particular user.
@@ -64,7 +64,7 @@ Causes QTweet to stop sending you tweets from this particular user.
 Example:
 - `!!stop HamsterFragment`: Will stop posting tweets from @HamsterFragment
 
-#### !!stopchannel
+#### stopchannel
 Usage: `!!stopchannel [channelID]`
 
 Acts like `!!stop` but on the whole channel. This is a command I made for two cases:
@@ -78,19 +78,19 @@ Examples:
 ### Bot owners
 This is only for me at the moment, it could be for you if you run **your own instance of QTweet**. QTweet knows who her owner is from the owner ID in `config.json`.
 
-#### !!adminlist
+#### adminlist
 Usage: `!!adminlist [guildId]`
 
 **Without parameter**, `!!adminlist` will list all of the servers QTweet is in along with their guild ID and the server owner's name. This is basically meant to make me able to contact server owners in case of big problems.
 
 **With parameter**: `!!adminlist` will list all the users this server is getting, basically like `!!list` but server-wide. Basically only useful for debugging stuff remotely.
 
-#### !!leaveguild
+#### leaveguild
 Usage: `!!leaveguild <guildId>`
 
 Force QTweet to leave a guild. Useful if the owner really messed up or something.
 
-#### !!announce
+#### announce
 Usage: `!!announce <message>`
 
 Posts an announcement to **every guild QTweet is currently posting in**. If a guild has multiple channel she's posting in, she will pick one and stick to it, she won't post the message across all channels. I use this to warn users in case of outages and that kind of stuff. Do not use this lightly.
