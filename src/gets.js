@@ -37,11 +37,11 @@ gets.rm = (channel, screenName) => {
       if (!users.collection.hasOwnProperty(userId)) {
         post.message(
           channel,
-          "You're not currently `get`ting this user. Use `" +
+          "**You're not  subscribed to this user.**\nUse `" +
             config.prefix +
             "start " +
             screenName +
-            "` to do it!"
+            "` to get started!"
         );
         return;
       }
@@ -56,11 +56,11 @@ gets.rm = (channel, screenName) => {
       if (idx == -1) {
         post.message(
           channel,
-          "You're not currently `get`ting this user. Use `" +
+          "**You're not subscribed to this user.**\nUse `" +
             config.prefix +
             "start " +
             screenName +
-            "` to do it!"
+            "` to get started!"
         );
         return;
       }
@@ -72,7 +72,7 @@ gets.rm = (channel, screenName) => {
         // ...and re-register the stream, which will now delete the user
         twitter.createStream();
       }
-      post.message(channel, "It's gone!");
+      post.message(channel, `**I've unsubscribed you from ${screenName}!**\nYou should now stop getting any messages from them.`);
       users.save();
     })
     .catch(function(err) {
