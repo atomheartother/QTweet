@@ -72,7 +72,7 @@ gets.rm = (channel, screenName) => {
         // ...and re-register the stream, which will now delete the user
         twitter.createStream();
       }
-      post.message(channel, `**I've unsubscribed you from ${screenName}!**\nYou should now stop getting any messages from them.`);
+      post.message(channel, `**I've unsubscribed you from @${screenName}!**\nYou should now stop getting any messages from them.`);
       users.save();
     })
     .catch(function(err) {
