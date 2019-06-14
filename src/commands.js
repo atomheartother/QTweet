@@ -32,12 +32,12 @@ const tweet = (args, channel) => {
         if (tweets.error === "Not authorized.") {
           post.message(
             channel,
-            `I tried getting a tweet from ${screenName} but Twitter tells me that's unauthorized. This is usually caused by a blocked account.`
+            `**I tried getting a tweet from ${screenName} but Twitter tells me that's unauthorized.**\nThis is usually caused by a blocked account.`
           );
         } else {
           post.message(
             channel,
-            `${screenName} does exist but something seems wrong with their profile, I can't get their timeline...\nTwitter had this to day: ${
+            `**${screenName} does exist but something seems wrong with their profile**\nI can't get their timeline... Twitter had this to say:\n${
               tweets.error
             }`
           );
@@ -57,7 +57,7 @@ const tweet = (args, channel) => {
       if (!tweet) {
         post.message(
           channel,
-          "This user doesn't seem to have any valid tweets...\nYou might want to try again, maybe Twitter messed up?"
+          "**This user doesn't seem to have any valid tweets**\nYou might want to try again, maybe Twitter messed up?"
         );
         log("Invalid tweets from timeline", channel);
         log(tweets, channel);
@@ -79,7 +79,7 @@ const tweet = (args, channel) => {
         log(response, channel);
         post.message(
           channel,
-          `Hm, something went wrong getting tweets from ${screenName}, I'm looking into it, sorry for the trouble!`
+          `**Something went wrong getting tweets from ${screenName}**\nI'm looking into it, sorry for the trouble!`
         );
         return;
       }
@@ -88,12 +88,12 @@ const tweet = (args, channel) => {
         // Not found
         post.message(
           channel,
-          `Twitter tells me @${screenName} doesn't exist! Make sure you enter the screen name and not the display name.`
+          `**Twitter tells me @${screenName} doesn't exist!**\nMake sure you enter the screen name and not the display name.`
         );
       else {
         post.message(
           channel,
-          `There was a problem getting @${screenName}'s latest tweet, it's possible Twitter is temporarily down.\nTwitter had this to say: \`${message}\``
+          `**There was a problem getting @${screenName}'s latest tweet**\nIt's possible Twitter is temporarily down.\nTwitter had this to say: \`${message}\``
         );
         log(
           `Couldn't get latest tweet from ${screenName}, user input was ${
@@ -128,7 +128,7 @@ const start = (args, channel) => {
       const addedObjectName =
         data.length === 1
           ? data[0].screen_name
-          : `${data.length} accounts: ${data
+          : `${data.length} users: ${data
               .map(({ screen_name }) => screen_name)
               .toString()}`;
       data.forEach(({ id_str: userId, screen_name: name }) => {
@@ -137,13 +137,13 @@ const start = (args, channel) => {
         }
         gets.add(channel, userId, name, options);
       });
-      let channelMsg = `I'm starting to get tweets from ${addedObjectName}! Remember you can stop me at any time with \`${
+      let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
         config.prefix
       }stop ${
         data.length === 1 ? data[0].screen_name : "<screen_name>"
-      }\`.\nIt can take a few minutes to start getting tweets from them, but once it starts, it'll be in real time!`;
+      }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
       if (screenNames.length !== data.length) {
-        channelMsg += `\n\nOh, also it appears I was unable to find some of the users you specified, make sure you used their screen name!`;
+        channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
       }
       post.message(channel, channelMsg);
       log(`Added ${addedObjectName}`, channel);
@@ -158,14 +158,14 @@ const start = (args, channel) => {
       if (screenNames.length === 1) {
         post.message(
           channel,
-          `I can't find a user by the name of ${
+          `**I can't find a user by the name of ${
             screenNames[0]
-          }, you most likely tried using their display name and not their twitter handle.`
+          }**\nYou most likely tried using their display name and not their twitter handle.`
         );
       } else {
         log(
           channel,
-          `I can't find users by the names of "${screenNames.toString()}", you most likely tried using their display names and not their twitter handles.`
+          `**I can't find any of those users:** ${screenNames.toString()}\nYou most likely tried using their display names and not their twitter handles.`
         );
       }
       return;
@@ -207,21 +207,23 @@ const stop = (args, channel) => {
 };
 
 const stopchannel = (args, channel) => {
-  let targetChannel = null;
+  targetChannel = channel.id;
+  channelName = channel.name;
   if (args.length > 0) {
     targetChannel = args[0];
-    if (!channel.guild.channels.find(c => c.id === targetChannel)) {
+    channelObj = channel.guild.channels.find(c => c.id === targetChannel);
+    if (!channelObj) {
       post.message(
         channel,
-        `I couldn't find channel ${targetChannel} in your server. If you deleted it, this is normal, don't panic, I'll try to leave it anyway :)`
+        `**I couldn't find channel ${targetChannel} in your server.**\nIf you deleted it, I'll leave it by myself whenever I try to post there, don't worry!`
       );
+      return;
     }
-  } else {
-    targetChannel = channel.id;
+    channelName = channelObj.name;
   }
   const count = gets.rmChannel(targetChannel);
   log(`Removed all gets from channel ID:${targetChannel}`, channel);
-  post.message(channel, `I have stopped fetching tweets from ${count} users`);
+  post.message(channel, `**I've unsubscribed you from ${count} users**\nYou should now stop getting any tweets in #${channelName}.`);
 };
 
 const list = (args, channel) => {

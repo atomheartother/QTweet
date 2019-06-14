@@ -152,7 +152,7 @@ users.list = channel => {
   if (gets.length < 1) {
     post.message(
       channel,
-      `You aren't fetching tweets from anywhere!\nUse \`${
+      `**You aren't subscribed to any twitter users**!\nUse \`${
         config.prefix
       }start <twitter handle>\` to begin!`
     );
@@ -161,11 +161,8 @@ users.list = channel => {
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`Tweet sources list`)
+    .setTitle(`This is all ${gets.length} accounts you're getting tweets from:`)
     .setURL(config.profileURL)
-    .setDescription(
-      `This is all ${gets.length} accounts you're getting tweets from`
-    );
   let counter = 0;
   gets.forEach(({ userId, text }) => {
     const twitterUser = users.collection[userId];
@@ -199,11 +196,8 @@ users.adminListGuild = (channel, guildId) => {
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`Guild gets list`)
+    .setTitle(`This is a complete list of all ${gets.length} gets for this guild!`)
     .setURL(config.profileURL)
-    .setDescription(
-      `This is a complete list of all ${gets.length} gets for this guild!`
-    );
   let counter = 0;
   gets.forEach(({ userId, channel: c, text }) => {
     const user = users.collection[userId];
@@ -231,11 +225,8 @@ users.adminList = channel => {
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`Global guild list`)
+    .setTitle(`This is a complete list of all ${guilds.length} guilds I'm in!`)
     .setURL(config.profileURL)
-    .setDescription(
-      `This is a complete list of all ${guilds.length} guilds I'm in!`
-    );
   // We now have an object for every guild we're in
   let counter = 0;
   guilds.forEach(g => {
