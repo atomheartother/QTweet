@@ -127,10 +127,16 @@ const start = (args, channel) => {
       let redoStream = false;
       const addedObjectName =
         data.length === 1
-          ? data[0].screen_name
+          ? `${data[0].screen_name}`
           : `${data.length} users: ${data
-              .map(({ screen_name }) => screen_name)
-              .toString()}`;
+              .reduce((acc, { screen_name }, idx) => {
+                if (idx === data.length - 1) {
+                  return acc.concat(` and ${screen_name}`)
+                } else if (idx === 0) {
+                  return screen_name;
+                }
+                return `, ${screen_name}`
+              }, "")}`;
       data.forEach(({ id_str: userId, screen_name: name }) => {
         if (!redoStream && !users.collection.hasOwnProperty(userId)) {
           redoStream = true;
@@ -163,7 +169,7 @@ const start = (args, channel) => {
           }**\nYou most likely tried using their display name and not their twitter handle.`
         );
       } else {
-        log(
+        post.message(
           channel,
           `**I can't find any of those users:** ${screenNames.toString()}\nYou most likely tried using their display names and not their twitter handles.`
         );
