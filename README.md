@@ -16,6 +16,77 @@ You never have to use Twitter again, just get the good stuff posted to your Disc
 - A "like" button, so that you know which of your Discord buddies liked that post.
 - By default, only the _server owner_ can start automatically fetching tweets. Want to grant that power to someone? Give them the `qtweet-mod` role!
 
+## Usage, Permissions
+Here's a detailed breakdown of QTweet's commands. I break them down in three permission categories. I use the standard notation for command parameters: `<param>` means that it's an obligatory parameter, `[param]` means it's optional. If you don't get it, don't worry there's examples c:
+
+### Everyone
+Everyone who can send messages in a channel QTweet is in can use these commands. So basically, if you don't want users to be able to do these, don't let them send messages in that channel.
+
+#### !!tweet
+Usage: `!!tweet <screen_name>`
+Gets the latest tweet from a twitter user and posts it in this channel. Works in DMs.
+Example:
+- `!!tweet HamsterFragment` will post the latest tweet from https://twitter.com/HamsterFragment.
+
+#### !!list
+Usage: `!!list`
+Lists all the users whose tweets you're getting automatically **in the current channel**.
+
+#### !!help
+Usage: `!!help`
+Posts a simple help message with some basic command usage.
+
+### Mods
+I consider a "mod" anyone who has elevated powers over QTweet in a channel. By default, that's the server owner and anyone with **moderator powers** in the channel. **Server admins are also considered mods**.
+
+#### !!start
+Usage: `!!start <screen_name> [screen_name2 screen_name3 ...] [--notext]`
+This command will cause QTweet to start posting tweets from this user (or these users) automatically into this discord channel, in real-time. Doesn't work in DMs (for now).
+Notes:
+- Extra screen names are separated by spaces.
+- `--notext` indicates that you don't want plain text posts, just posts with media in them.
+
+Examples:
+- `!!start HamsterFragment --notext`: Will start posting tweets from @HamsterFragment, but not their text posts.
+- `!!start HamsterFragment billwurtz`: Will start posting tweets from @HamsterFragment and @billwurtz.
+
+#### !!stop
+Usage: `!!stop <screen_name>`
+Causes QTweet to stop sending you tweets from this particular user.
+Example:
+- `!!stop HamsterFragment`: Will stop posting tweets from @HamsterFragment
+
+#### !!stopchannel
+Usage: `!!stopchannel [channelID]`
+Acts like `!!stop` but on the whole channel. This is a command I made for two cases:
+- If you want to quickly remove all of QTweet's gets from a channel
+- If you stopped giving QTweet the right to post in a channel but she keeps trying to post to it and she keeps asking you for permission.
+Examples:
+- `!!stopchannel`: Will stop getting posting any tweets in this channel.
+- `!!stopchannel 464858170259406850`: Will stop posting any tweets in the channel with ID #464858170259406850. This command must be ran **in the server this channel is in**, it cannot be run in DMs!
+
+### Bot owners
+This is only for me at the moment, it could be for you if you run **your own instance of QTweet**. QTweet knows who her owner is from the owner ID in `config.json`.
+
+#### !!adminlist
+Usage: `!!adminlist [guildId]`
+Without parameter, `!!adminlist` will list all of the servers QTweet is in along with their guild ID and the server owner's name. This is basically meant to make me able to contact server owners in case of big problems.
+With parameter: `!!adminlist` will list all the users this server is getting, basically like `!!list` but server-wide. Basically only useful for debugging stuff remotely.
+
+#### !!leaveguild
+Usage: `!!leaveguild <guildId>`
+Force QTweet to leave a guild. Useful if the owner really messed up or something.
+
+#### !!announce
+Usage: `!!announce <message>`
+Posts an announcement to every guild QTweet is currently posting in. If a guild has multiple channel she's posting in, she will pick one and stick to it, she won't post the message across all channels. I use this to warn users in case of outages and that kind of stuff. Do not use this lightly.
+
+### Notes
+QTweet understands 3 formats for twitter screen names, therefore these 3 commands are equivalent:
+- `!!start HamsterFragment`
+- `!!start @HamsterFragment`
+- `!!start https://twitter.com/HamsterFragment`
+
 ## Can I add QTweet to my server?
 
 If you wanna add QTweet to your server, you can just click [this link](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=18496).
