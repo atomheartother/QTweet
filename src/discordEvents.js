@@ -123,7 +123,7 @@ handleGuildCreate = guild => {
         config.prefix
       }help\`.\n**If I'm useful to your server**, please remember to upvote me at ${
       config.profileURL
-    }\n**For any questions or feature requests**, my Discord server is here: ${config.supportServ}\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info and an exhaustive documentation can be found [here](${config.docsURL})`
+    }\n**For any questions or feature requests**, my Discord server is here: ${config.supportServ}\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info and an exhaustive documentation can be found here: ${config.docsURL}`
   );
 };
 
