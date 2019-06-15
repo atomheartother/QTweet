@@ -22,7 +22,7 @@ checks.isMod = (author, channel, callback) => {
       .fetchMember(author)
       .then(member => {
         // Are they an admin or have global management rights? (means they're a moderator)
-        const modRole = member.permissions
+        let modRole = member.permissions
           .toArray()
           .find(
             perm =>
