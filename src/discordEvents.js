@@ -89,10 +89,10 @@ handleMessage = message => {
       .setDescription(
         `Hello, I'm ${
           config.botName
-        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](${config.inviteLink}) !\nHere's a basic list of commands, you can find my complete documentation [here](${config.docsURL}).`
+        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\n**Want to invite me to your server?** [Click here](${config.inviteLink}) !\n**Need help, found a bug, have a feature idea?** Join our [support server](${config.supportServ}) !\nHere's a basic list of commands, you can find my complete documentation [here](${config.docsURL}).`
       )
       .setFooter(
-        `*: Anyone can perform these commands. [Support server](${config.supportServ})`
+        "*: Anyone can perform these commands."
       )
       .addField(`${config.prefix}tweet*`, usage["tweet"])
       .addField(`${config.prefix}start`, usage["start"])
