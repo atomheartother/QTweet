@@ -92,7 +92,7 @@ handleMessage = message => {
         }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\nWant to invite me to your server? [Click here](${config.inviteLink}) !\nHere's a basic list of commands, you can find my complete documentation [here](${config.docsURL}).`
       )
       .setFooter(
-        "*: Anyone can perform these commands. Issues, suggestions? My creator is Tom'#4242"
+        `*: Anyone can perform these commands. [Support server](${config.supportServ})`
       )
       .addField(`${config.prefix}tweet*`, usage["tweet"])
       .addField(`${config.prefix}start`, usage["start"])
@@ -124,7 +124,7 @@ handleGuildCreate = guild => {
         config.prefix
       }help\`. If I'm useful to your server please remember to upvote me at ${
       config.profileURL
-    } !\nMy creator is \`Tom'#4242\`, please don't hesitate to friend him & message him about any issues or feature ideas.\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info and an exhaustive documentation can be found [here](${config.docsURL})`
+    } !\nYou can find my support server here if you have any questions or feature requests: ${config.supportServ}\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info and an exhaustive documentation can be found [here](${config.docsURL})`
   );
 };
 
