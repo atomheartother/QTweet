@@ -67,7 +67,7 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
       getChannelOwner(channel),
       `Hi! I tried to #${
         channel.name
-      } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner \`Tom'#4242\` about this immediately!`
+      } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner through our support server: ${config.supportServ}`
     );
     return;
   } else if (
@@ -89,7 +89,7 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
       config.prefix
     }stopchannel ${
       channel.id
-    }\`.\nIf you think you've done everything right but keep getting this message, please contact my creator (\`Tom'#4242\`) about this so he can look into it with you. Thanks!`;
+    }\`.\nIf you think you've done everything right but keep getting this message, here's a link to my support server so we can look into it together: ${config.supportServ}`;
     if (channel.type === "text" && errorCount === 0) {
       const postableChannel = discord.canPostIn(channel)
         ? channel
