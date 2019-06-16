@@ -67,8 +67,20 @@ twitter.isValid = tweet =>
 
 // Takes a tweet and formats it for posting.
 twitter.formatTweet = (tweet, callback) => {
-  let { user, full_text, text, entities, extended_entities } = tweet;
+  let {
+    user,
+    full_text,
+    text,
+    entities,
+    extended_entities,
+    extended_tweet
+  } = tweet;
   let txt = full_text || text;
+  if (extended_tweet) {
+    txt = extended_tweet.full_text;
+    extended_entities = extended_tweet.extended_entities;
+    entities = extended_tweet.entities;
+  }
   let embed = {
     author: {
       name: `${user.name} (@${user.screen_name})`,
