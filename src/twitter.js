@@ -68,14 +68,14 @@ twitter.isValid = tweet =>
 // Takes a tweet and formats it for posting.
 twitter.formatTweet = (tweet, callback) => {
   let { user, text, extended_entities } = tweet;
-  // Author doesn't have a screenName field,
-  // we use it for debugging and for error handling
+  console.log(tweet);
   let embed = {
     author: {
-      name: user.name,
-      screenName: user.screen_name,
-      url: "https://twitter.com/" + user.screen_name,
-      icon_url: user.profile_image_url_https
+      name: `${user.name} (${user.screen_name})`,
+      url: "https://twitter.com/" + user.screen_name
+    },
+    thumbnail: {
+      url: user.profile_image_url_https
     }
   };
   // For any additional files
