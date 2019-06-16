@@ -67,7 +67,7 @@ twitter.isValid = tweet =>
 
 // Takes a tweet and formats it for posting.
 twitter.formatTweet = (tweet, callback) => {
-  let { user, text, entities, extended_entities } = tweet;
+  let { user, full_text, entities, extended_entities } = tweet;
   let embed = {
     author: {
       name: `${user.name} (@${user.screen_name})`,
@@ -112,7 +112,7 @@ twitter.formatTweet = (tweet, callback) => {
       if (vidinfo.duration_millis < 20000 || bitrate === 0) files = [vidurl];
       else {
         embed.image = { url: extended_entities.media[0].media_url_https };
-        text = `[Link to video](${vidurl})\n\n${text}`;
+        full_text = `[Link to video](${vidurl})\n\n${full_text}`;
       }
     } else {
       log("Found video tweet with no valid url");
@@ -132,7 +132,7 @@ twitter.formatTweet = (tweet, callback) => {
   }
   // // Unshorten all urls then post
   // unshortenUrls(text, newText => {
-  embed.description = text;
+  embed.description = full_text;
   callback({ embed, files });
   // });
 };
