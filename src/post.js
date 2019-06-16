@@ -54,20 +54,19 @@ function unshortenUrls(text, callback) {
     });
 }
 
-const getChannelOwner = channel =>
-  channel.type === "dm" ? channel.recipient : channel.guild.owner;
-
-const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
+const handleDiscordPostError = (error, qChannel, type, msg, errorCount = 0) => {
   const errCode = error.statusCode || error.code || error.status;
   if (errCode === 404 || errCode === 10003) {
     // The channel was deleted or we don't have access to it, auto-delete it
-    const count = gets.rmChannel(channel.id);
-    log(`${errCode}: Auto-deleted ${count} gets, channel removed`, channel);
-    post.dm(
-      getChannelOwner(channel),
-      `Hi! I tried to #${
-        channel.name
-      } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} twitter fetches in that channel.\n\nIf this isn't what you wanted, please contact my owner through our support server: ${config.supportServ}`
+    const count = gets.rmChannel(qChannel.id);
+    log(`${errCode}: Auto-deleted ${count} gets, qChannel removed`, qChannel);
+    post.message(
+      qChannel.owner(),
+      `Hi! I tried to post in ${
+        qChannel.name
+      } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} subscriptions in that channel.\n\nIf this isn't what you wanted, please contact my owner through our support server: ${
+        config.supportServ
+      }`
     );
     return;
   } else if (
@@ -78,29 +77,27 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
     errCode === 40001
   ) {
     // Discord MissingPermissions error
-    // Try to find the 1st channel we can post in
+    // Try to find the 1st qChannel we can post in
     log(
       `Tried to post ${type} but lacked permissions: ${errCode} ${error.name}`,
-      channel
+      qChannel
     );
-    const permissionsMsg = `Hello!\nI just tried to post a message in #${
-      channel.name
-    }, but Discord says I don't have any rights to it.\n\nIf a mod could give me the right to **Send Messages** and **Send Embeds** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
+    const permissionsMsg = `**Missing Permissions:** I couldn't send a ${type} in ${
+      qChannel.name
+    }.\nIf a mod could give me the **Send Messages** and **Send Embeds** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
       config.prefix
     }stopchannel ${
-      channel.id
-    }\`.\nIf you think you've done everything right but keep getting this message, here's a link to my support server so we can look into it together: ${config.supportServ}`;
-    if (channel.type === "text" && errorCount === 0) {
-      const postableChannel = discord.canPostIn(channel)
-        ? channel
-        : channel.guild.channels
-            .filter(c => c.type === "text")
-            .find(c => discord.canPostIn(c));
-      if (postableChannel) {
-        postableChannel
+      qChannel.id
+    }\`.\nIf you think you've done everything right but keep getting this message, join our support server, it's linked in my \`${
+      config.prefix
+    }help\` message.`;
+    if (qChannel.type === "text" && errorCount === 0) {
+      const postableQChannel = qChannel.firstPostableChannel();
+      if (postableQChannel) {
+        postableQChannel
           .send(permissionsMsg)
           .then(
-            log("Sent a message asking to get permissions", postableChannel)
+            log("Sent a message asking to get permissions", postableQChannel)
           )
           .catch(err => {
             handleDiscordPostError(
@@ -115,8 +112,8 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
       }
     }
     // If it was a message, just try and msg the owner
-    post.dm(getChannelOwner(channel), permissionsMsg);
-    log(`${errCode}: Owner has been notified`, channel);
+    post.message(qChannel.owner(), permissionsMsg);
+    log(`${errCode}: Owner has been notified`, qChannel);
     return;
   } else if (
     errCode === "ECONNRESET" ||
@@ -127,41 +124,41 @@ const handleDiscordPostError = (error, channel, type, msg, errorCount = 0) => {
     if (errorCount >= 2) {
       log(
         `${errCode}: Discord servers failed receiving ${type} ${errorCount} times, giving up`,
-        channel
+        qChannel
       );
       return;
     }
     log(
       `${errCode}: Discord servers failed when I tried to send ${type} (attempt #${errorCount +
         1})`,
-      channel
+      qChannel
     );
     setTimeout(() => {
-      channel.send(msg).catch(err => {
-        handleDiscordPostError(err, channel, type, msg, errorCount + 1);
+      qChannel.send(msg).catch(err => {
+        handleDiscordPostError(err, qChannel, type, msg, errorCount + 1);
       });
     }, 5000);
     return;
   }
   log(
     `Posting ${type} failed (${errCode} ${error.name}): ${error.message}`,
-    channel
+    qChannel
   );
-  log(error, channel);
-  if (channel.type !== "dm")
-    post.dm(
-      channel.guild.owner,
-      `I'm trying to send a message in #${
-        channel.name
-      } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${
+  log(error, qChannel);
+  if (qChannel.type !== "dm")
+    post.message(
+      qChannel.owner(),
+      `I'm trying to send a message in ${
+        qChannel.name
+      } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${errCode} ${
         error.message
       }`
     );
 };
 
 // React is a boolean, if true, add a reaction to the message after posting
-post.embed = (channel, embed, react) => {
-  channel
+post.embed = (qChannel, embed, react) => {
+  qChannel
     .send(embed)
     .then(function(message) {
       if (react)
@@ -170,28 +167,21 @@ post.embed = (channel, embed, react) => {
         });
     })
     .catch(err => {
-      handleDiscordPostError(err, channel, "embed", embed);
+      handleDiscordPostError(err, qChannel, "embed", embed);
     });
 };
 
-post.message = (channel, message) => {
-  channel.send(message).catch(err => {
-    handleDiscordPostError(err, channel, "message", message);
+post.message = (qChannel, message) => {
+  qChannel.send(message).catch(err => {
+    handleDiscordPostError(err, qChannel, "message", message);
   });
 };
 
-post.announcement = (message, channels) => {
-  if (channels.length <= 0) return;
-  const nextChannel = channels.shift();
-  post.message(nextChannel, message);
+post.announcement = (message, qChannels) => {
+  if (qChannels.length <= 0) return;
+  const nextQChannel = qChannels.shift();
+  post.message(nextQChannel, message);
   setTimeout(() => {
-    post.announcement(message, channels);
+    post.announcement(message, qChannels);
   }, 1000);
-};
-
-post.dm = (author, message) => {
-  author.send(message).catch(err => {
-    log(`Couldn't sent a message to ${author.username}`);
-    log(err);
-  });
 };

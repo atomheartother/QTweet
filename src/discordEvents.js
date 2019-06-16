@@ -15,29 +15,30 @@ const twitter = require("./twitter");
 const users = require("./users");
 const commands = require("./commands");
 const discord = require("./discord");
+const QChannel = require("./QChannel");
 
-const handleCommand = (commandName, author, channel, args) => {
+const handleCommand = (commandName, author, qChannel, args) => {
   const command = commands[commandName];
   // Check that the command exists
   if (command) {
     // Check that there's the right number of args
     if (args.length < command.minArgs) {
-      post.message(channel, usage[commandName]);
+      post.message(qChannel, usage[commandName]);
       return;
     }
-    log(`Executing command: ${commandName} ${args}`, channel);
+    log(`Executing command: ${commandName} ${args}`, qChannel);
     let validChecks = 0;
     let isValid = true;
     if (command.checks.length > 0)
       command.checks.forEach(({ f, badB }) => {
         // Check every condition to perform the command
-        f(author, channel, passed => {
+        f(author, qChannel, passed => {
           // It's already marked as invalid
           if (!isValid) return;
           if (passed) validChecks++;
           else {
             isValid = false;
-            if (badB) post.message(channel, badB); // If it's not met and we were given a bad boy, post it
+            if (badB) post.message(qChannel, badB); // If it's not met and we were given a bad boy, post it
             log(
               `Rejected command "${commandName} ${args}" with reason: ${badB}`
             );
@@ -45,11 +46,11 @@ const handleCommand = (commandName, author, channel, args) => {
           }
           if (validChecks === command.checks.length) {
             // If we get here, everything has succeeded.
-            command.function(args, channel);
+            command.function(args, qChannel);
           }
         });
       });
-    else command.function(args, channel);
+    else command.function(args, qChannel);
   }
 };
 
@@ -108,7 +109,7 @@ handleMessage = message => {
   }
 
   const { author, channel } = message;
-  handleCommand(command, author, channel, args);
+  handleCommand(command, author, new QChannel(channel), args);
 };
 
 handleError = error => {

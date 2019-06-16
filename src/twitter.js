@@ -153,8 +153,8 @@ const streamData = tweet => {
     const isTextTweet = !hasMedia(tweet);
     twitterUserObject.subs
       .filter(({ text }) => !isTextTweet || text)
-      .forEach(({ channel }) => {
-        post.embed(channel, embed, true);
+      .forEach(({ qChannel }) => {
+        post.embed(qChannel, embed, true);
       });
   });
 };
