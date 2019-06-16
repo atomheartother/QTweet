@@ -233,7 +233,7 @@ const stopchannel = (args, qChannel) => {
   log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
   post.message(
     qChannel,
-    `**I've unsubscribed you from ${count} users**\nYou should now stop getting any tweets in #${channelName}.`
+    `**I've unsubscribed you from ${count} users**\nYou should now stop getting any tweets in ${channelName}.`
   );
 };
 
