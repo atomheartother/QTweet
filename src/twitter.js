@@ -151,7 +151,7 @@ const streamData = tweet => {
   }
   twitter.formatTweet(tweet, embed => {
     const isTextTweet = !hasMedia(tweet);
-    twitterUserObject.channels
+    twitterUserObject.subs
       .filter(({ text }) => !isTextTweet || text)
       .forEach(({ channel }) => {
         post.embed(channel, embed, true);

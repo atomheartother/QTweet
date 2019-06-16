@@ -89,11 +89,15 @@ handleMessage = message => {
       .setDescription(
         `Hello, I'm ${
           config.botName
-        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\n**Want to invite me to your server?** [Click here](${config.inviteLink}) !\n**Need help, found a bug, have a feature idea?** Join our [support server](${config.supportServ}) !\nHere's a basic list of commands, you can find my complete documentation [here](${config.docsURL}).`
+        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\n**Want to invite me to your server?** [Click here](${
+          config.inviteLink
+        }) !\n**Need help, found a bug, have a feature idea?** Join our [support server](${
+          config.supportServ
+        }) !\nHere's a basic list of commands, you can find my complete documentation [here](${
+          config.docsURL
+        }).`
       )
-      .setFooter(
-        "*: Anyone can perform these commands."
-      )
+      .setFooter("*: Anyone can perform these commands.")
       .addField(`${config.prefix}tweet*`, usage["tweet"])
       .addField(`${config.prefix}start`, usage["start"])
       .addField(`${config.prefix}stop`, usage["stop"])
@@ -120,10 +124,14 @@ handleGuildCreate = guild => {
     `Hello, I'm ${
       config.botName
     }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a short list of my commands with \`${
-        config.prefix
-      }help\`.\n**If I'm useful to your server**, please remember to upvote me at ${
+      config.prefix
+    }help\`.\n**If I'm useful to your server**, please remember to upvote me at ${
       config.profileURL
-    }\n**For any questions or feature requests**, my Discord server is here: ${config.supportServ}\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info and an exhaustive documentation can be found here: ${config.docsURL}`
+    }\n**For any questions or feature requests**, my Discord server is here: ${
+      config.supportServ
+    }\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info and an exhaustive documentation can be found here: ${
+      config.docsURL
+    }`
   );
 };
 
@@ -146,7 +154,7 @@ handleReady = () => {
   });
 };
 
-handleRateLimit = ({limit, timeDifference, path, method}) => {
+handleRateLimit = ({ limit, timeDifference, path, method }) => {
   // log(`Discord is rate-limiting us at ${method} ${path}. ${limit} requests max`);
 };
 

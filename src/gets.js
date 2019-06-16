@@ -10,18 +10,16 @@ var config = require("../config.json");
 gets.add = (channel, userId, name, options) => {
   if (!users.collection.hasOwnProperty(userId)) {
     // Create the user object
-    users.collection[userId] = { channels: [] };
+    users.collection[userId] = { subs: [] };
   }
   if (name !== null && !users.collection[userId].name !== name) {
     users.collection[userId].name = name;
   }
 
-  if (
-    users.collection[userId].channels.find(get => get.channel.id == channel.id)
-  )
+  if (users.collection[userId].subs.find(get => get.channel.id == channel.id))
     return;
 
-  users.collection[userId].channels.push({
+  users.collection[userId].subs.push({
     channel: channel,
     text: options.text
   });
@@ -46,8 +44,8 @@ gets.rm = (channel, screenName) => {
         return;
       }
       let idx = -1;
-      for (let i = 0; i < users.collection[userId].channels.length; i++) {
-        let curChannel = users.collection[userId].channels[i].channel;
+      for (let i = 0; i < users.collection[userId].subs.length; i++) {
+        let curChannel = users.collection[userId].subs[i].channel;
         if (curChannel.id == channel.id) {
           idx = i;
           break;
@@ -65,14 +63,17 @@ gets.rm = (channel, screenName) => {
         return;
       }
       // Remove element from channels
-      users.collection[userId].channels.splice(idx, 1);
-      if (users.collection[userId].channels.length < 1) {
+      users.collection[userId].subs.splice(idx, 1);
+      if (users.collection[userId].subs.length < 1) {
         // If no one needs this user's tweets we can delete the enty
         delete users.collection[userId];
         // ...and re-register the stream, which will now delete the user
         twitter.createStream();
       }
-      post.message(channel, `**I've unsubscribed you from @${screenName}!**\nYou should now stop getting any messages from them.`);
+      post.message(
+        channel,
+        `**I've unsubscribed you from @${screenName}!**\nYou should now stop getting any messages from them.`
+      );
       users.save();
     })
     .catch(function(err) {
@@ -86,15 +87,15 @@ gets.rmChannel = channelId => {
   // Remove all instances of this channel from our gets
   Object.keys(users.collection).forEach(userId => {
     let user = users.collection[userId];
-    var i = user.channels.length;
+    var i = user.subs.length;
     while (i--) {
-      if (channelId === user.channels[i].channel.id) {
+      if (channelId === user.subs[i].channel.id) {
         count++;
         // We should remove this get
-        user.channels.splice(i, 1);
+        user.subs.splice(i, 1);
       }
     }
-    if (user.channels.length < 1) {
+    if (user.subs.length < 1) {
       // If no one needs this user's tweets we can delete the enty
       delete users.collection[userId];
       usersChanged = true;
@@ -112,14 +113,14 @@ gets.rmGuild = id => {
   // Remove all instances of this guild from our gets
   Object.keys(users.collection).forEach(userId => {
     let user = users.collection[userId];
-    var i = user.channels.length;
+    var i = user.subs.length;
     while (i--) {
-      if (id === user.channels[i].channel.guild.id) {
+      if (id === user.subs[i].channel.guild.id) {
         // We should remove this get
-        user.channels.splice(i, 1);
+        user.subs.splice(i, 1);
       }
     }
-    if (user.channels.length < 1) {
+    if (user.subs.length < 1) {
       usersChanged = true;
       // If no one needs this user's tweets we can delete the enty
       delete users.collection[userId];
