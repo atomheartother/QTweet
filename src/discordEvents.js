@@ -117,11 +117,12 @@ handleError = error => {
   console.error(error);
 };
 
-handleGuildCreate = guild => {
+handleGuildCreate = async guild => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
-  post.dm(
-    guild.owner,
+  const qc = await QChannel.unserialize({ id: guild.owner.id, isDM: true });
+  post.message(
+    qc,
     `Hello, I'm ${
       config.botName
     }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\nYou can get a short list of my commands with \`${

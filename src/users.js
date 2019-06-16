@@ -8,7 +8,6 @@ var config = require("../config.json");
 
 const post = require("./post");
 const gets = require("./gets");
-const discord = require("./discord");
 const log = require("./log");
 const QChannel = require("./QChannel");
 
@@ -30,10 +29,11 @@ users.getUniqueChannels = async () => {
   for (let i = 0; i < keysArray.length; i++) {
     const user = users.collection[keysArray[i]];
     for (let j = 0; j < user.subs.length; j++) {
-      const getId = await user.subs[j].qChannel.ownerId();
+      const getQChannel = user.subs[j].qChannel;
+      const getId = await getQChannel.guildId();
       let unique = true;
       for (let qcIdx = 0; qcIdx < qChannels.length; qcIdx++) {
-        const qcGOID = await qChannels[qcIdx].ownerId();
+        const qcGOID = await qChannels[qcIdx].guildId();
         if (qcGOID === getId) {
           unique = false;
           break;

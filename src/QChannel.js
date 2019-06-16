@@ -51,7 +51,7 @@ class QChannel {
 
   async guildId() {
     if (this.type === "dm") {
-      return null;
+      return this.ownerId();
     }
     const c = await this.obj();
     return c.guild.id;
@@ -71,7 +71,7 @@ class QChannel {
     if (this.type === "dm") {
       return c.recipient.id;
     }
-    return c.guild.ownerId;
+    return c.guild.ownerID;
   }
 
   // Return a qChannel for the owner of this qChannel
