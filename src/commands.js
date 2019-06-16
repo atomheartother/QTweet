@@ -27,7 +27,7 @@ const getScreenName = word => {
 const tweet = (args, qChannel) => {
   const screenName = getScreenName(args[0]);
   twitter
-    .userTimeline({ screen_name: screenName })
+    .userTimeline({ screen_name: screenName, tweet_mode: "extended" })
     .then(function(tweets, error) {
       if (tweets.error) {
         if (tweets.error === "Not authorized.") {
