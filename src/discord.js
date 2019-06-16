@@ -25,6 +25,10 @@ module.exports = {
     return dClient.guilds.get(id);
   },
 
+  getUser: id => {
+    return dClient.users.get(id);
+  },
+
   canPostIn: channel => {
     const permissions = channel.permissionsFor(dClient.user);
     return (

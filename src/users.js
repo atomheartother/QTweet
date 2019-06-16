@@ -15,9 +15,9 @@ const log = require("./log");
 // Dict of TwitterUser, using userId as key
 //  TwitterUser:
 //   name: screen name
-//   channels: Array of Gets
+//   subs: Array of Gets
 //   Get:
-//    channel: channel object
+//    qChannel: QChannel object
 //    text: Boolean, defines whether text posts should be sent to this channel
 users.collection = {};
 
@@ -26,7 +26,7 @@ users.getUniqueChannels = () => {
   const channels = [];
   Object.keys(users.collection).forEach(userId => {
     const user = users.collection[userId];
-    user.channels.forEach(get => {
+    user.subs.forEach(get => {
       if (!channels.find(channel => channel.guild.id === get.channel.guild.id))
         channels.push(get.channel);
     });
@@ -39,7 +39,7 @@ users.getGuildGets = guildId =>
   Object.keys(users.collection).reduce(
     (acc, userId) =>
       acc.concat(
-        users.collection[userId].channels
+        users.collection[userId].subs
           .filter(
             get =>
               get.channel &&
@@ -59,7 +59,7 @@ users.getChannelGets = channelId =>
   Object.keys(users.collection).reduce(
     (acc, userId) =>
       acc.concat(
-        users.collection[userId].channels
+        users.collection[userId].subs
           .filter(get => get.channel.id === channelId)
           .map(get => ({
             ...get,
@@ -78,7 +78,7 @@ users.defaultOptions = function() {
 users.save = () => {
   // We save users as:
   // {
-  //    "userId" : {name: "screen_name", channels: [{id: channelId, text: bool}]}
+  //    "userId" : {name: "screen_name", subs: [{id: channelId, text: bool}]}
   // }
 
   // Create a copy of the channels object, remove all timeouts from it
@@ -86,13 +86,13 @@ users.save = () => {
   for (let userId in users.collection) {
     // Iterate over twitter users
     if (!users.collection.hasOwnProperty(userId)) continue;
-    usersCopy[userId] = { channels: [] };
+    usersCopy[userId] = { subs: [] };
     if (users.collection[userId].hasOwnProperty("name")) {
       usersCopy[userId].name = users.collection[userId].name;
     }
-    for (let get of users.collection[userId].channels) {
+    for (let get of users.collection[userId].subs) {
       let txt = get.hasOwnProperty("text") ? get.text : true;
-      usersCopy[userId].channels.push({ id: get.channel.id, text: txt });
+      usersCopy[userId].subs.push({ id: get.channel.id, text: txt });
     }
   }
   let json = JSON.stringify(usersCopy);
@@ -121,20 +121,21 @@ users.load = callback => {
           let name = usersCopy[userId].hasOwnProperty("name")
             ? usersCopy[userId].name
             : null;
-          let getsList = usersCopy[userId].channels;
-          for (let get of getsList) {
-            // Iterate over gets in channels
-            let channel = discord.getChannel(get.id);
+          // Support the old format where subs were named channels
+          const subList = usersCopy[userId].subs || usersCopy[userId].channels;
+          // Iterate over every subscription
+          for (const { id, text } of subList) {
+            let channel = discord.getChannel(id);
             if (channel === undefined) {
               log(
                 "Tried to load undefined channel: " +
-                  get.id +
+                  id +
                   ", we most likely got kicked! :c"
               );
               continue;
             }
             let options = users.defaultOptions();
-            if (get.hasOwnProperty("text") && !get.text) {
+            if (text === false) {
               options.text = false;
             }
             gets.add(channel, userId, name, options);
@@ -161,8 +162,8 @@ users.list = channel => {
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`This is all ${gets.length} accounts you're getting tweets from:`)
-    .setURL(config.profileURL)
+    .setTitle(`${gets.length} subscriptions:`)
+    .setURL(config.profileURL);
   let counter = 0;
   gets.forEach(({ userId, text }) => {
     const twitterUser = users.collection[userId];
@@ -176,11 +177,8 @@ users.list = channel => {
       post.embed(channel, { embed }, false);
       embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
-        .setTitle(`Tweet sources list (page ${page})`)
-        .setURL(config.profileURL)
-        .setDescription(
-          `This is all ${gets.length} accounts you're getting tweets from`
-        );
+        .setTitle(`${gets.length} subscriptions (page ${page}):`)
+        .setURL(config.profileURL);
       counter = 0;
     }
   });
@@ -196,8 +194,8 @@ users.adminListGuild = (channel, guildId) => {
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`This is a complete list of all ${gets.length} gets for this guild!`)
-    .setURL(config.profileURL)
+    .setTitle(`${gets.length} subscriptions for this guild:`)
+    .setURL(config.profileURL);
   let counter = 0;
   gets.forEach(({ userId, channel: c, text }) => {
     const user = users.collection[userId];
@@ -208,11 +206,8 @@ users.adminListGuild = (channel, guildId) => {
       post.embed(channel, { embed }, false);
       embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
-        .setTitle(`Guild gets list (page ${page})`)
-        .setURL(config.profileURL)
-        .setDescription(
-          `This is a complete list of all ${gets.length} gets for this guild!`
-        );
+        .setTitle(`${gets.length} subscriptions for this guild (page ${page}):`)
+        .setURL(config.profileURL);
       counter = 0;
     }
   });
@@ -225,8 +220,8 @@ users.adminList = channel => {
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`This is a complete list of all ${guilds.length} guilds I'm in!`)
-    .setURL(config.profileURL)
+    .setTitle(`In ${guilds.length} guilds:`)
+    .setURL(config.profileURL);
   // We now have an object for every guild we're in
   let counter = 0;
   guilds.forEach(g => {
@@ -240,11 +235,8 @@ users.adminList = channel => {
       post.embed(channel, { embed }, false);
       embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
-        .setTitle(`Users list (page ${page})`)
-        .setURL(config.profileURL)
-        .setDescription(
-          "This is a complete list of the twitter users I'm getting, with guild names and owner info!"
-        );
+        .setTitle(`In ${guilds.length} guilds (page ${page}):`)
+        .setURL(config.profileURL);
       counter = 0;
     }
   });
