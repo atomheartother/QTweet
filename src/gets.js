@@ -105,16 +105,19 @@ gets.rmChannel = channelId => {
   return count;
 };
 
-gets.rmGuild = id => {
+gets.rmGuild = async id => {
   let usersChanged = false;
   // Remove all instances of this guild from our gets
-  Object.keys(users.collection).forEach(userId => {
+  const keysArray = Object.keys(users.collection);
+  for (let i = keysArray.length - 1; i >= 0; i--) {
+    const userId = keysArray[i];
     let user = users.collection[userId];
-    var i = user.subs.length;
-    while (i--) {
-      if (id === user.subs[i].qChannel.guildId()) {
+    let x = user.subs.length;
+    while (x--) {
+      const gid = await user.subs[x].qChannel.guildId();
+      if (id === gid) {
         // We should remove this get
-        user.subs.splice(i, 1);
+        user.subs.splice(x, 1);
       }
     }
     if (user.subs.length < 1) {
@@ -122,7 +125,7 @@ gets.rmGuild = id => {
       // If no one needs this user's tweets we can delete the enty
       delete users.collection[userId];
     }
-  });
+  }
   // Save any changes we did to the users object
   users.save();
   // ...and re-register the stream, which will be properly updated

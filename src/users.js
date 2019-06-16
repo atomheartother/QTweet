@@ -24,36 +24,44 @@ users.collection = {};
 
 // Returns a list of channel objects, each in an unique guild
 // DMs are also returned
-users.getUniqueChannels = () => {
+users.getUniqueChannels = async () => {
   const qChannels = [];
-  Object.keys(users.collection).forEach(userId => {
-    const user = users.collection[userId];
-    user.subs.forEach(get => {
-      if (
-        !qChannels.find(
-          qChannel => qChannel.ownerId() === get.qChannel.ownerId()
-        )
-      )
-        qChannels.push(get.qChannel);
-    });
-  });
+  const keysArray = Object.keys(users.collection);
+  for (let i = 0; i < keysArray.length; i++) {
+    const user = users.collection[keysArray[i]];
+    for (let j = 0; j < user.subs.length; j++) {
+      const getId = await user.subs[j].qChannel.ownerId();
+      let unique = true;
+      for (let qcIdx = 0; qcIdx < qChannels.length; qcIdx++) {
+        const qcGOID = await qChannels[qcIdx].ownerId();
+        if (qcGOID === getId) {
+          unique = false;
+          break;
+        }
+      }
+      if (unique) qChannels.push(user.subs[j].qChannel);
+    }
+  }
   return qChannels;
 };
 
 // Returns a list of get objects matching this guild, with added userId of the get
-users.getGuildGets = guildId =>
-  Object.keys(users.collection).reduce(
-    (acc, userId) =>
-      acc.concat(
-        users.collection[userId].subs
-          .filter(get => get.qChannel && get.qChannel.guildId() === guildId)
-          .map(get => ({
-            ...get,
-            userId
-          }))
-      ),
-    []
-  );
+users.getGuildGets = async guildId => {
+  const gets = [];
+  const keysArray = Object.keys(users.collection);
+  for (let i = 0; i < keysArray.length; i++) {
+    const userId = keysArray[i];
+    const { subs } = users.collection[userId];
+    for (let j = 0; j < subs.length; j++) {
+      const get = subs[j];
+      if (get.qChannel.type === "dm") continue;
+      const gID = await get.qChannel.guildId();
+      if (gID === guildId) {
+        gets.push(...get, userId);
+      }
+    }
+  }
+};
 
 // Returns a list of get objects matching this channel, with added userid of the get
 users.getChannelGets = channelId =>
@@ -195,8 +203,8 @@ users.list = qChannel => {
   if (counter > 0) post.embed(qChannel, { embed }, false);
 };
 
-users.adminListGuild = (qChannel, guildId) => {
-  const gets = users.getGuildGets(guildId);
+users.adminListGuild = async (qChannel, guildId) => {
+  const gets = await users.getGuildGets(guildId);
   if (gets.length < 1) {
     post.message(qChannel, `I'm not getting any tweets from guild ${guildId}!`);
     return;
@@ -228,8 +236,8 @@ users.adminListGuild = (qChannel, guildId) => {
 };
 
 // List all gets in every channel, available to the admin only, and in DMs
-users.adminList = qChannel => {
-  const qChannels = users.getUniqueChannels();
+users.adminList = async qChannel => {
+  const qChannels = await users.getUniqueChannels();
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
@@ -237,15 +245,16 @@ users.adminList = qChannel => {
     .setURL(config.profileURL);
   // We now have an object for every guild we're in
   let counter = 0;
-  qChannels.forEach(qc => {
-    if (qc.guildId()) {
-      const g = qc.guild();
+  for (let i = 0; i < qChannels.length; i++) {
+    const qc = qChannels[i];
+    const g = await qc.guild();
+    if (g !== null) {
       embed.addField(
         g.name,
         `Guild ID: \`${g.id}\`\nOwner name: \`${g.owner.user.tag}\``
       );
     } else {
-      embed.addField(qc.name, qc.formattedName);
+      embed.addField(qc.name, `ID: ${qc.id}`);
     }
     counter++;
     if (counter > 20) {
@@ -257,6 +266,6 @@ users.adminList = qChannel => {
         .setURL(config.profileURL);
       counter = 0;
     }
-  });
+  }
   if (counter > 0) post.embed(qChannel, { embed }, false);
 };
