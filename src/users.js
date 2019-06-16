@@ -57,7 +57,7 @@ users.getGuildGets = async guildId => {
       if (get.qChannel.type === "dm") continue;
       const gID = await get.qChannel.guildId();
       if (gID === guildId) {
-        gets.push(...get, userId);
+        gets.push({ ...get, userId });
       }
     }
   }
