@@ -249,11 +249,11 @@ const adminList = (args, qChannel) => {
   }
 };
 
-const announce = args => {
+const announce = async args => {
   const message = args.join(" ");
-  const channels = users.getUniqueChannels();
+  const qChannels = await users.getUniqueChannels();
   log(`Posting announcement to ${channels.length} channels`);
-  post.announcement(message, channels);
+  post.announcement(message, qChannels);
 };
 
 module.exports = {
