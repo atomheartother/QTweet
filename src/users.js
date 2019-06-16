@@ -61,6 +61,7 @@ users.getGuildGets = async guildId => {
       }
     }
   }
+  return gets;
 };
 
 // Returns a list of get objects matching this channel, with added userid of the get
