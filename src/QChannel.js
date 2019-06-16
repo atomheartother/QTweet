@@ -81,11 +81,9 @@ class QChannel {
     }
     const id = await this.ownerId();
     const usr = discord.getUser(id);
-    if (!usr.dmChannel) {
-      log("Could not find owner for qChannel", this);
-      return null;
-    }
-    return QChannel(usr.dmChannel);
+    if (usr.dmChannel) return new QChannel(usr.dmChannel);
+    const dm = await usr.createDM();
+    return new QChannel(dm);
   }
 
   async firstPostableChannel() {
