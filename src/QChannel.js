@@ -6,9 +6,9 @@ const log = require("./log");
 const getType = c => c.type;
 const getName = c => {
   if (c.type === "dm") {
-    return c.recipient.tag;
+    return `\`${c.recipient.tag}\``;
   }
-  return `#${c.name}`;
+  return `\`#${c.name}\``;
 };
 
 const getFormattedName = c => {
@@ -90,10 +90,10 @@ class QChannel {
 
   async firstPostableChannel() {
     if (this.type !== "text") return this;
-    if (discord.canPostIn(this.obj())) {
+    const c = await this.obj();
+    if (discord.canPostIn(c)) {
       return this;
     }
-    const c = await this.obj();
     const firstBest = c.guild.channels
       .filter(c => c.type === "text")
       .find(c => discord.canPostIn(c));

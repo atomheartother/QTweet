@@ -54,7 +54,13 @@ function unshortenUrls(text, callback) {
     });
 }
 
-const handleDiscordPostError = (error, qChannel, type, msg, errorCount = 0) => {
+const handleDiscordPostError = async (
+  error,
+  qChannel,
+  type,
+  msg,
+  errorCount = 0
+) => {
   const errCode = error.statusCode || error.code || error.status;
   if (errCode === 404 || errCode === 10003) {
     // The channel was deleted or we don't have access to it, auto-delete it
@@ -92,7 +98,7 @@ const handleDiscordPostError = (error, qChannel, type, msg, errorCount = 0) => {
       config.prefix
     }help\` message.`;
     if (qChannel.type === "text" && errorCount === 0) {
-      const postableQChannel = qChannel.firstPostableChannel();
+      const postableQChannel = await qChannel.firstPostableChannel();
       if (postableQChannel) {
         postableQChannel
           .send(permissionsMsg)
