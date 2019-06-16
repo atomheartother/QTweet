@@ -261,12 +261,8 @@ module.exports = {
     function: start,
     checks: [
       {
-        f: checks.isNotDm,
-        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
-      },
-      {
         f: checks.isMod,
-        badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
+        badB: `**Not authorized**\nTo subscribe to a twitter account you need to be a moderator or to have the ${
           config.modRole
         } role!`
       }
@@ -277,12 +273,9 @@ module.exports = {
     function: stop,
     checks: [
       {
-        f: checks.isNotDm,
-        badB: "I can't post tweets automatically to DMs, I'm very sorry!"
-      },
-      {
         f: checks.isMod,
-        badB: "You're not authorized to stop fetching tweets!"
+        badB:
+          "**Not authorized**\nOnly moderators can unsubscribe from a twitter account!"
       }
     ],
     minArgs: 1
@@ -314,10 +307,6 @@ module.exports = {
   stopchannel: {
     function: stopchannel,
     checks: [
-      {
-        f: checks.isNotDm,
-        badB: "You should use this command on the concerned server, not in DMs"
-      },
       {
         f: checks.isMod,
         badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
