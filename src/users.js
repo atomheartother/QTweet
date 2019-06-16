@@ -93,7 +93,7 @@ users.save = () => {
     }
     for (let get of users.collection[userId].subs) {
       let txt = get.hasOwnProperty("text") ? get.text : true;
-      usersCopy[userId].subs.push({ id: get.qChannel.id, text: txt });
+      usersCopy[userId].subs.push({ qc: get.qChannel.serialize(), text: txt });
     }
   }
   let json = JSON.stringify(usersCopy);
@@ -106,45 +106,54 @@ users.save = () => {
 };
 
 users.load = callback => {
-  fs.stat(config.getFile, function(err, stat) {
-    if (err == null) {
-      fs.readFile(config.getFile, "utf8", function(err, data) {
-        if (err) {
-          log("There was a problem reading the config file");
-          return;
-        }
-        // Restore the channels object from saved file
-        let usersCopy = JSON.parse(data);
-        for (let userId in usersCopy) {
-          // Iterate over users
-          if (!usersCopy.hasOwnProperty(userId)) continue;
-
-          let name = usersCopy[userId].hasOwnProperty("name")
-            ? usersCopy[userId].name
-            : null;
-          // Support the old format where subs were named channels
-          const subList = usersCopy[userId].subs || usersCopy[userId].channels;
-          // Iterate over every subscription
-          for (const { id, text } of subList) {
-            const qChannel = new QChannel({ id });
-            if (!qChannel) {
-              log(
-                "Tried to load undefined channel: " +
-                  id +
-                  ", we most likely got kicked! :c"
-              );
-              continue;
-            }
-            let options = users.defaultOptions();
-            if (text === false) {
-              options.text = false;
-            }
-            gets.add(qChannel, userId, name, options);
-          }
-        }
-        callback();
-      });
+  fs.stat(config.getFile, (err, stat) => {
+    if (err) {
+      log(err);
+      return;
     }
+    fs.readFile(config.getFile, "utf8", async (err, data) => {
+      if (err) {
+        log("There was a problem reading the config file");
+        return;
+      }
+      // Restore the channels object from saved file
+      let usersCopy = JSON.parse(data);
+      for (let userId in usersCopy) {
+        // Iterate over users
+        if (!usersCopy.hasOwnProperty(userId)) continue;
+
+        let name = usersCopy[userId].hasOwnProperty("name")
+          ? usersCopy[userId].name
+          : null;
+        // Support the old format where subs were named channels
+        const subList = usersCopy[userId].subs || usersCopy[userId].channels;
+        // Iterate over every subscription
+        for (const sub of subList) {
+          let qChannel = null;
+          if (sub.qc) {
+            // New format, we can unserialize
+            qChannel = await QChannel.unserialize(sub.qc);
+          } else {
+            // Old format, no DMs
+            qChannel = new QChannel({ id: sub.id });
+          }
+          if (qChannel.id === null) {
+            log(
+              "Tried to load undefined channel: " +
+                id +
+                ", we most likely got kicked! :c"
+            );
+            continue;
+          }
+          let options = users.defaultOptions();
+          if (sub.text === false) {
+            options.text = false;
+          }
+          gets.add(qChannel, userId, name, options);
+        }
+      }
+      callback();
+    });
   });
 };
 
