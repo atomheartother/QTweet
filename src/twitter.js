@@ -68,7 +68,6 @@ twitter.isValid = tweet =>
 // Takes a tweet and formats it for posting.
 twitter.formatTweet = (tweet, callback) => {
   let { user, text, extended_entities } = tweet;
-  console.log(tweet);
   let embed = {
     author: {
       name: `${user.name} (${user.screen_name})`,
