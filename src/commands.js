@@ -7,6 +7,7 @@ const discord = require("./discord");
 const twitter = require("./twitter");
 const users = require("./users");
 const log = require("./log");
+const QChannel = require("./QChannel");
 
 const getScreenName = word => {
   if (word.startsWith("@")) {
@@ -23,7 +24,7 @@ const getScreenName = word => {
   return word;
 };
 
-const tweet = (args, channel) => {
+const tweet = (args, qChannel) => {
   const screenName = getScreenName(args[0]);
   twitter
     .userTimeline({ screen_name: screenName })
@@ -31,24 +32,24 @@ const tweet = (args, channel) => {
       if (tweets.error) {
         if (tweets.error === "Not authorized.") {
           post.message(
-            channel,
+            qChannel,
             `**I tried getting a tweet from ${screenName} but Twitter tells me that's unauthorized.**\nThis is usually caused by a blocked account.`
           );
         } else {
           post.message(
-            channel,
+            qChannel,
             `**${screenName} does exist but something seems wrong with their profile**\nI can't get their timeline... Twitter had this to say:\n${
               tweets.error
             }`
           );
-          log("Unknown error on twitter timeline", channel);
-          log(tweets.error, channel);
+          log("Unknown error on twitter timeline", qChannel);
+          log(tweets.error, qChannel);
         }
         return;
       }
       if (tweets.length < 1) {
         post.message(
-          channel,
+          qChannel,
           "It doesn't look like " + screenName + " has any tweets... "
         );
         return;
@@ -56,17 +57,17 @@ const tweet = (args, channel) => {
       let tweet = tweets.find(t => twitter.isValid(t));
       if (!tweet) {
         post.message(
-          channel,
+          qChannel,
           "**This user doesn't seem to have any valid tweets**\nYou might want to try again, maybe Twitter messed up?"
         );
-        log("Invalid tweets from timeline", channel);
-        log(tweets, channel);
+        log("Invalid tweets from timeline", qChannel);
+        log(tweets, qChannel);
         return;
       }
       twitter.formatTweet(tweet, embed => {
-        post.embed(channel, embed, true);
+        post.embed(qChannel, embed, true);
       });
-      log(`Posted latest tweet from ${screenName}`, channel);
+      log(`Posted latest tweet from ${screenName}`, qChannel);
     })
     .catch(function(response) {
       const err =
@@ -75,10 +76,10 @@ const tweet = (args, channel) => {
         response.errors.length > 0 &&
         response.errors[0];
       if (!err) {
-        log("Exception thrown without error", channel);
-        log(response, channel);
+        log("Exception thrown without error", qChannel);
+        log(response, qChannel);
         post.message(
-          channel,
+          qChannel,
           `**Something went wrong getting tweets from ${screenName}**\nI'm looking into it, sorry for the trouble!`
         );
         return;
@@ -87,26 +88,26 @@ const tweet = (args, channel) => {
       if (code === 34)
         // Not found
         post.message(
-          channel,
+          qChannel,
           `**Twitter tells me @${screenName} doesn't exist!**\nMake sure you enter the screen name and not the display name.`
         );
       else {
         post.message(
-          channel,
+          qChannel,
           `**There was a problem getting @${screenName}'s latest tweet**\nIt's possible Twitter is temporarily down.\nTwitter had this to say: \`${message}\``
         );
         log(
           `Couldn't get latest tweet from ${screenName}, user input was ${
             args[0]
           }:`,
-          channel
+          qChannel
         );
-        log(response, channel);
+        log(response, qChannel);
       }
     });
 };
 
-const start = (args, channel) => {
+const start = (args, qChannel) => {
   let options = users.defaultOptions();
   let screenNames = [];
   for (let arg of args) {
@@ -118,7 +119,7 @@ const start = (args, channel) => {
     }
   }
   if (screenNames.length < 1) {
-    post.message(channel, usage["start"]);
+    post.message(qChannel, usage["start"]);
     return;
   }
   twitter
@@ -128,20 +129,22 @@ const start = (args, channel) => {
       const addedObjectName =
         data.length === 1
           ? `${data[0].screen_name}`
-          : `${data.length} users: ${data
-              .reduce((acc, { screen_name }, idx) => {
+          : `${data.length} users: ${data.reduce(
+              (acc, { screen_name }, idx) => {
                 if (idx === data.length - 1) {
-                  return acc.concat(` and ${screen_name}`)
+                  return acc.concat(` and ${screen_name}`);
                 } else if (idx === 0) {
                   return screen_name;
                 }
-                return `, ${screen_name}`
-              }, "")}`;
+                return `, ${screen_name}`;
+              },
+              ""
+            )}`;
       data.forEach(({ id_str: userId, screen_name: name }) => {
         if (!redoStream && !users.collection.hasOwnProperty(userId)) {
           redoStream = true;
         }
-        gets.add(channel, userId, name, options);
+        gets.add(qChannel, userId, name, options);
       });
       let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
         config.prefix
@@ -151,11 +154,10 @@ const start = (args, channel) => {
       if (screenNames.length !== data.length) {
         channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
       }
-      post.message(channel, channelMsg);
-      log(`Added ${addedObjectName}`, channel);
+      post.message(qChannel, channelMsg);
+      log(`Added ${addedObjectName}`, qChannel);
       // Re-register the stream if we didn't know the user before
       if (redoStream) {
-        log(`Redoing stream...`);
         twitter.createStream();
       }
       users.save();
@@ -163,14 +165,14 @@ const start = (args, channel) => {
     .catch(function(error) {
       if (screenNames.length === 1) {
         post.message(
-          channel,
+          qChannel,
           `**I can't find a user by the name of ${
             screenNames[0]
           }**\nYou most likely tried using their display name and not their twitter handle.`
         );
       } else {
         post.message(
-          channel,
+          qChannel,
           `**I can't find any of those users:** ${screenNames.toString()}\nYou most likely tried using their display names and not their twitter handles.`
         );
       }
@@ -178,18 +180,18 @@ const start = (args, channel) => {
     });
 };
 
-const leaveGuild = (args, channel) => {
+const leaveGuild = (args, qChannel) => {
   let guild = null;
-  if (args.length >= 1 && checks.isDm(null, channel)) {
+  if (args.length >= 1 && checks.isDm(null, qChannel)) {
     guild = discord.getGuild(args[0]);
-  } else if (!checks.isDm(null, channel)) {
+  } else if (!checks.isDm(null, qChannel)) {
     guild = channel.guild;
   } else {
-    post.message(channel, "No valid guild ID provided");
+    post.message(qChannel, "No valid guild ID provided");
     return;
   }
   if (guild == undefined) {
-    post.message(channel, "I couldn't find guild: " + args[0]);
+    post.message(qChannel, "I couldn't find guild: " + args[0]);
     return;
   }
   // Leave the guild
@@ -197,50 +199,53 @@ const leaveGuild = (args, channel) => {
     .leave()
     .then(g => {
       log(`Left the guild ${g.name}`);
-      if (checks.isDm(author, channel))
-        post.message(channel, `Left the guild ${g}`);
+      if (checks.isDm(author, qChannel))
+        post.message(qChannel, `Left the guild ${g}`);
     })
     .catch(err => {
-      log("Could not leave guild", channel);
+      log("Could not leave guild", qChannel);
       log(err);
     });
 };
 
-const stop = (args, channel) => {
+const stop = (args, qChannel) => {
   const screenName = getScreenName(args[0]);
-  log(`Removed ${screenName}`, channel);
-  gets.rm(channel, screenName);
+  log(`Removed ${screenName}`, qChannel);
+  gets.rm(qChannel, screenName);
 };
 
-const stopchannel = (args, channel) => {
-  targetChannel = channel.id;
-  channelName = channel.name;
+const stopchannel = (args, qChannel) => {
+  targetChannel = qChannel.id;
+  channelName = qChannel.name;
   if (args.length > 0) {
     targetChannel = args[0];
     channelObj = channel.guild.channels.find(c => c.id === targetChannel);
     if (!channelObj) {
       post.message(
-        channel,
+        qChannel,
         `**I couldn't find channel ${targetChannel} in your server.**\nIf you deleted it, I'll leave it by myself whenever I try to post there, don't worry!`
       );
       return;
     }
-    channelName = channelObj.name;
+    channelName = new QChannel(channelObj).name;
   }
   const count = gets.rmChannel(targetChannel);
-  log(`Removed all gets from channel ID:${targetChannel}`, channel);
-  post.message(channel, `**I've unsubscribed you from ${count} users**\nYou should now stop getting any tweets in #${channelName}.`);
+  log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
+  post.message(
+    qChannel,
+    `**I've unsubscribed you from ${count} users**\nYou should now stop getting any tweets in #${channelName}.`
+  );
 };
 
-const list = (args, channel) => {
-  users.list(channel);
+const list = (args, qChannel) => {
+  users.list(qChannel);
 };
 
-const adminList = (args, channel) => {
+const adminList = (args, qChannel) => {
   if (args.length > 0) {
-    users.adminListGuild(channel, args[0]);
+    users.adminListGuild(qChannel, args[0]);
   } else {
-    users.adminList(channel);
+    users.adminList(qChannel);
   }
 };
 

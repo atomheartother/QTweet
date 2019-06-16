@@ -1,10 +1,5 @@
-const formatChannelInfo = channel =>
-  channel.type !== "dm"
-    ? ` [#${channel.name} -- ${channel.guild.name}]`
-    : ` [${channel.recipient.username}#${channel.recipient.discriminator}]`;
-
-module.exports = (message, channel = null) => {
+module.exports = (message, qChannel = null) => {
   const dateString = new Date().toLocaleString();
-  let channelInfo = channel ? formatChannelInfo(channel) : "";
+  let channelInfo = qChannel ? `[${qChannel.formattedName}]` : "";
   console.log(`${dateString}:${channelInfo}`, message);
 };

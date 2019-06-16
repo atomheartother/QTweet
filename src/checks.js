@@ -4,21 +4,22 @@ let checks = (module.exports = {});
 const log = require("./log");
 
 // Takes an author and returns whether or not they are an admin
-checks.isAdmin = (author, channel, callback) => {
+checks.isAdmin = (author, qChannel, callback) => {
   callback(author.id === config.ownerID);
 };
 
 // Takes an author. checks that they're able to perform mod-level commands
-checks.isMod = (author, channel, callback) => {
+checks.isMod = (author, qChannel, callback) => {
   const isSomeOwner =
     author.id === config.ownerID ||
-    (!!channel && !!channel.guild && author.id === channel.guild.ownerID);
+    (!!qChannel && author.id === qChannel.ownerID());
   if (isSomeOwner)
     // The user is either the channel owner or us. We can just accept their command
     callback(true);
-  else if (channel && channel.guild) {
+  else if (qChannel && qChannel.guildId()) {
     // Less fun part. We need to get their GuildMember object first of all
-    channel.guild
+    qChannel
+      .guild()
       .fetchMember(author)
       .then(member => {
         // Are they an admin or have global management rights? (means they're a moderator)
@@ -36,7 +37,7 @@ checks.isMod = (author, channel, callback) => {
         callback(modRole ? true : false);
       })
       .catch(err => {
-        log(`Couldn't get info for ${author.username}`, channel);
+        log(`Couldn't get info for ${author.username}`, qChannel);
         log(err);
         callback(false);
       });
@@ -45,10 +46,10 @@ checks.isMod = (author, channel, callback) => {
   }
 };
 
-checks.isDm = (author, channel, callback) => {
-  callback(channel.type === "dm");
+checks.isDm = (author, qChannel, callback) => {
+  callback(qChannel.type === "dm");
 };
 
-checks.isNotDm = (author, channel, callback) => {
-  callback(channel.type !== "dm");
+checks.isNotDm = (author, qChannel, callback) => {
+  callback(qChannel.type !== "dm");
 };

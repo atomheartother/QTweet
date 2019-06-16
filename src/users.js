@@ -10,6 +10,7 @@ const post = require("./post");
 const gets = require("./gets");
 const discord = require("./discord");
 const log = require("./log");
+const QChannel = require("./QChannel");
 
 // Users:
 // Dict of TwitterUser, using userId as key
@@ -22,16 +23,21 @@ const log = require("./log");
 users.collection = {};
 
 // Returns a list of channel objects, each in an unique guild
+// DMs are also returned
 users.getUniqueChannels = () => {
-  const channels = [];
+  const qChannels = [];
   Object.keys(users.collection).forEach(userId => {
     const user = users.collection[userId];
     user.subs.forEach(get => {
-      if (!channels.find(channel => channel.guild.id === get.channel.guild.id))
-        channels.push(get.channel);
+      if (
+        !qChannels.find(
+          qChannel => qChannel.ownerId() === get.qChannel.ownerId()
+        )
+      )
+        qChannels.push(get.qChannel);
     });
   });
-  return channels;
+  return qChannels;
 };
 
 // Returns a list of get objects matching this guild, with added userId of the get
@@ -40,12 +46,7 @@ users.getGuildGets = guildId =>
     (acc, userId) =>
       acc.concat(
         users.collection[userId].subs
-          .filter(
-            get =>
-              get.channel &&
-              get.channel.guild &&
-              get.channel.guild.id === guildId
-          )
+          .filter(get => get.qChannel && get.qChannel.guildId() === guildId)
           .map(get => ({
             ...get,
             userId
@@ -60,7 +61,7 @@ users.getChannelGets = channelId =>
     (acc, userId) =>
       acc.concat(
         users.collection[userId].subs
-          .filter(get => get.channel.id === channelId)
+          .filter(get => get.qChannel.id === channelId)
           .map(get => ({
             ...get,
             userId
@@ -92,7 +93,7 @@ users.save = () => {
     }
     for (let get of users.collection[userId].subs) {
       let txt = get.hasOwnProperty("text") ? get.text : true;
-      usersCopy[userId].subs.push({ id: get.channel.id, text: txt });
+      usersCopy[userId].subs.push({ id: get.qChannel.id, text: txt });
     }
   }
   let json = JSON.stringify(usersCopy);
@@ -125,8 +126,8 @@ users.load = callback => {
           const subList = usersCopy[userId].subs || usersCopy[userId].channels;
           // Iterate over every subscription
           for (const { id, text } of subList) {
-            let channel = discord.getChannel(id);
-            if (channel === undefined) {
+            const qChannel = new QChannel({ id });
+            if (!qChannel) {
               log(
                 "Tried to load undefined channel: " +
                   id +
@@ -138,7 +139,7 @@ users.load = callback => {
             if (text === false) {
               options.text = false;
             }
-            gets.add(channel, userId, name, options);
+            gets.add(qChannel, userId, name, options);
           }
         }
         callback();
@@ -148,11 +149,11 @@ users.load = callback => {
 };
 
 // List users we're getting in this channel, available to everyone
-users.list = channel => {
-  const gets = users.getChannelGets(channel.id);
+users.list = qChannel => {
+  const gets = users.getChannelGets(qChannel.id);
   if (gets.length < 1) {
     post.message(
-      channel,
+      qChannel,
       `**You aren't subscribed to any twitter users**!\nUse \`${
         config.prefix
       }start <twitter handle>\` to begin!`
@@ -174,7 +175,7 @@ users.list = channel => {
     counter++;
     if (counter > 20) {
       page++;
-      post.embed(channel, { embed }, false);
+      post.embed(qChannel, { embed }, false);
       embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
         .setTitle(`${gets.length} subscriptions (page ${page}):`)
@@ -182,13 +183,13 @@ users.list = channel => {
       counter = 0;
     }
   });
-  if (counter > 0) post.embed(channel, { embed }, false);
+  if (counter > 0) post.embed(qChannel, { embed }, false);
 };
 
-users.adminListGuild = (channel, guildId) => {
+users.adminListGuild = (qChannel, guildId) => {
   const gets = users.getGuildGets(guildId);
   if (gets.length < 1) {
-    post.message(channel, `I'm not getting any tweets from guild ${guildId}!`);
+    post.message(qChannel, `I'm not getting any tweets from guild ${guildId}!`);
     return;
   }
   let page = 1;
@@ -197,13 +198,16 @@ users.adminListGuild = (channel, guildId) => {
     .setTitle(`${gets.length} subscriptions for this guild:`)
     .setURL(config.profileURL);
   let counter = 0;
-  gets.forEach(({ userId, channel: c, text }) => {
+  gets.forEach(({ userId, qChannel, text }) => {
     const user = users.collection[userId];
-    embed.addField(user.name, `#${c.name}, ${text ? "With text" : "No text"}`);
+    embed.addField(
+      user.name,
+      `${qChannel.name}, ${text ? "With text" : "No text"}`
+    );
     counter++;
     if (counter > 20) {
       page++;
-      post.embed(channel, { embed }, false);
+      post.embed(qChannel, { embed }, false);
       embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
         .setTitle(`${gets.length} subscriptions for this guild (page ${page}):`)
@@ -211,34 +215,39 @@ users.adminListGuild = (channel, guildId) => {
       counter = 0;
     }
   });
-  if (counter > 0) post.embed(channel, { embed }, false);
+  if (counter > 0) post.embed(qChannel, { embed }, false);
 };
 
 // List all gets in every channel, available to the admin only, and in DMs
-users.adminList = channel => {
-  const guilds = users.getUniqueChannels().map(c => c.guild);
+users.adminList = qChannel => {
+  const qChannels = users.getUniqueChannels();
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(0xf26d7a)
-    .setTitle(`In ${guilds.length} guilds:`)
+    .setTitle(`In ${qChannels.length} guilds:`)
     .setURL(config.profileURL);
   // We now have an object for every guild we're in
   let counter = 0;
-  guilds.forEach(g => {
-    embed.addField(
-      g.name,
-      `Guild ID: \`${g.id}\`\nOwner name: \`${g.owner.user.tag}\``
-    );
+  qChannels.forEach(qc => {
+    if (qc.guildId()) {
+      const g = qc.guild();
+      embed.addField(
+        g.name,
+        `Guild ID: \`${g.id}\`\nOwner name: \`${g.owner.user.tag}\``
+      );
+    } else {
+      embed.addField(qc.name, qc.formattedName);
+    }
     counter++;
     if (counter > 20) {
       page++;
-      post.embed(channel, { embed }, false);
+      post.embed(qChannel, { embed }, false);
       embed = new Discord.RichEmbed()
         .setColor(0xf26d7a)
-        .setTitle(`In ${guilds.length} guilds (page ${page}):`)
+        .setTitle(`In ${qChannels.length} guilds (page ${page}):`)
         .setURL(config.profileURL);
       counter = 0;
     }
   });
-  if (counter > 0) post.embed(channel, { embed }, false);
+  if (counter > 0) post.embed(qChannel, { embed }, false);
 };

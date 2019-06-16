@@ -6,8 +6,7 @@ const post = require("./post");
 var config = require("../config.json");
 
 // Add a get to the user list
-// options: {text: boolean}
-gets.add = (channel, userId, name, options) => {
+gets.add = (qChannel, userId, name, { text }) => {
   if (!users.collection.hasOwnProperty(userId)) {
     // Create the user object
     users.collection[userId] = { subs: [] };
@@ -16,25 +15,25 @@ gets.add = (channel, userId, name, options) => {
     users.collection[userId].name = name;
   }
 
-  if (users.collection[userId].subs.find(get => get.channel.id == channel.id))
+  if (users.collection[userId].subs.find(get => get.qChannel.id == qChannel.id))
     return;
 
   users.collection[userId].subs.push({
-    channel: channel,
-    text: options.text
+    qChannel,
+    text
   });
 };
 
 // Remove a get from the user list
 // This function doesn't save to fs automatically
-gets.rm = (channel, screenName) => {
+gets.rm = (qChannel, screenName) => {
   twitter
     .userLookup({ screen_name: screenName })
     .then(function(data) {
       let userId = data[0].id_str;
       if (!users.collection.hasOwnProperty(userId)) {
         post.message(
-          channel,
+          qChannel,
           "**You're not  subscribed to this user.**\nUse `" +
             config.prefix +
             "start " +
@@ -43,17 +42,12 @@ gets.rm = (channel, screenName) => {
         );
         return;
       }
-      let idx = -1;
-      for (let i = 0; i < users.collection[userId].subs.length; i++) {
-        let curChannel = users.collection[userId].subs[i].channel;
-        if (curChannel.id == channel.id) {
-          idx = i;
-          break;
-        }
-      }
+      const idx = users.collection[userId].subs.findIndex(
+        ({ qChannel: { id } }) => qChannel.id == id
+      );
       if (idx == -1) {
         post.message(
-          channel,
+          qChannel,
           "**You're not subscribed to this user.**\nUse `" +
             config.prefix +
             "start " +
@@ -65,19 +59,22 @@ gets.rm = (channel, screenName) => {
       // Remove element from channels
       users.collection[userId].subs.splice(idx, 1);
       if (users.collection[userId].subs.length < 1) {
-        // If no one needs this user's tweets we can delete the enty
+        // If no one needs this user's tweets we can delete the entry
         delete users.collection[userId];
         // ...and re-register the stream, which will now delete the user
         twitter.createStream();
       }
       post.message(
-        channel,
+        qChannel,
         `**I've unsubscribed you from @${screenName}!**\nYou should now stop getting any messages from them.`
       );
       users.save();
     })
     .catch(function(err) {
-      post.message(channel, "I can't find a user by the name of " + screenName);
+      post.message(
+        qChannel,
+        "I can't find a user by the name of " + screenName
+      );
     });
 };
 
@@ -89,7 +86,7 @@ gets.rmChannel = channelId => {
     let user = users.collection[userId];
     var i = user.subs.length;
     while (i--) {
-      if (channelId === user.subs[i].channel.id) {
+      if (channelId === user.subs[i].qChannel.id) {
         count++;
         // We should remove this get
         user.subs.splice(i, 1);
@@ -115,7 +112,7 @@ gets.rmGuild = id => {
     let user = users.collection[userId];
     var i = user.subs.length;
     while (i--) {
-      if (id === user.subs[i].channel.guild.id) {
+      if (id === user.subs[i].qChannel.guildId()) {
         // We should remove this get
         user.subs.splice(i, 1);
       }
