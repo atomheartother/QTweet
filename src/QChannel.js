@@ -6,9 +6,9 @@ const log = require("./log");
 const getType = c => c.type;
 const getName = c => {
   if (c.type === "dm") {
-    return `\`${c.recipient.tag}\``;
+    return `${c.recipient.tag}`;
   }
-  return `\`#${c.name}\``;
+  return `#${c.name}`;
 };
 
 const getFormattedName = c => {
