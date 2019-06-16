@@ -43,7 +43,8 @@ class Stream {
     log(`Creating a stream with ${this.userIds.length} registered users`);
     this.stream = this.tClient
       .stream("statuses/filter", {
-        follow: this.userIds.toString()
+        follow: this.userIds.toString(),
+        tweet_mode: "extended"
       })
       .on("start", this.streamStart)
       .on("data", this.streamData)
