@@ -70,7 +70,7 @@ twitter.formatTweet = (tweet, callback) => {
   let { user, text, entities, extended_entities } = tweet;
   let embed = {
     author: {
-      name: `${user.name} (${user.screen_name})`,
+      name: `${user.name} (@${user.screen_name})`,
       url: "https://twitter.com/" + user.screen_name
     },
     thumbnail: {
