@@ -114,7 +114,7 @@ gets.rmGuild = async id => {
     let user = users.collection[userId];
     let x = user.subs.length;
     while (x--) {
-      const gid = await user.subs[x].qChannel.guildId();
+      const { gid } = user.subs[x].qChannel;
       if (id === gid) {
         // We should remove this get
         user.subs.splice(x, 1);

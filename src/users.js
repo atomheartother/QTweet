@@ -30,10 +30,10 @@ users.getUniqueChannels = async () => {
     const user = users.collection[keysArray[i]];
     for (let j = 0; j < user.subs.length; j++) {
       const getQChannel = user.subs[j].qChannel;
-      const getId = await getQChannel.guildId();
+      const { gid: getId } = getQChannel;
       let unique = true;
       for (let qcIdx = 0; qcIdx < qChannels.length; qcIdx++) {
-        const qcGOID = await qChannels[qcIdx].guildId();
+        const { gid: qcGOID } = await qChannels[qcIdx];
         if (qcGOID === getId) {
           unique = false;
           break;
@@ -55,8 +55,8 @@ users.getGuildGets = async guildId => {
     for (let j = 0; j < subs.length; j++) {
       const get = subs[j];
       if (get.qChannel.type === "dm") continue;
-      const gID = await get.qChannel.guildId();
-      if (gID === guildId) {
+      const { gid } = get.qChannel;
+      if (gid === guildId) {
         gets.push({ ...get, userId });
       }
     }
@@ -248,7 +248,7 @@ users.adminList = async qChannel => {
   let counter = 0;
   for (let i = 0; i < qChannels.length; i++) {
     const qc = qChannels[i];
-    const g = await qc.guild();
+    const g = qc.guild();
     if (g !== null) {
       embed.addField(
         g.name,
