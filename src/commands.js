@@ -26,8 +26,29 @@ const getScreenName = word => {
 
 const tweet = (args, qChannel) => {
   const screenName = getScreenName(args[0]);
+  let count = 1;
+  if (args.length > 1) {
+    count = Number(args[1]);
+  }
+  if (isNaN(count)) {
+    post.message(
+      qChannel,
+      `**I need a number of tweets to get!**\nWait a minute, ${
+        args[1]
+      } isn't a number! >:c`
+    );
+    return;
+  }
+  const maxCount = 15;
+  if (count > maxCount) {
+    post.message(
+      qChannel,
+      `**Limited to ${maxCount} tweets**\nHere's the latest ${maxCount} tweets!`
+    );
+    count = maxCount;
+  }
   twitter
-    .userTimeline({ screen_name: screenName, tweet_mode: "extended" })
+    .userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
     .then(function(tweets, error) {
       if (tweets.error) {
         if (tweets.error === "Not authorized.") {
@@ -54,23 +75,22 @@ const tweet = (args, qChannel) => {
         );
         return;
       }
-      let tweet = tweets.find(t => twitter.isValid(t));
-      if (!tweet) {
-        tweet = tweets.find(t => t && t.user);
-        if (!tweet) {
-          post.message(
-            qChannel,
-            "**This user doesn't seem to have any valid tweets**\nYou might want to try again, maybe Twitter messed up?"
-          );
-          log("Invalid tweets from timeline", qChannel);
-          log(tweets, qChannel);
-          return;
-        }
+      let validTweets = tweets.filter(t => t && t.user);
+      if (validTweets.length == 0) {
+        post.message(
+          qChannel,
+          "**This user doesn't seem to have any valid tweets**\nYou might want to try again, maybe Twitter messed up?"
+        );
+        log("Invalid tweets from timeline", qChannel);
+        log(tweets, qChannel);
+        return;
       }
-      twitter.formatTweet(tweet, embed => {
-        post.embed(qChannel, embed, true);
+      validTweets.forEach(tweet => {
+        twitter.formatTweet(tweet, embed => {
+          post.embed(qChannel, embed, true);
+        });
       });
-      log(`Posted latest tweet from ${screenName}`, qChannel);
+      log(`Posted latest ${count} tweet(s) from ${screenName}`, qChannel);
     })
     .catch(function(response) {
       const err =
