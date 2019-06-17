@@ -49,6 +49,11 @@ class QChannel {
     return c.send(content);
   }
 
+  async sendToOwner(content) {
+    const c = await this.owner();
+    return c.send(content);
+  }
+
   async guildId() {
     if (this.type === "dm") {
       return this.ownerId();

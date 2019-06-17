@@ -66,8 +66,8 @@ const handleDiscordPostError = async (
     // The channel was deleted or we don't have access to it, auto-delete it
     const count = gets.rmChannel(qChannel.id);
     log(`${errCode}: Auto-deleted ${count} gets, qChannel removed`, qChannel);
-    post.message(
-      qChannel.owner(),
+    post.dm(
+      qChannel,
       `Hi! I tried to post in ${
         qChannel.name
       } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} subscriptions in that channel.\n\nIf this isn't what you wanted, please contact my owner through our support server: ${
@@ -99,7 +99,7 @@ const handleDiscordPostError = async (
     }help\` message.`;
     if (qChannel.type === "text" && errorCount === 0) {
       const postableQChannel = await qChannel.firstPostableChannel();
-      if (postableQChannel) {
+      if (postableQChannel && postableQChannel.id !== null) {
         postableQChannel
           .send(permissionsMsg)
           .then(
@@ -118,7 +118,7 @@ const handleDiscordPostError = async (
       }
     }
     // If it was a message, just try and msg the owner
-    post.message(qChannel.owner(), permissionsMsg);
+    post.dm(qChannel, permissionsMsg);
     log(`${errCode}: Owner has been notified`, qChannel);
     return;
   } else if (
@@ -151,9 +151,9 @@ const handleDiscordPostError = async (
     qChannel
   );
   log(error, qChannel);
-  if (qChannel.type !== "dm")
-    post.message(
-      qChannel.owner(),
+  if (type !== "dm")
+    post.dm(
+      qChannel,
       `I'm trying to send a message in ${
         qChannel.name
       } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${errCode} ${
@@ -190,4 +190,10 @@ post.announcement = (message, qChannels) => {
   setTimeout(() => {
     post.announcement(message, qChannels);
   }, 1000);
+};
+
+post.dm = (qChannel, message) => {
+  qChannel.sendToOwner(message).catch(err => {
+    handleDiscordPostError(err, qChannel, "dm", message);
+  });
 };
