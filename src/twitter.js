@@ -35,10 +35,14 @@ const resetTimeout = () => {
 };
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
-const hasMedia = ({ extended_entities }) =>
-  extended_entities &&
-  extended_entities.hasOwnProperty("media") &&
-  extended_entities.media.length > 0;
+const hasMedia = ({ extended_entities, extended_tweet }) =>
+  (extended_entities &&
+    extended_entities.hasOwnProperty("media") &&
+    extended_entities.media.length > 0) ||
+  (extended_tweet &&
+    extended_tweet.extended_entities &&
+    extended_tweet.extended_entities.media &&
+    extended_tweet.extended_entities.media.length > 0);
 
 const startTimeout = () => {
   resetTimeout();
