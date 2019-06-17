@@ -10,10 +10,9 @@ checks.isAdmin = (author, qChannel, callback) => {
 
 // Takes an author. checks that they're able to perform mod-level commands
 checks.isMod = async (author, qChannel, callback) => {
-  const ownerId = await qChannel.ownerId();
-  const guild = await qChannel.guild();
+  const guild = qChannel.guild();
   const isSomeOwner =
-    author.id === config.ownerID || (!!qChannel && author.id === ownerId);
+    author.id === config.ownerID || (!!qChannel && author.id === qChannel.oid);
   if (isSomeOwner)
     // The user is either the channel owner or us. We can just accept their command
     callback(true);
