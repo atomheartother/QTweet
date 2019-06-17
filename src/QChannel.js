@@ -35,25 +35,22 @@ class QChannel {
     this.oid = this.type === "dm" ? c.recipient.id : c.guild.ownerID;
   }
 
-  // Check if we can still access this channel
-  async valid() {
-    if (this.type === "dm") {
-      const u = discord.getUser(this.id);
-      if (u.dmChannel) return true;
-      return !!(await u.createDM());
-    }
-    return !!discord.getChannel(this.id);
-  }
-
   // Returns a discord.js channel object
   async obj() {
     if (this.type === "dm") {
-      const u = discord.getUser(this.id);
-      if (u.dmChannel) return u.dmChannel;
-      const dmChannel = await u.createDM();
-      return dmChannel;
+      const usr = discord.getUser(this.id);
+      return usr.dmChannel ? usr.dmChannel : usr.createDM();
     }
     return discord.getChannel(this.id);
+  }
+
+  // Return a direct channel to the owner of this qChannel
+  async ownerObj() {
+    if (this.type === "dm") {
+      return this.obj();
+    }
+    const usr = discord.getUser(this.oid);
+    return usr.dmChannel ? usr.dmChannel : usr.createDM();
   }
 
   async send(content) {
@@ -62,7 +59,7 @@ class QChannel {
   }
 
   async sendToOwner(content) {
-    const c = await this.owner();
+    const c = await this.ownerObj();
     return c.send(content);
   }
 
@@ -72,17 +69,6 @@ class QChannel {
       return null;
     }
     return discord.getGuild(this.gid);
-  }
-
-  // Return a qChannel for the owner of this qChannel
-  async owner() {
-    if (this.type === "dm") {
-      return this;
-    }
-    const usr = discord.getUser(this.oid);
-    if (usr.dmChannel) return new QChannel(usr.dmChannel);
-    const dm = await usr.createDM();
-    return new QChannel(dm);
   }
 
   async firstPostableChannel() {
