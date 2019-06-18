@@ -121,7 +121,7 @@ handleGuildCreate = async guild => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
   const qc = await QChannel.bestGuildChannel(guild);
-  post.message(
+  post.dm(
     qc,
     `Hello, I'm ${
       config.botName
