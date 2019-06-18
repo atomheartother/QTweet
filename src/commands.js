@@ -240,9 +240,8 @@ const stop = (args, qChannel) => {
 const stopchannel = (args, qChannel) => {
   targetChannel = qChannel.id;
   channelName = qChannel.name;
-  if (args.length > 0) {
-    targetChannel = args[0];
-    channelObj = channel.guild.channels.find(c => c.id === targetChannel);
+  if (args.length > 0 && qChannel.type !== "dm") {
+    channelObj = qChannel.guild().channels.find(c => c.id === targetChannel);
     if (!channelObj) {
       post.message(
         qChannel,
