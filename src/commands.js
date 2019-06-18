@@ -24,7 +24,7 @@ const getScreenName = word => {
   return word;
 };
 
-const tweet = (args, qChannel) => {
+const tweet = (args, qChannel, author) => {
   const screenName = getScreenName(args[0]);
   let count = 1;
   if (args.length > 1) {
@@ -39,95 +39,97 @@ const tweet = (args, qChannel) => {
     );
     return;
   }
-  const maxCount = 15;
-  if (count > maxCount) {
-    post.message(
-      qChannel,
-      `**Limited to ${maxCount} tweets**\nHere's the latest ${maxCount} tweets!`
-    );
-    count = maxCount;
-  }
-  twitter
-    .userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
-    .then(function(tweets, error) {
-      if (tweets.error) {
-        if (tweets.error === "Not authorized.") {
-          post.message(
-            qChannel,
-            `**I tried getting a tweet from ${screenName} but Twitter tells me that's unauthorized.**\nThis is usually caused by a blocked account.`
-          );
-        } else {
-          post.message(
-            qChannel,
-            `**${screenName} does exist but something seems wrong with their profile**\nI can't get their timeline... Twitter had this to say:\n${
-              tweets.error
-            }`
-          );
-          log("Unknown error on twitter timeline", qChannel);
-          log(tweets.error, qChannel);
+  const maxCount = 5;
+  checks.isMod(author, qChannel, isMod => {
+    if (!isMod && count > maxCount) {
+      post.message(
+        qChannel,
+        `**Limited to ${maxCount} tweets**\nYou're not a mod so I have to limit you - here's the latest ${maxCount} tweets!`
+      );
+      count = maxCount;
+    }
+    twitter
+      .userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
+      .then(function(tweets, error) {
+        if (tweets.error) {
+          if (tweets.error === "Not authorized.") {
+            post.message(
+              qChannel,
+              `**I tried getting a tweet from ${screenName} but Twitter tells me that's unauthorized.**\nThis is usually caused by a blocked account.`
+            );
+          } else {
+            post.message(
+              qChannel,
+              `**${screenName} does exist but something seems wrong with their profile**\nI can't get their timeline... Twitter had this to say:\n${
+                tweets.error
+              }`
+            );
+            log("Unknown error on twitter timeline", qChannel);
+            log(tweets.error, qChannel);
+          }
+          return;
         }
-        return;
-      }
-      if (tweets.length < 1) {
-        post.message(
-          qChannel,
-          "It doesn't look like " + screenName + " has any tweets... "
-        );
-        return;
-      }
-      let validTweets = tweets.filter(t => t && t.user);
-      if (validTweets.length == 0) {
-        post.message(
-          qChannel,
-          "**This user doesn't seem to have any valid tweets**\nYou might want to try again, maybe Twitter messed up?"
-        );
-        log("Invalid tweets from timeline", qChannel);
-        log(tweets, qChannel);
-        return;
-      }
-      validTweets.forEach(tweet => {
-        twitter.formatTweet(tweet, embed => {
-          post.embed(qChannel, embed, true);
+        if (tweets.length < 1) {
+          post.message(
+            qChannel,
+            "It doesn't look like " + screenName + " has any tweets... "
+          );
+          return;
+        }
+        let validTweets = tweets.filter(t => t && t.user);
+        if (validTweets.length == 0) {
+          post.message(
+            qChannel,
+            "**This user doesn't seem to have any valid tweets**\nYou might want to try again, maybe Twitter messed up?"
+          );
+          log("Invalid tweets from timeline", qChannel);
+          log(tweets, qChannel);
+          return;
+        }
+        validTweets.forEach(tweet => {
+          twitter.formatTweet(tweet, embed => {
+            post.embed(qChannel, embed, true);
+          });
         });
+        log(`Posted latest ${count} tweet(s) from ${screenName}`, qChannel);
+      })
+      .catch(function(response) {
+        const err =
+          response &&
+          response.errors &&
+          response.errors.length > 0 &&
+          response.errors[0];
+        if (!err) {
+          log("Exception thrown without error", qChannel);
+          log(response, qChannel);
+          post.message(
+            qChannel,
+            `**Something went wrong getting tweets from ${screenName}**\nI'm looking into it, sorry for the trouble!`
+          );
+          return;
+        }
+        const { code, message } = err;
+        if (code === 34)
+          // Not found
+          post.message(
+            qChannel,
+            `**Twitter tells me @${screenName} doesn't exist!**\nMake sure you enter the screen name and not the display name.`
+          );
+        else {
+          post.message(
+            qChannel,
+            `**There was a problem getting @${screenName}'s latest tweet**\nIt's possible Twitter is temporarily down.\nTwitter had this to say: \`${message}\``
+          );
+          log(
+            `Couldn't get latest tweet from ${screenName}, user input was ${
+              args[0]
+            }:`,
+            qChannel
+          );
+          log(response, qChannel);
+        }
       });
-      log(`Posted latest ${count} tweet(s) from ${screenName}`, qChannel);
-    })
-    .catch(function(response) {
-      const err =
-        response &&
-        response.errors &&
-        response.errors.length > 0 &&
-        response.errors[0];
-      if (!err) {
-        log("Exception thrown without error", qChannel);
-        log(response, qChannel);
-        post.message(
-          qChannel,
-          `**Something went wrong getting tweets from ${screenName}**\nI'm looking into it, sorry for the trouble!`
-        );
-        return;
-      }
-      const { code, message } = err;
-      if (code === 34)
-        // Not found
-        post.message(
-          qChannel,
-          `**Twitter tells me @${screenName} doesn't exist!**\nMake sure you enter the screen name and not the display name.`
-        );
-      else {
-        post.message(
-          qChannel,
-          `**There was a problem getting @${screenName}'s latest tweet**\nIt's possible Twitter is temporarily down.\nTwitter had this to say: \`${message}\``
-        );
-        log(
-          `Couldn't get latest tweet from ${screenName}, user input was ${
-            args[0]
-          }:`,
-          qChannel
-        );
-        log(response, qChannel);
-      }
-    });
+  });
 };
 
 const start = (args, qChannel) => {
