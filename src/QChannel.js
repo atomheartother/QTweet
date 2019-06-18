@@ -19,7 +19,7 @@ const getFormattedName = c => {
 };
 
 class QChannel {
-  constructor({ id, type }) {
+  constructor({ id }) {
     // Check validity of object
     const c = discord.getChannel(id);
     if (!c) {
@@ -38,8 +38,7 @@ class QChannel {
   // Returns a discord.js channel object
   async obj() {
     if (this.type === "dm") {
-      const usr = discord.getUser(this.id);
-      return usr.dmChannel ? usr.dmChannel : usr.createDM();
+      return discord.getUserDm(this.id);
     }
     return discord.getChannel(this.id);
   }
@@ -47,10 +46,9 @@ class QChannel {
   // Return a direct channel to the owner of this qChannel
   async ownerObj() {
     if (this.type === "dm") {
-      return this.obj();
+      return discord.getUserDm(this.id);
     }
-    const usr = discord.getUser(this.oid);
-    return usr.dmChannel ? usr.dmChannel : usr.createDM();
+    return discord.getUserDm(this.oid);
   }
 
   async send(content) {
@@ -71,17 +69,41 @@ class QChannel {
     return discord.getGuild(this.gid);
   }
 
-  async firstPostableChannel() {
-    if (this.type !== "text") return this;
+  static async bestGuildChannel(guild) {
+    // Check the system channel
+    if (guild.systemChannelID) {
+      const sysChan = discord.getChannel(guild.systemChannelID);
+      if (sysChan && discord.canPostIn(sysChan)) return new QChannel(sysChan);
+    }
+
+    // Check #general
+    const genChan = guild.channels.find(c => c.name === "general");
+    if (genChan && discord.canPostIn(genChan)) return new QChannel(genChan);
+
+    // Iterate over all channels and find the first best one
+    const firstBest = guild.channels.find(
+      c => c.type === "text" && discord.canPostIn(c)
+    );
+    if (firstBest) return new QChannel(firstBest);
+    // Try to reach the owner, this might fail, we'll return null here if all fails
+    const dm = await discord.getUserDm(guild.ownerID);
+    if (dm) return new QChannel(dm);
+    return null;
+  }
+
+  // Best channel starting from this channel
+  // Can return null
+  async bestChannel() {
     const c = await this.obj();
     if (discord.canPostIn(c)) {
       return this;
     }
-    const firstBest = c.guild.channels
-      .filter(c => c.type === "text")
-      .find(c => discord.canPostIn(c));
-    if (!firstBest) return null;
-    return new QChannel(firstBest);
+    // From now on we can't post in this channel
+    if (this.type === "dm") {
+      // We have no other point of contact than DMs
+      return null;
+    }
+    return QChannel.bestGuildChannel(this.guild());
   }
 
   serialize() {
@@ -93,10 +115,9 @@ class QChannel {
 
   static async unserialize({ id, isDM }) {
     if (!isDM) return new QChannel({ id });
-    const u = discord.getUser(id);
-    if (u.dmChannel) return new QChannel({ id: u.dmChannel.id });
-    const dmChannel = await u.createDM();
-    return new QChannel({ id: dmChannel.id });
+    const dm = await discord.getUserDm(id);
+    if (dm) return new QChannel(dm);
+    return null;
   }
 }
 

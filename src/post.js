@@ -54,6 +54,9 @@ function unshortenUrls(text, callback) {
     });
 }
 
+// Handle an error with sending a message:
+// - Try to notify the user
+// - Plan for the notification failing too
 const handleDiscordPostError = async (
   error,
   qChannel,
@@ -62,19 +65,39 @@ const handleDiscordPostError = async (
   errorCount = 0
 ) => {
   const errCode = error.statusCode || error.code || error.status;
-  if (errCode === 404 || errCode === 10003) {
-    // The channel was deleted or we don't have access to it, auto-delete it
-    const count = gets.rmChannel(qChannel.id);
-    log(`${errCode}: Auto-deleted ${count} gets, qChannel removed`, qChannel);
-    post.dm(
-      qChannel,
-      `Hi! I tried to post in ${
-        qChannel.name
-      } but Discord tells me I can't access it anymore.\n\nI took the liberty of stopping all ${count} subscriptions in that channel.\n\nIf this isn't what you wanted, please contact my owner through our support server: ${
-        config.supportServ
-      }`
+  // We keep fucking up. Stop trying.
+  if (errorCount >= 2) {
+    log(
+      `${errCode}: Discord servers failed receiving ${type} ${errorCount} times, giving up`,
+      qChannel
     );
     return;
+  }
+  const postableQChannel = await qChannel.bestChannel();
+  if (!postableQChannel && postableQChannel.id === null) {
+    log(`Couldn't find a way to send ${type}`, qChannel);
+    return;
+  }
+  // New message type
+  let newType = type;
+  // New message to send
+  let newMsg = msg;
+  // Log message to print before sending
+  let logMsg = "";
+  // delay before sending
+  let delay = 0;
+  // channel to post to
+  let newQchannel = postableQChannel;
+  if (errCode === 404 || errCode === 10003) {
+    // The channel was deleted or we don't have access to it, auto-delete it
+    // And notify the user
+    const count = gets.rmChannel(qChannel.id);
+    logMsg = `${errCode}: Auto-deleted ${count} gets, qChannel removed`;
+    newMsg = `**Inaccessible channel**: I tried to post in ${
+      qChannel.name
+    } but Discord says it doesn't exist anymore.\nI took the liberty of stopping all ${count} subscriptions in that channel.\n\nIf this isn't what you wanted, please contact my creator through our support server!`;
+    newType = "404 notification";
+    resend = false;
   } else if (
     errCode === 403 ||
     errCode === 50013 ||
@@ -83,12 +106,11 @@ const handleDiscordPostError = async (
     errCode === 40001
   ) {
     // Discord MissingPermissions error
-    // Try to find the 1st qChannel we can post in
-    log(
-      `Tried to post ${type} but lacked permissions: ${errCode} ${error.name}`,
-      qChannel
-    );
-    const permissionsMsg = `**Missing Permissions:** I couldn't send a ${type} in ${
+    // Try to notify the user that something is wrong
+    logMsg = `Tried to post ${type} but lacked permissions: ${errCode} ${
+      error.name
+    }`;
+    newMsg = `**Missing Permissions:** I couldn't send a ${type} in ${
       qChannel.name
     }.\nIf a mod could give me the **Send Messages** and **Send Embeds** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
       config.prefix
@@ -97,69 +119,42 @@ const handleDiscordPostError = async (
     }\`.\nIf you think you've done everything right but keep getting this message, join our support server, it's linked in my \`${
       config.prefix
     }help\` message.`;
-    if (qChannel.type === "text" && errorCount === 0) {
-      const postableQChannel = await qChannel.firstPostableChannel();
-      if (postableQChannel && postableQChannel.id !== null) {
-        postableQChannel
-          .send(permissionsMsg)
-          .then(
-            log("Sent a message asking to get permissions", postableQChannel)
-          )
-          .catch(err => {
-            handleDiscordPostError(
-              err,
-              postableChannel,
-              "message",
-              permissionsMsg,
-              1
-            );
-          });
-        return;
-      }
-    }
-    // If it was a message, just try and msg the owner
-    post.dm(qChannel, permissionsMsg);
-    log(`${errCode}: Owner has been notified`, qChannel);
-    return;
+    newType = "permission message";
   } else if (
     errCode === "ECONNRESET" ||
     errCode === "read ECONNRESET" ||
     errCode === 504
   ) {
-    // Discord servers fucked up, gatweay timeout
-    if (errorCount >= 2) {
-      log(
-        `${errCode}: Discord servers failed receiving ${type} ${errorCount} times, giving up`,
-        qChannel
-      );
-      return;
-    }
-    log(
-      `${errCode}: Discord servers failed when I tried to send ${type} (attempt #${errorCount +
-        1})`,
-      qChannel
-    );
-    setTimeout(() => {
-      qChannel.send(msg).catch(err => {
-        handleDiscordPostError(err, qChannel, type, msg, errorCount + 1);
-      });
-    }, 5000);
-    return;
+    // There was an error
+    logMsg = `${errCode}: Discord servers failed when I tried to send ${type}`;
+    delay = errorCount * 1500;
+    // retry posting in the same channel
+    newQchannel = qChannel;
+  } else {
+    logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
+      error.message
+    }`;
+    newMsg = `I'm trying to send a message in ${
+      qChannel.name
+    } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${errCode} ${
+      error.message
+    }`;
   }
-  log(
-    `Posting ${type} failed (${errCode} ${error.name}): ${error.message}`,
-    qChannel
-  );
-  log(error, qChannel);
-  if (type !== "dm")
-    post.dm(
-      qChannel,
-      `I'm trying to send a message in ${
-        qChannel.name
-      } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${errCode} ${
-        error.message
-      }`
-    );
+  log(`${logMsg} (attempt #${errorCount})`, qChannel);
+  setTimeout(() => {
+    newQchannel
+      .send(newMsg)
+      .then(log(`Sent ${newType}`, newQchannel))
+      .catch(err => {
+        handleDiscordPostError(
+          err,
+          newQchannel,
+          newType,
+          newMsg,
+          errorCount + 1
+        );
+      });
+  }, delay);
 };
 
 // React is a boolean, if true, add a reaction to the message after posting
