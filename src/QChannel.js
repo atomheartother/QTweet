@@ -95,14 +95,10 @@ class QChannel {
   // Can return null
   async bestChannel() {
     const c = await this.obj();
-    if (discord.canPostIn(c)) {
+    if (this.type === "dm" || discord.canPostIn(c)) {
       return this;
     }
     // From now on we can't post in this channel
-    if (this.type === "dm") {
-      // We have no other point of contact than DMs
-      return null;
-    }
     return QChannel.bestGuildChannel(this.guild());
   }
 
