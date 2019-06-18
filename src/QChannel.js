@@ -77,7 +77,9 @@ class QChannel {
     }
 
     // Check #general
-    const genChan = guild.channels.find(c => c.name === "general");
+    const genChan = guild.channels.find(
+      c => c.type === "text" && c.name === "general"
+    );
     if (genChan && discord.canPostIn(genChan)) return new QChannel(genChan);
 
     // Iterate over all channels and find the first best one
