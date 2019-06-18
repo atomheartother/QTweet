@@ -130,6 +130,9 @@ const handleDiscordPostError = async (
     delay = errorCount * 1500;
     // retry posting in the same channel
     newQchannel = qChannel;
+  } else if (errCode === 50007) {
+    logMsg = `This user won't accept DMs from us`;
+    newQchannel = null;
   } else {
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
@@ -141,20 +144,21 @@ const handleDiscordPostError = async (
     }`;
   }
   log(`${logMsg} (attempt #${errorCount})`, qChannel);
-  setTimeout(() => {
-    newQchannel
-      .send(newMsg)
-      .then(log(`Sent ${newType}`, newQchannel))
-      .catch(err => {
-        handleDiscordPostError(
-          err,
-          newQchannel,
-          newType,
-          newMsg,
-          errorCount + 1
-        );
-      });
-  }, delay);
+  if (newQchannel !== null)
+    setTimeout(() => {
+      newQchannel
+        .send(newMsg)
+        .then(log(`Sent ${newType}`, newQchannel))
+        .catch(err => {
+          handleDiscordPostError(
+            err,
+            newQchannel,
+            newType,
+            newMsg,
+            errorCount + 1
+          );
+        });
+    }, delay);
 };
 
 // React is a boolean, if true, add a reaction to the message after posting
