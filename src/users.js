@@ -146,10 +146,10 @@ users.load = callback => {
             // Old format, no DMs
             qChannel = new QChannel({ id: sub.id });
           }
-          if (qChannel.id === null) {
+          if (!qChannel || qChannel.id === null) {
             log(
               "Tried to load undefined channel: " +
-                id +
+                sub.id +
                 ", we most likely got kicked! :c"
             );
             continue;

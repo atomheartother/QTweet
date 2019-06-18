@@ -29,7 +29,14 @@ module.exports = {
     return dClient.users.get(id);
   },
 
+  getUserDm: async id => {
+    const usr = dClient.users.get(id);
+    if (!usr) return null;
+    return usr.dmChannel ? usr.dmChannel : usr.createDM();
+  },
+
   canPostIn: channel => {
+    if (!channel) return false;
     const permissions = channel.permissionsFor(dClient.user);
     return (
       permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES) &&

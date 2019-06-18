@@ -120,7 +120,7 @@ handleError = error => {
 handleGuildCreate = async guild => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
-  const qc = await QChannel.unserialize({ id: guild.owner.id, isDM: true });
+  const qc = await QChannel.bestGuildChannel(guild);
   post.message(
     qc,
     `Hello, I'm ${
@@ -129,9 +129,7 @@ handleGuildCreate = async guild => {
       config.prefix
     }help\` for commands and useful links!\n**If I'm useful to your server**, please consider upvoting me at ${
       config.profileURL
-    }\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, more info and an exhaustive documentation can be found here: ${
-      config.docsURL
-    }`
+    }\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, check out my documentation for more information.`
   );
 };
 
