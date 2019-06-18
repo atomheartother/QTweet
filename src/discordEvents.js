@@ -46,11 +46,11 @@ const handleCommand = (commandName, author, qChannel, args) => {
           }
           if (validChecks === command.checks.length) {
             // If we get here, everything has succeeded.
-            command.function(args, qChannel);
+            command.function(args, qChannel, author);
           }
         });
       });
-    else command.function(args, qChannel);
+    else command.function(args, qChannel, author);
   }
 };
 
