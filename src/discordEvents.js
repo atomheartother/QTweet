@@ -26,7 +26,10 @@ const handleCommand = (commandName, author, qChannel, args) => {
       post.message(qChannel, usage[commandName]);
       return;
     }
-    log(`Executing command: ${commandName} ${args}`, qChannel);
+    log(
+      `Executing command: "${commandName} ${args}" from ${author.tag}`,
+      qChannel
+    );
     let validChecks = 0;
     let isValid = true;
     if (command.checks.length > 0)
