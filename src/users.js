@@ -145,16 +145,12 @@ users.load = callback => {
           } else if (sub.id) {
             // Old format, no DMs
             qChannel = new QChannel({ id: sub.id });
-          } else {
-            log("Weird sub without a valid channel");
-            log(sub);
           }
           if (!qChannel || qChannel.id === null) {
             log(
-              "Tried to load undefined channel: " +
-                sub.id +
-                ", we most likely got kicked! :c"
+              `Tried to load invalid qChannel for userId ${userId} (${name})`
             );
+            log(sub);
             continue;
           }
           let options = users.defaultOptions();
