@@ -13,9 +13,9 @@ const getName = c => {
 
 const getFormattedName = c => {
   if (c.type === "dm") {
-    return `DM: ${c.recipient.tag}`;
+    return `DM: ${c.recipient.tag} -- ${c.recipient.id}`;
   }
-  return `#${c.name} -- ${c.guild.name}`;
+  return `#${c.name} -- ${c.guild.name} -- ${c.id}`;
 };
 
 class QChannel {
