@@ -168,7 +168,7 @@ const start = (args, qChannel) => {
                 } else if (idx === 0) {
                   return screen_name;
                 }
-                return `, ${screen_name}`;
+                return acc.concat(`, ${screen_name}`);
               },
               ""
             )}`;
@@ -272,11 +272,16 @@ const list = (args, qChannel) => {
   users.list(qChannel);
 };
 
-const adminList = (args, qChannel) => {
-  if (args.length > 0) {
-    users.adminListGuild(qChannel, args[0]);
-  } else {
-    users.adminList(qChannel);
+const admin = (args, qChannel) => {
+  const verb = args.shift();
+  switch (verb[0]) {
+    case "c":
+      channelInfo(args, qChannel);
+      return;
+    case "t":
+      twitterInfo(args, qChannel);
+      return;
+    case ""
   }
 };
 
@@ -316,19 +321,20 @@ module.exports = {
     checks: [],
     minArgs: 0
   },
-  adminlist: {
-    function: adminList,
+  admin: {
+    function: admin,
     checks: [
+      {
+        f: checks.isAdmin,
+        badB:
+          "**Bot Owner command**\nThis command accesses other servers' data so only my owner can use it!"
+      },
       {
         f: checks.isDm,
         badB: "For user privacy reasons, this command is only allowed in DMs."
-      },
-      {
-        f: checks.isAdmin,
-        badB: "Sorry, only my owner can use the adminlist command!"
       }
     ],
-    minArgs: 0
+    minArgs: 1
   },
   tweet: {
     function: tweet,
@@ -340,9 +346,8 @@ module.exports = {
     checks: [
       {
         f: checks.isMod,
-        badB: `You're not authorized to start fetching tweets, you need to be a mod or to have the ${
-          config.modRole
-        } role!`
+        badB:
+          "**Not authorized**\nOnly moderators can unsubscribe from a twitter account!"
       }
     ]
   },
@@ -351,7 +356,8 @@ module.exports = {
     checks: [
       {
         f: checks.isAdmin,
-        badB: "Sorry, only my owner can force me off a server"
+        badB:
+          "**Bot Owner command**\nSorry, only my owner can force me off a server"
       }
     ],
     minArgs: 0
@@ -361,7 +367,8 @@ module.exports = {
     checks: [
       {
         f: checks.isAdmin,
-        badB: "Sorry, only my owner can do announcements!"
+        badB:
+          "**Bot Owner command**\nSorry, only my owner can do announcements!"
       }
     ]
   }
