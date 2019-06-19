@@ -138,11 +138,9 @@ const handleDiscordPostError = async (
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
     }`;
-    newMsg = `I'm trying to send a message in ${
-      qChannel.name
-    } but Discord won't let me! My creator has been warned, but you can contact him if this persists.\n\nThis is the reason Discord gave: ${errCode} ${
-      error.message
-    }`;
+    newQchannel = null;
+    log(qChannel);
+    log(msg);
   }
   log(`${logMsg} (attempt #${errorCount})`, qChannel);
   if (newQchannel !== null)
