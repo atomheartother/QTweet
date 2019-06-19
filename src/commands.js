@@ -48,6 +48,7 @@ const tweet = (args, qChannel, author) => {
       );
       count = maxCount;
     }
+    if (count < 1) count = 1;
     twitter
       .userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
       .then(function(tweets, error) {
