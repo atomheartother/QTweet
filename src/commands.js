@@ -297,15 +297,29 @@ const channelInfo = async (args, qChannel) => {
   format.channelList(qChannel, qc);
 };
 
+const twitterInfo = (args, qChannel) => {
+  const screenName = args.shift();
+  if (!screenName) {
+    post.message(qChannel, "Usage: `!!admin t <screenName>`");
+    return;
+  }
+  const id = users.getTwitterIdFromScreenName(screenName);
+  if (!id) {
+    post.message(qChannel, `We're not getting any user called @${screenName}`);
+    return;
+  }
+  format.twitterUser(qChannel, id);
+};
+
 const admin = (args, qChannel) => {
   const verb = args.shift();
   switch (verb[0]) {
     case "c":
       channelInfo(args, qChannel);
       return;
-    // case "t":
-    //   twitterInfo(args, qChannel);
-    //   return;
+    case "t":
+      twitterInfo(args, qChannel);
+      return;
     default: {
       post.message(
         qChannel,

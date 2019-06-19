@@ -83,6 +83,18 @@ users.defaultOptions = function() {
   };
 };
 
+users.getTwitterIdFromScreenName = screenName => {
+  const array = Object.keys(users.collection);
+  for (let i = 0; i < array.length; i++) {
+    const userId = array[i];
+    if (
+      users.collection[userId].name.toLowerCase() === screenName.toLowerCase()
+    )
+      return userId;
+  }
+  return null;
+};
+
 users.save = () => {
   // We save users as:
   // {

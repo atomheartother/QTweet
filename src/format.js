@@ -12,6 +12,7 @@ const defaults = {
   data: [],
   formatTitle: () => "",
   formatField: () => "",
+  description: null,
   noElements: "List is empty, nothing to display.",
   objectName: "objects",
   color: 0xf26d7a
@@ -41,6 +42,7 @@ format.genericList = async (
     data = defaults.data,
     formatTitle = defaults.formatTitle,
     formatField = defaults.formatField,
+    description = defaults.description,
     noElements = defaults.noElements,
     objectName = defaults.objectName,
     color = defaults.color,
@@ -55,6 +57,9 @@ format.genericList = async (
     .setColor(color)
     .setTitle(`${data.length} ${objectName}:`)
     .setURL(config.profileURL);
+  if (description) {
+    embed.setDescription(description);
+  }
   let counter = 0;
   for (let i = 0; i < data.length; i++) {
     const elem = data[i];
@@ -78,6 +83,20 @@ format.genericList = async (
 format.twitterUserShort = userId => {
   const twitterUser = users.collection[userId];
   return twitterUser.name ? `${twitterUser.name} (${userId})` : userId;
+};
+
+format.twitterUser = (qChannel, id) => {
+  const tUser = users.collection[id];
+  format.genericList(qChannel, {
+    data: tUser.subs,
+    formatTitle: ({ qChannel }) => qChannel.name,
+    formatField: ({ qChannel, text }) =>
+      `**ID:** ${qChannel.id}\n**Type:** ${
+        qChannel.type === "dm" ? "dm" : "serv"
+      } (${text ? "text posts" : "no text posts"})`,
+    noElements: `**This user has no subs**\nThis shouldn't happen`,
+    objectName: "subscriptions"
+  });
 };
 
 format.channelList = async (qChannel, targetChannel) => {
