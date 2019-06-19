@@ -1,4 +1,3 @@
-const Discord = require("discord.js");
 let users = (module.exports = {});
 
 var fs = require("fs");
@@ -6,7 +5,6 @@ var fs = require("fs");
 // Config file
 var config = require("../config.json");
 
-const post = require("./post");
 const gets = require("./gets");
 const log = require("./log");
 const QChannel = require("./QChannel");
@@ -163,109 +161,4 @@ users.load = callback => {
       callback();
     });
   });
-};
-
-// List users we're getting in this channel, available to everyone
-users.list = qChannel => {
-  const gets = users.getChannelGets(qChannel.id);
-  if (gets.length < 1) {
-    post.message(
-      qChannel,
-      `**You aren't subscribed to any twitter users**!\nUse \`${
-        config.prefix
-      }start <twitter handle>\` to begin!`
-    );
-    return;
-  }
-  let page = 1;
-  let embed = new Discord.RichEmbed()
-    .setColor(0xf26d7a)
-    .setTitle(`${gets.length} subscriptions:`)
-    .setURL(config.profileURL);
-  let counter = 0;
-  gets.forEach(({ userId, text }) => {
-    const twitterUser = users.collection[userId];
-    embed.addField(
-      twitterUser.name || twitterUser.id,
-      text ? "With text posts" : "No text posts"
-    );
-    counter++;
-    if (counter > 20) {
-      page++;
-      post.embed(qChannel, { embed }, false);
-      embed = new Discord.RichEmbed()
-        .setColor(0xf26d7a)
-        .setTitle(`${gets.length} subscriptions (page ${page}):`)
-        .setURL(config.profileURL);
-      counter = 0;
-    }
-  });
-  if (counter > 0) post.embed(qChannel, { embed }, false);
-};
-
-users.adminListGuild = async (qChannel, guildId) => {
-  const gets = await users.getGuildGets(guildId);
-  if (gets.length < 1) {
-    post.message(qChannel, `I'm not getting any tweets from guild ${guildId}!`);
-    return;
-  }
-  let page = 1;
-  let embed = new Discord.RichEmbed()
-    .setColor(0xf26d7a)
-    .setTitle(`${gets.length} subscriptions for this guild:`)
-    .setURL(config.profileURL);
-  let counter = 0;
-  gets.forEach(({ userId, qChannel, text }) => {
-    const user = users.collection[userId];
-    embed.addField(
-      user.name,
-      `${qChannel.name}, ${text ? "With text" : "No text"}`
-    );
-    counter++;
-    if (counter > 20) {
-      page++;
-      post.embed(qChannel, { embed }, false);
-      embed = new Discord.RichEmbed()
-        .setColor(0xf26d7a)
-        .setTitle(`${gets.length} subscriptions for this guild (page ${page}):`)
-        .setURL(config.profileURL);
-      counter = 0;
-    }
-  });
-  if (counter > 0) post.embed(qChannel, { embed }, false);
-};
-
-// List all gets in every channel, available to the admin only, and in DMs
-users.adminList = async qChannel => {
-  const qChannels = await users.getUniqueChannels();
-  let page = 1;
-  let embed = new Discord.RichEmbed()
-    .setColor(0xf26d7a)
-    .setTitle(`In ${qChannels.length} guilds:`)
-    .setURL(config.profileURL);
-  // We now have an object for every guild we're in
-  let counter = 0;
-  for (let i = 0; i < qChannels.length; i++) {
-    const qc = qChannels[i];
-    const g = qc.guild();
-    if (g !== null) {
-      embed.addField(
-        g.name,
-        `Guild ID: \`${g.id}\`\nOwner name: \`${g.owner.user.tag}\``
-      );
-    } else {
-      embed.addField(qc.name, `ID: ${qc.id}`);
-    }
-    counter++;
-    if (counter > 20) {
-      page++;
-      post.embed(qChannel, { embed }, false);
-      embed = new Discord.RichEmbed()
-        .setColor(0xf26d7a)
-        .setTitle(`In ${qChannels.length} guilds (page ${page}):`)
-        .setURL(config.profileURL);
-      counter = 0;
-    }
-  }
-  if (counter > 0) post.embed(qChannel, { embed }, false);
 };
