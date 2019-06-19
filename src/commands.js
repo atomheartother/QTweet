@@ -285,17 +285,16 @@ const channelInfo = async (args, qChannel) => {
   } else {
     qc = await QChannel.unserialize({ id, isDM: true });
   }
-  if (!qc) {
-    post.message(qChannel, `I couldn't build a valid qChannel with id ${id}`);
+  if (!qc || !qc.id) {
+    post.message(
+      qChannel,
+      `I couldn't build a valid channel object with id: ${id}`
+    );
     return;
   }
-  let info = await qc.longInfo();
-  const channelGets = users.getChannelGets(qc.id);
-  // for (let i = 0; i < channelGets.length; i++) {
-  //   const get = channelGets[i];
-  //   const usr = users.collection[get.userId];
-  // }
+  let info = await format.qChannel(qc);
   post.message(qChannel, info);
+  format.channelList(qChannel, qc);
 };
 
 const admin = (args, qChannel) => {
