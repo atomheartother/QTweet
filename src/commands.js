@@ -48,7 +48,13 @@ const tweet = (args, qChannel, author) => {
       );
       count = maxCount;
     }
-    if (count < 1) count = 1;
+    if (count < 1) {
+      post.message(
+        qChannel,
+        `**You asked me to post ${count} tweets, so I won't post any**\nNice try~`
+      );
+      return;
+    }
     twitter
       .userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
       .then(function(tweets, error) {
