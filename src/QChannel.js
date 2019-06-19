@@ -51,14 +51,14 @@ class QChannel {
     return discord.getUserDm(this.oid);
   }
 
-  async send(content) {
+  async send(content, options = null) {
     const c = await this.obj();
-    return c.send(content);
+    return c.send(content, options);
   }
 
-  async sendToOwner(content) {
+  async sendToOwner(content, options = null) {
     const c = await this.ownerObj();
-    return c.send(content);
+    return c.send(content, options);
   }
 
   // Returns a raw Discord guild object

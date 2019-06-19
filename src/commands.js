@@ -8,6 +8,7 @@ const twitter = require("./twitter");
 const users = require("./users");
 const log = require("./log");
 const QChannel = require("./QChannel");
+const format = require("./format");
 
 const getScreenName = word => {
   if (word.startsWith("@")) {
@@ -269,7 +270,32 @@ const stopchannel = (args, qChannel) => {
 };
 
 const list = (args, qChannel) => {
-  users.list(qChannel);
+  format.channelList(qChannel, qChannel);
+};
+
+const channelInfo = async (args, qChannel) => {
+  const id = args.shift();
+  if (!id) {
+    post.message(qChannel, "Usage: `!!admin c <id>`");
+    return;
+  }
+  let qc = null;
+  if (discord.getChannel(id)) {
+    qc = await QChannel.unserialize({ id, isDM: false });
+  } else {
+    qc = await QChannel.unserialize({ id, isDM: true });
+  }
+  if (!qc) {
+    post.message(qChannel, `I couldn't build a valid qChannel with id ${id}`);
+    return;
+  }
+  let info = await qc.longInfo();
+  const channelGets = users.getChannelGets(qc.id);
+  // for (let i = 0; i < channelGets.length; i++) {
+  //   const get = channelGets[i];
+  //   const usr = users.collection[get.userId];
+  // }
+  post.message(qChannel, info);
 };
 
 const admin = (args, qChannel) => {
@@ -278,10 +304,15 @@ const admin = (args, qChannel) => {
     case "c":
       channelInfo(args, qChannel);
       return;
-    case "t":
-      twitterInfo(args, qChannel);
-      return;
-    case ""
+    // case "t":
+    //   twitterInfo(args, qChannel);
+    //   return;
+    default: {
+      post.message(
+        qChannel,
+        `**admin command failed**\nInvalid verb: ${verb}\n`
+      );
+    }
   }
 };
 
