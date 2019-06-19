@@ -120,17 +120,21 @@ handleError = error => {
 handleGuildCreate = async guild => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
-  const qc = await QChannel.bestGuildChannel(guild);
-  post.dm(
-    qc,
-    `Hello, I'm ${
-      config.botName
-    }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\n**To get started:** \`${
-      config.prefix
-    }help\` for commands and useful links!\n**If I'm useful to your server**, please consider upvoting me at ${
-      config.profileURL
-    }\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, check out my documentation for more information.`
-  );
+  const qc = await QChannel.unserialize({ id: guild.ownerID, isDM: true });
+  if (qc && qc.id)
+    post.dm(
+      qc,
+      `Hello, I'm ${
+        config.botName
+      }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\n**To get started:** \`${
+        config.prefix
+      }help\` for commands and useful links!\n**If I'm useful to your server**, please consider upvoting me at ${
+        config.profileURL
+      }\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, check out my documentation for more information.`
+    );
+  else {
+    log(`Could not send welcome message for ${guild.name}`);
+  }
 };
 
 handleGuildDelete = ({ id, name }) => {

@@ -74,8 +74,9 @@ const handleDiscordPostError = async (
     return;
   }
   const postableQChannel = await qChannel.bestChannel();
-  if (!postableQChannel && postableQChannel.id === null) {
+  if (!postableQChannel || postableQChannel.id === null) {
     log(`Couldn't find a way to send ${type}`, qChannel);
+    log(msg);
     return;
   }
   // New message type
