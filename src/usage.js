@@ -13,5 +13,8 @@ module.exports = {
   stopchannel: `Exactly like stop but acts on the whole channel.\n**Usage**: \`${
     config.prefix
   }stopchannel [channel ID]\``,
-  list: "Print a list of the twitter users you're currently subscribed to."
+  list: "Print a list of the twitter users you're currently subscribed to.",
+  admin: `Access info about all servers.\n**Usage**: \`${
+    config.prefix
+  }admin <channel|twitter>\``
 };

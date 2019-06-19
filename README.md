@@ -100,11 +100,7 @@ This is only for me at the moment, it could be for you if you run **your own ins
 
 ### adminlist
 
-Usage: `!!adminlist [guildId]`
-
-**Without parameter**, `!!adminlist` will list all of the servers QTweet is in along with their guild ID and the server owner's name. This is basically meant to make me able to contact server owners in case of big problems.
-
-**With parameter**: `!!adminlist` will list all the users this server is getting, basically like `!!list` but server-wide. Basically only useful for debugging stuff remotely.
+`!!adminlist` has been deprecated, `!!admin` is in the process of being built.
 
 ### leaveguild
 
