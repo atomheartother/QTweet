@@ -109,7 +109,19 @@ handleMessage = message => {
   }
 
   const { author, channel } = message;
-  handleCommand(command, author, new QChannel(channel), args);
+  const qc = new QChannel(channel);
+  if (!qc || !qc.id) {
+    channel.send(
+      "**Something really weird just happened**\nWow, it appears I don't support whatever you're using to message me... My creator has been notified"
+    );
+    log("Couldn't create QChannel from channel");
+    log(`ChanID: ${channel.id}`);
+    log(`OwnrID: ${channel.guild.ownerID}`);
+    log(author);
+    log(channel.guild);
+    log(channel);
+  }
+  handleCommand(command, author, qc, args);
 };
 
 handleError = error => {
