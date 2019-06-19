@@ -142,9 +142,12 @@ users.load = callback => {
           if (sub.qc) {
             // New format, we can unserialize
             qChannel = await QChannel.unserialize(sub.qc);
-          } else {
+          } else if (sub.id) {
             // Old format, no DMs
             qChannel = new QChannel({ id: sub.id });
+          } else {
+            log("Weird sub without a valid channel");
+            log(sub);
           }
           if (!qChannel || qChannel.id === null) {
             log(
