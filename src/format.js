@@ -88,9 +88,9 @@ format.twitterUserShort = userId => {
 };
 
 format.flags = flags =>
-  `${!flags.notext ? "text posts" : "no text posts"}, ${
-    flags.retweet ? "retweeting" : "no retweets"
-  }`;
+  `With ${flags.notext ? "no text posts" : "text posts"}, ${
+    flags.retweet ? "retweets" : "no retweets"
+  }, ${flags.noquote ? "no quotes" : "quotes"}`;
 
 format.twitterUser = (qChannel, id) => {
   const tUser = users.collection[id];
