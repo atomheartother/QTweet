@@ -96,7 +96,7 @@ const tweet = (args, qChannel, author) => {
         }
         validTweets.forEach(tweet => {
           twitter.formatTweet(tweet, embed => {
-            post.embed(qChannel, embed, true);
+            post.embed(qChannel, embed);
           });
         });
         log(`Posted latest ${count} tweet(s) from ${screenName}`, qChannel);
@@ -147,7 +147,7 @@ const tweetId = (args, qChannel) => {
     .then((tweet, error) => {
       twitter.formatTweet(tweet, embed => {
         log(`Posting tweet ${id}`, qChannel);
-        post.embed(qChannel, embed, true);
+        post.embed(qChannel, embed);
       });
     })
     .catch(response => {

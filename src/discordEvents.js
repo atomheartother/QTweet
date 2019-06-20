@@ -107,7 +107,7 @@ handleMessage = message => {
       .addField(`${config.prefix}stop`, usage["stop"])
       .addField(`${config.prefix}list*`, usage["list"])
       .addField(`${config.prefix}help*`, "Print this help message.");
-    post.embed(message.channel, { embed }, false);
+    post.embed(message.channel, { embed });
     return;
   }
 

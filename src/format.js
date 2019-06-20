@@ -67,7 +67,7 @@ format.genericList = async (
     counter++;
     if (counter > 20) {
       page++;
-      post.embed(qChannel, { embed }, false);
+      post.embed(qChannel, { embed });
       embed = new Discord.RichEmbed()
         .setColor(color)
         .setTitle(`${data.length} ${objectName} (p.${page}):`)
@@ -76,7 +76,7 @@ format.genericList = async (
     }
   }
   if (counter > 0) {
-    post.embed(qChannel, { embed }, false);
+    post.embed(qChannel, { embed });
   }
 };
 
