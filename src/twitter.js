@@ -1,5 +1,3 @@
-let twitter = (module.exports = {});
-
 // Passwords file
 const pw = require("../pw.json");
 const post = require("./post");
@@ -9,6 +7,8 @@ const Backup = require("./backup");
 const Stream = require("./twitterStream");
 
 var Twitter = require("twitter-lite");
+
+let twitter = (module.exports = {});
 
 // Timeout detecting when there haven't been new tweets in the past min
 let lastTweetTimeout = null;
@@ -120,17 +120,20 @@ const formatTweetText = (text, entities) => {
       });
   }
   let offset = 0;
+
+  let g = [...text.normalize("NFC")];
   changes
     .sort((a, b) => a.start - b.start)
     .forEach(({ start, end, newText }) => {
-      text = text
-        .substring(0, start + offset)
-        .concat(newText)
-        .concat(text.substring(end + offset));
-      offset += newText.length - (end - start);
+      const nt = [...newText.normalize("NFC")];
+      g = g
+        .slice(0, start + offset)
+        .concat(nt)
+        .concat(g.slice(end + offset));
+      offset += nt.length - (end - start);
     });
 
-  return text;
+  return g.join("");
 };
 
 // Takes a tweet and formats it for posting.
@@ -306,4 +309,8 @@ twitter.userLookup = params => {
 
 twitter.userTimeline = params => {
   return tClient.get("statuses/user_timeline", params);
+};
+
+twitter.showTweet = (id, params) => {
+  return tClient.get(`statuses/show/${id}`, params);
 };

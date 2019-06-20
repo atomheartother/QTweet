@@ -140,6 +140,27 @@ const tweet = (args, qChannel, author) => {
   });
 };
 
+const tweetId = (args, qChannel) => {
+  const id = args[0];
+  twitter
+    .showTweet(id, { tweet_mode: "extended" })
+    .then((tweet, error) => {
+      twitter.formatTweet(tweet, embed => {
+        log(`Posting tweet ${id}`, qChannel);
+        post.embed(qChannel, embed, true);
+      });
+    })
+    .catch(response => {
+      const err =
+        response &&
+        response.errors &&
+        response.errors.length > 0 &&
+        response.errors[0];
+      log(response, qChannel);
+      post.message(qChannel, `${err}`);
+    });
+};
+
 const start = (args, qChannel) => {
   let flags = users.defaultFlags;
   let screenNames = [];
@@ -384,6 +405,11 @@ module.exports = {
   },
   tweet: {
     function: tweet,
+    checks: [],
+    minArgs: 1
+  },
+  tweetid: {
+    function: tweetId,
     checks: [],
     minArgs: 1
   },
