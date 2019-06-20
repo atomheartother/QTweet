@@ -65,13 +65,33 @@ twitter.isValid = tweet =>
     !tweet || // Ignore null tweets
     !tweet.user || // Ignore tweets without authors
     (tweet.hasOwnProperty("in_reply_to_user_id") &&
-      tweet.in_reply_to_user_id !== null) || // Ignore replies
-    tweet.hasOwnProperty("retweeted_status")
-  ); // Ignore retweets
+      tweet.in_reply_to_user_id !== null)
+  ); // Ignore replies // Ignore retweets
 
-const unshortenUrls = (text, entities) => {
-  if (entities && entities.urls) {
-    const { urls } = entities;
+const formatTweetText = (text, entities) => {
+  if (!entities) return text;
+  const { user_mentions, urls, hashtags } = entities;
+  const changes = [];
+
+  if (user_mentions) {
+    user_mentions
+      .filter(
+        ({ screen_name, indices }) =>
+          screen_name && indices && indices.length === 2
+      )
+      .forEach(({ screen_name, name, indices }) => {
+        const [start, end] = indices;
+        changes.push({
+          start,
+          end,
+          newText: `[@${
+            name ? name : screen_name
+          }](https://twitter.com/${screen_name})`
+        });
+      });
+  }
+
+  if (urls) {
     urls
       .filter(
         ({ expanded_url, indices }) =>
@@ -79,13 +99,32 @@ const unshortenUrls = (text, entities) => {
       )
       .forEach(({ expanded_url, indices }) => {
         const [start, end] = indices;
-        text = text
-          .substring(0, start)
-          .concat(expanded_url)
-          .concat(text.substring(end));
+        changes.push({ start, end, newText: expanded_url });
       });
   }
 
+  if (hashtags) {
+    hashtags
+      .filter(({ text, indices }) => text && indices && indices.length === 2)
+      .forEach(({ text: hashtagTxt, indices }) => {
+        const [start, end] = indices;
+        changes.push({
+          start,
+          end,
+          newText: `[#${hashtagTxt}](https://twitter.com/hashtag/${hashtagTxt}?src=hash)`
+        });
+      });
+  }
+  let offset = 0;
+  changes
+    .sort((a, b) => a.start < b.start)
+    .forEach(({ start, end, newText }) => {
+      text = text
+        .substring(0, start + offset)
+        .concat(newText)
+        .concat(text.substring(end + offset));
+      offset += newText.length - (end - start);
+    });
   return text;
 };
 
@@ -166,8 +205,18 @@ twitter.formatTweet = (tweet, callback) => {
       embed.color = post.colors["images"];
     }
   }
-  embed.description = unshortenUrls(txt, entities);
+  embed.description = formatTweetText(txt, entities);
   callback({ embed, files });
+};
+
+const flagsFilter = (flags, tweet) => {
+  if (flags.notext && !hasMedia(tweet)) {
+    return false;
+  }
+  if (!flags.retweet && tweet.hasOwnProperty("retweeted_status")) {
+    return false;
+  }
+  return tweet;
 };
 
 const streamData = tweet => {
@@ -182,9 +231,8 @@ const streamData = tweet => {
     return;
   }
   twitter.formatTweet(tweet, embed => {
-    const isTextTweet = !hasMedia(tweet);
     twitterUserObject.subs
-      .filter(({ flags }) => !isTextTweet || flags.text)
+      .filter(({ flags }) => flagsFilter(flags, tweet))
       .forEach(({ qChannel }) => {
         post.embed(qChannel, embed, true);
       });

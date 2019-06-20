@@ -82,8 +82,15 @@ format.genericList = async (
 
 format.twitterUserShort = userId => {
   const twitterUser = users.collection[userId];
-  return twitterUser.name ? `${twitterUser.name} (${userId})` : userId;
+  return twitterUser.name
+    ? `@${twitterUser.name} (https://twitter.com/${twitterUser.name})`
+    : userId;
 };
+
+format.flags = flags =>
+  `${!flags.notext ? "text posts" : "no text posts"}, ${
+    flags.retweet ? "retweeting" : "no retweets"
+  }`;
 
 format.twitterUser = (qChannel, id) => {
   const tUser = users.collection[id];
@@ -93,7 +100,7 @@ format.twitterUser = (qChannel, id) => {
     formatField: ({ qChannel, flags }) =>
       `**ID:** ${qChannel.id}\n**Type:** ${
         qChannel.type === "dm" ? "dm" : "serv"
-      } (${flags.text ? "text posts" : "no text posts"})`,
+      } (${format.flags(flags)})`,
     noElements: `**This user has no subs**\nThis shouldn't happen`,
     objectName: "subscriptions"
   });
@@ -103,8 +110,8 @@ format.channelList = async (qChannel, targetChannel) => {
   format.genericList(qChannel, {
     data: users.getChannelGets(targetChannel.id),
     formatTitle: ({ userId }) => format.twitterUserShort(userId),
-    formatField: ({ flags }) =>
-      flags.text ? "With text posts" : "No text posts",
+    formatField: ({ userId, flags }) =>
+      `**ID:** ${userId}\n${format.flags(flags)}`,
     noElements: `**You're not subscribed to anyone**\nUse \`${
       config.prefix
     }start <screen_name>\` to get started!`,

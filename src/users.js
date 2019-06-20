@@ -18,7 +18,7 @@ const QChannel = require("./QChannel");
 //    qChannel: QChannel object, see QChannel.js
 //    flags: Flags object
 //    Flags:
-//      text: Boolean, if true we post text posts to this channel
+//      notext: Boolean, if true we don't post text posts to this channel
 //      retweet: Boolean, if true we post retweets to this channel
 
 users.collection = {};
@@ -82,12 +82,12 @@ users.getChannelGets = channelId =>
   );
 
 users.defaultFlags = {
-  text: true,
+  notext: false,
   retweet: false
 };
 
 const FlagsEnum = Object.freeze({
-  text: 1,
+  notext: 1,
   retweet: 2
 });
 
@@ -102,7 +102,7 @@ users.serializeFlags = flags => {
 };
 
 users.unserializeFlags = f => {
-  const flags = users.defaultFlags;
+  const flags = {};
   Object.keys(FlagsEnum).forEach(k => {
     flags[k] = (f & FlagsEnum[k]) > 0;
   });
@@ -199,7 +199,7 @@ users.load = callback => {
             // Olf format, build flags and support the old text boolean
             flags = {
               ...users.defaultFlags,
-              text: sub.text
+              notext: true
             };
           } else {
             flags = users.defaultFlags;
