@@ -7,13 +7,14 @@ server.
 
 You never have to use Twitter again, just get the good stuff posted to your Discord server.
 
-![A QT Tweeting](https://raw.githubusercontent.com/atomheartother/QTweet/master/img/example.jpg)
+![A QT Tweeting](https://cdn.discordapp.com/attachments/141566322730467328/591402397285351446/unknown.png)
 
 # Features
 
-- Get the latest text, image, album and video tweet(s) from any twitter user, formatted for Discord.
+- Get the latest **text, image, album and video** tweet(s) from any twitter user, formatted for Discord.
 - Cross-post tweets from Twitter to Discord in **real time**.
-- Supports retweets, quotes, highlights hashtags and user mentions
+- Supports **retweets and quotes**, highlights hashtags and user mentions...
+- **Can post to DMs** directly!
 
 # Usage, Permissions
 
