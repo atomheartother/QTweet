@@ -15,8 +15,12 @@ const QChannel = require("./QChannel");
 //   name: screen name
 //   subs: Array of Gets
 //   Get:
-//    qChannel: QChannel object
-//    text: Boolean, defines whether text posts should be sent to this channel
+//    qChannel: QChannel object, see QChannel.js
+//    flags: Flags object
+//    Flags:
+//      text: Boolean, if true we post text posts to this channel
+//      retweet: Boolean, if true we post retweets to this channel
+
 users.collection = {};
 
 // Returns a list of channel objects, each in an unique guild
@@ -77,10 +81,32 @@ users.getChannelGets = channelId =>
     []
   );
 
-users.defaultOptions = function() {
-  return {
-    text: true
-  };
+users.defaultFlags = {
+  text: true,
+  retweet: false
+};
+
+const FlagsEnum = Object.freeze({
+  text: 1,
+  retweet: 2
+});
+
+users.serializeFlags = flags => {
+  let f = 0;
+  Object.keys(FlagsEnum).forEach(k => {
+    if (flags[k]) {
+      f += FlagsEnum[k];
+    }
+  });
+  return f;
+};
+
+users.unserializeFlags = f => {
+  const flags = {};
+  Object.keys(FlagsEnum).forEach(k => {
+    flags[k] = (f & FlagsEnum[k]) > 0;
+  });
+  return flags;
 };
 
 users.getTwitterIdFromScreenName = screenName => {
@@ -98,7 +124,7 @@ users.getTwitterIdFromScreenName = screenName => {
 users.save = () => {
   // We save users as:
   // {
-  //    "userId" : {name: "screen_name", subs: [{id: channelId, text: bool}]}
+  //    "userId" : {name: "screen_name", subs: [{id: qChannel.id, f: Int (bitfields)}]}
   // }
 
   // Create a copy of the channels object, remove all timeouts from it
@@ -110,9 +136,11 @@ users.save = () => {
     if (users.collection[userId].hasOwnProperty("name")) {
       usersCopy[userId].name = users.collection[userId].name;
     }
-    for (let get of users.collection[userId].subs) {
-      let txt = get.hasOwnProperty("text") ? get.text : true;
-      usersCopy[userId].subs.push({ qc: get.qChannel.serialize(), text: txt });
+    for (const { qChannel, flags } of users.collection[userId].subs) {
+      usersCopy[userId].subs.push({
+        qc: qChannel.serialize(),
+        f: users.serializeFlags(flags)
+      });
     }
   }
   let json = JSON.stringify(usersCopy);
@@ -163,11 +191,20 @@ users.load = callback => {
             log(sub);
             continue;
           }
-          let options = users.defaultOptions();
-          if (sub.text === false) {
-            options.text = false;
+          let flags = null;
+          if (sub.f) {
+            // New format, we unserialize flags
+            flags = users.unserializeFlags(sub.f);
+          } else if (sub.text === false) {
+            // Olf format, build flags and support the old text boolean
+            flags = {
+              ...users.defaultFlags,
+              text: sub.text
+            };
+          } else {
+            flags = users.defaultFlags;
           }
-          gets.add(qChannel, userId, name, options);
+          gets.add(qChannel, userId, name, flags);
         }
       }
       callback();
