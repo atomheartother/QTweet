@@ -141,7 +141,7 @@ handleGuildCreate = async guild => {
       qc,
       `Hello, I'm ${
         config.botName
-      }, thanks for inviting me to your server!\nBefore I can start getting tweets I'll need a text channel where I have permission to write messages & send embeds, please. It'd be nice if I could get reaction permissions in it, too!\n**To get started:** \`${
+      }, thanks for inviting me to your server!\n**To get started:** \`${
         config.prefix
       }help\` for commands and useful links!\n**If I'm useful to your server**, please consider upvoting me at ${
         config.profileURL
