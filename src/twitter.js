@@ -117,7 +117,7 @@ const formatTweetText = (text, entities) => {
   }
   let offset = 0;
   changes
-    .sort((a, b) => a.start < b.start)
+    .sort((a, b) => a.start - b.start)
     .forEach(({ start, end, newText }) => {
       text = text
         .substring(0, start + offset)
@@ -125,6 +125,7 @@ const formatTweetText = (text, entities) => {
         .concat(text.substring(end + offset));
       offset += newText.length - (end - start);
     });
+
   return text;
 };
 
