@@ -121,19 +121,19 @@ const formatTweetText = (text, entities) => {
   }
   let offset = 0;
 
-  let g = [...text.normalize("NFC")];
+  let codePoints = [...text.normalize("NFC")];
   changes
     .sort((a, b) => a.start - b.start)
     .forEach(({ start, end, newText }) => {
       const nt = [...newText.normalize("NFC")];
-      g = g
+      codePoints = codePoints
         .slice(0, start + offset)
         .concat(nt)
         .concat(g.slice(end + offset));
       offset += nt.length - (end - start);
     });
 
-  return g.join("");
+  return codePoints.join("");
 };
 
 // Takes a tweet and formats it for posting.
