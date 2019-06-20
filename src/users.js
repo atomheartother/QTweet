@@ -192,7 +192,7 @@ users.load = callback => {
             continue;
           }
           let flags = null;
-          if (sub.f) {
+          if (sub.f !== undefined) {
             // New format, we unserialize flags
             flags = users.unserializeFlags(sub.f);
           } else if (sub.text === false) {
