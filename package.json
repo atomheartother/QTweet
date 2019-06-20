@@ -4,13 +4,14 @@
   "description": "A bot who posts images from a twitter profile",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node -r esm src/index.js"
   },
   "author": "Thomas N",
   "license": "MIT",
   "dependencies": {
     "dblapi.js": "^2.3.0",
     "discord.js": "latest",
+    "esm": "^3.2.25",
     "fortune-teller": "latest",
     "tall": "latest",
     "twitter-lite": "latest"
