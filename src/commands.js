@@ -141,12 +141,12 @@ const tweet = (args, qChannel, author) => {
 };
 
 const start = (args, qChannel) => {
-  let options = users.defaultOptions();
+  let flags = users.defaultFlags;
   let screenNames = [];
   for (let arg of args) {
     if (arg.substring(0, 2) == "--") {
       let option = arg.substring(2);
-      if (option === "notext") options.text = false;
+      if (option === "notext") flags.text = false;
     } else {
       screenNames.push(getScreenName(arg));
     }
@@ -177,7 +177,7 @@ const start = (args, qChannel) => {
         if (!redoStream && !users.collection.hasOwnProperty(userId)) {
           redoStream = true;
         }
-        gets.add(qChannel, userId, name, options);
+        gets.add(qChannel, userId, name, flags);
       });
       let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
         config.prefix

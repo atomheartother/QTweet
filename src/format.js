@@ -90,10 +90,10 @@ format.twitterUser = (qChannel, id) => {
   format.genericList(qChannel, {
     data: tUser.subs,
     formatTitle: ({ qChannel }) => qChannel.name,
-    formatField: ({ qChannel, text }) =>
+    formatField: ({ qChannel, flags }) =>
       `**ID:** ${qChannel.id}\n**Type:** ${
         qChannel.type === "dm" ? "dm" : "serv"
-      } (${text ? "text posts" : "no text posts"})`,
+      } (${flags.text ? "text posts" : "no text posts"})`,
     noElements: `**This user has no subs**\nThis shouldn't happen`,
     objectName: "subscriptions"
   });
@@ -103,7 +103,8 @@ format.channelList = async (qChannel, targetChannel) => {
   format.genericList(qChannel, {
     data: users.getChannelGets(targetChannel.id),
     formatTitle: ({ userId }) => format.twitterUserShort(userId),
-    formatField: ({ text }) => (text ? "With text posts" : "No text posts"),
+    formatField: ({ flags }) =>
+      flags.text ? "With text posts" : "No text posts",
     noElements: `**You're not subscribed to anyone**\nUse \`${
       config.prefix
     }start <screen_name>\` to get started!`,

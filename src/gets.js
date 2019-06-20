@@ -6,7 +6,7 @@ const post = require("./post");
 var config = require("../config.json");
 
 // Add a get to the user list
-gets.add = (qChannel, userId, name, { text }) => {
+gets.add = (qChannel, userId, name, flags) => {
   if (!users.collection.hasOwnProperty(userId)) {
     // Create the user object
     users.collection[userId] = { subs: [] };
@@ -15,13 +15,18 @@ gets.add = (qChannel, userId, name, { text }) => {
     users.collection[userId].name = name;
   }
 
-  if (users.collection[userId].subs.find(get => get.qChannel.id == qChannel.id))
-    return;
-
-  users.collection[userId].subs.push({
-    qChannel,
-    text
-  });
+  const idx = users.collection[userId].subs.findIndex(
+    get => get.qChannel.id == qChannel.id
+  );
+  if (idx > -1) {
+    // We already have a get from this channel for this user. Update it
+    users.collection[userId].subs[idx].flags = flags;
+  } else {
+    users.collection[userId].subs.push({
+      qChannel,
+      flags
+    });
+  }
 };
 
 // Remove a get from the user list

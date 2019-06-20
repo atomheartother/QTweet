@@ -184,7 +184,7 @@ const streamData = tweet => {
   twitter.formatTweet(tweet, embed => {
     const isTextTweet = !hasMedia(tweet);
     twitterUserObject.subs
-      .filter(({ text }) => !isTextTweet || text)
+      .filter(({ flags }) => !isTextTweet || flags.text)
       .forEach(({ qChannel }) => {
         post.embed(qChannel, embed, true);
       });
