@@ -253,14 +253,13 @@ const streamData = tweet => {
   }
   twitter.formatTweet(tweet, embed => {
     twitterUserObject.subs.forEach(({ qChannel, flags }) => {
-      if (flagsFilter(flags, tweet))
-        post.embed(qChannel, embed, !tweet.is_quote_status);
+      if (flagsFilter(flags, tweet)) post.embed(qChannel, embed);
     });
   });
   if (tweet.is_quote_status) {
     twitter.formatTweet(tweet.quoted_status, embed => {
       twitterUserObject.subs.forEach(({ qChannel, flags }) => {
-        if (!flags.noquote) post.embed(qChannel, embed, true);
+        if (!flags.noquote) post.embed(qChannel, embed);
       });
     });
   }
