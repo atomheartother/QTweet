@@ -113,7 +113,7 @@ const handleDiscordPostError = async (
     }`;
     newMsg = `**Missing Permissions:** I couldn't send a ${type} in ${
       qChannel.name
-    }.\nIf a mod could give me the **Send Messages** and **Send Embeds** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
+    }.\nIf a mod could give me the **Send Messages**, **Send Embeds** and **Attach Files** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
       config.prefix
     }stopchannel ${
       qChannel.id

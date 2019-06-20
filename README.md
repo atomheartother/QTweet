@@ -54,20 +54,25 @@ You can allow anyone to be a QTweet mod by giving them the `qtweet-mod` role.
 
 ### start
 
-Usage: `!!start <screen_name> [screen_name2 screen_name3 ...] [--notext]`
+Usage: `!!start <screen_name> [screen_name2 screen_name3 ...] [--notext] [--retweet] [--noquote]`
 
 This command will cause QTweet to start posting tweets from this user (or these users) automatically into this discord channel, in real-time. It will take her a bit (between 5 and 20min) to start posting them because of twitter rate limits, but once she gets started they will be real-time. Works in DMs.
 
-Notes:
+Options:
 
-- Extra screen names are separated by spaces.
-- `--notext` indicates that you don't want plain text posts, just posts with media in them.
+`--notext`: Don't post text tweets
+
+`--retweet`: Post retweets
+
+`--noquote`: Don't post quotes. Quotes are when an account retweets and adds a comment to the post. I make 2 posts for those, one for the quote and then one for the quoted message.
 
 Examples:
 
 `!!start HamsterFragment --notext`: Will start posting tweets from @HamsterFragment, but not their text posts.
 
 `!!start HamsterFragment billwurtz`: Will start posting tweets from @HamsterFragment and @billwurtz.
+
+`!!start HamsterFragment --retweet --noquote`: Will post tweets and retweets from @HamsterFragment but not their quotes.
 
 ### stop
 
@@ -126,7 +131,7 @@ QTweet understands 3 formats for twitter screen names, therefore these 3 command
 
 ## Can I add QTweet to my server?
 
-If you wanna add QTweet to your server, you can just click [this link](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=18496).
+If you wanna add QTweet to your server, you can just click [this link](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=51264).
 
 ## Can I modify and run your bot?
 
