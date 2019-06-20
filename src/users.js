@@ -102,7 +102,7 @@ users.serializeFlags = flags => {
 };
 
 users.unserializeFlags = f => {
-  const flags = {};
+  const flags = users.defaultFlags;
   Object.keys(FlagsEnum).forEach(k => {
     flags[k] = (f & FlagsEnum[k]) > 0;
   });
