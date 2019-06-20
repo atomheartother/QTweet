@@ -6,7 +6,7 @@ module.exports = {
   }tweet <twitter_screen_name> [count]\``,
   start: `Subscribe to a twitter user, getting their tweets in real time.\n**Usage**: \`${
     config.prefix
-  }start <twitter_screen_name> [--notext]\`\nI can take up to 20 minutes to start posting their tweets.\nYou can add multiple twitter users by separating their screen names with spaces.`,
+  }start <twitter_screen_name> [--notext] [--retweet]\`\nI can take up to 20 minutes to start posting their tweets.\nYou can add multiple twitter users by separating their screen names with spaces.`,
   stop: `Unsubscribe from the given user.\n**Usage**: \`${
     config.prefix
   }stop <twitter_screen_name>\``,

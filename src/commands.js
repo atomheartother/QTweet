@@ -146,8 +146,8 @@ const start = (args, qChannel) => {
   for (let arg of args) {
     if (arg.substring(0, 2) == "--") {
       let option = arg.substring(2);
-      if (option === "notext") flags.text = false;
-      if (option === "retweets") flags.retweets = true;
+      if (option === "notext") flags.notext = true;
+      if (option === "retweet") flags.retweet = true;
     } else {
       screenNames.push(getScreenName(arg));
     }
