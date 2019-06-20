@@ -66,11 +66,11 @@ const streamStart = response => {
 // Validation function for tweets
 twitter.isValid = tweet =>
   !(
-    !tweet || // Ignore null tweets
-    !tweet.user || // Ignore tweets without authors
-    (tweet.hasOwnProperty("in_reply_to_user_id") &&
-      tweet.in_reply_to_user_id !== null)
-  ); // Ignore replies // Ignore retweets
+    !tweet ||
+    !tweet.user ||
+    (tweet.is_quote_status &&
+      (!tweet.quoted_status || !tweet.quoted_status.user))
+  );
 
 const formatTweetText = (text, entities) => {
   if (!entities) return text;
@@ -129,7 +129,7 @@ const formatTweetText = (text, entities) => {
       codePoints = codePoints
         .slice(0, start + offset)
         .concat(nt)
-        .concat(g.slice(end + offset));
+        .concat(codePoints.slice(end + offset));
       offset += nt.length - (end - start);
     });
 
@@ -164,7 +164,10 @@ twitter.formatTweet = (tweet, callback) => {
     },
     thumbnail: {
       url: user.profile_image_url_https
-    }
+    },
+    color: user.profile_link_color
+      ? parseInt(user.profile_link_color, 16)
+      : null
   };
   // For any additional files
   let files = null;
@@ -179,7 +182,7 @@ twitter.formatTweet = (tweet, callback) => {
   }
   if (!hasMedia(tweet)) {
     // Text tweet
-    embed.color = post.colors["text"];
+    embed.color = embed.color || post.colors["text"];
   } else if (
     extended_entities.media[0].type === "animated_gif" ||
     extended_entities.media[0].type === "video"
@@ -207,17 +210,15 @@ twitter.formatTweet = (tweet, callback) => {
       log("Found video tweet with no valid url");
       log(vidinfo);
     }
-    embed.color = post.colors["video"];
+    embed.color = embed.color || post.colors["video"];
   } else {
     // Image(s)
     files = extended_entities.media.map(media => media.media_url_https);
     if (files.length === 1) {
       embed.image = { url: files[0] };
       files = null;
-      embed.color = post.colors["image"];
-    } else {
-      embed.color = post.colors["images"];
     }
+    embed.color = embed.color || post.colors["image"];
   }
   embed.description = formatTweetText(txt, entities);
   callback({ embed, files });
@@ -237,7 +238,12 @@ const flagsFilter = (flags, tweet) => {
 const streamData = tweet => {
   // Ignore invalid tweets
   if (!twitter.isValid(tweet)) return;
-
+  // Ignore replies
+  if (
+    tweet.hasOwnProperty("in_reply_to_user_id") &&
+    tweet.in_reply_to_user_id !== null
+  )
+    return;
   // Reset the last tweet timeout
   startTimeout();
 
