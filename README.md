@@ -145,15 +145,6 @@ Some stuff is already variable, you can change the configuration variables in `c
 
 QTweet is designed to do one thing and do it well, I don't care much to make it too multifunction like a lot of Discord bots tend to be. However if you think a feature would work with her specific purpose then feel free to drop an issue. Even better, implement it yourself and make a PR!
 
-## Why doesn't QTweet post retweets?
-
-You may have noticed that QTweet doesn't cross-post retweets or replies, only original posts. There's multiple reasons why that's the case:
-
-- There are spammers who ping "retweet bots" to get illegal content, and content no one wants to see, onto hundreds of twitter feeds. I have no interest in spreading such content.
-- Adding retweets and replies would absolutely multiply my posting rate by 10, and I haven't quite looked into proper rate limits with the Discord API quite yet so I'm a bit afraid of the effect it could have.
-
-There is an open issue on the matter and I am thinking about it, but for now, no replies or retweets. If you want those, consider hosting your own instance of QTweet.
-
 # Motivation, Philosophy, Legal notice
 
 I don't like Twitter but I like a few accounts on it. This is my solution. I value privacy above all, and none of your personal data or messages are being stored anywhere, QTweet only keeps records of what she needs to know (channel ids, twitter usernames, and that's about it), and doesn't record any personal information, nor does she even store a record of which tweets she forwards to your server.
