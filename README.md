@@ -11,10 +11,9 @@ You never have to use Twitter again, just get the good stuff posted to your Disc
 
 # Features
 
-- Get the latest text, image and video tweets from any twitter user, formatted for Discord.
-- Cross-post tweets from Twitter to Discord in real time.
-- A "like" button, so that you know which of your Discord buddies liked that post.
-- By default, only the _server owner_ can start automatically fetching tweets. Want to grant that power to someone? Give them the `qtweet-mod` role!
+- Get the latest text, image, album and video tweet(s) from any twitter user, formatted for Discord.
+- Cross-post tweets from Twitter to Discord in **real time**.
+- Supports retweets, quotes, highlights hashtags and user mentions
 
 # Usage, Permissions
 
