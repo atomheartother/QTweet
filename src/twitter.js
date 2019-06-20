@@ -69,6 +69,26 @@ twitter.isValid = tweet =>
     tweet.hasOwnProperty("retweeted_status")
   ); // Ignore retweets
 
+const unshortenUrls = (text, entities) => {
+  if (entities && entities.urls) {
+    const { urls } = entities;
+    urls
+      .filter(
+        ({ expanded_url, indices }) =>
+          expanded_url && indices && indices.length === 2
+      )
+      .forEach(({ expanded_url, indices }) => {
+        const [start, end] = indices;
+        text = text
+          .substring(0, start)
+          .concat(expanded_url)
+          .concat(text.substring(end));
+      });
+  }
+
+  return text;
+};
+
 // Takes a tweet and formats it for posting.
 twitter.formatTweet = (tweet, callback) => {
   let {
@@ -80,10 +100,9 @@ twitter.formatTweet = (tweet, callback) => {
     extended_tweet
   } = tweet;
   let txt = full_text || text;
+  // Extended_tweet is an API twitter uses for tweets over 140 characters.
   if (extended_tweet) {
-    txt = extended_tweet.full_text;
-    extended_entities = extended_tweet.extended_entities;
-    entities = extended_tweet.entities;
+    ({ extended_entities, entities, full_text: txt } = extended_tweet);
   }
   let embed = {
     author: {
@@ -147,11 +166,8 @@ twitter.formatTweet = (tweet, callback) => {
       embed.color = post.colors["images"];
     }
   }
-  // // Unshorten all urls then post
-  // unshortenUrls(text, newText => {
-  embed.description = txt;
+  embed.description = unshortenUrls(txt, entities);
   callback({ embed, files });
-  // });
 };
 
 const streamData = tweet => {
