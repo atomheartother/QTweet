@@ -83,12 +83,14 @@ users.getChannelGets = channelId =>
 
 users.defaultFlags = {
   notext: false,
-  retweet: false
+  retweet: false,
+  noquote: false
 };
 
 const FlagsEnum = Object.freeze({
   notext: 1,
-  retweet: 2
+  retweet: 2,
+  noquote: 4
 });
 
 users.serializeFlags = flags => {

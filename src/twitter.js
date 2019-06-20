@@ -35,14 +35,18 @@ const resetTimeout = () => {
 };
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
-const hasMedia = ({ extended_entities, extended_tweet }) =>
+const hasMedia = ({ extended_entities, extended_tweet, retweeted_status }) =>
   (extended_entities &&
     extended_entities.hasOwnProperty("media") &&
     extended_entities.media.length > 0) ||
   (extended_tweet &&
     extended_tweet.extended_entities &&
     extended_tweet.extended_entities.media &&
-    extended_tweet.extended_entities.media.length > 0);
+    extended_tweet.extended_entities.media.length > 0) ||
+  (retweeted_status &&
+    retweeted_status.extended_entities &&
+    retweeted_status.extended_entities.media &&
+    retweeted_status.extended_entities.media.length > 0);
 
 const startTimeout = () => {
   resetTimeout();
@@ -137,12 +141,18 @@ twitter.formatTweet = (tweet, callback) => {
     text,
     entities,
     extended_entities,
-    extended_tweet
+    extended_tweet,
+    retweeted_status
   } = tweet;
   let txt = full_text || text;
   // Extended_tweet is an API twitter uses for tweets over 140 characters.
   if (extended_tweet) {
-    ({ extended_entities, entities, full_text: txt } = extended_tweet);
+    ({ extended_entities, entities } = extended_tweet);
+    txt = extended_tweet.full_text || extended_tweet.text;
+  }
+  if (retweeted_status) {
+    // Copy over media from retweets
+    extended_entities = extended_entities || retweeted_status.extended_entities;
   }
   let embed = {
     author: {
@@ -217,7 +227,8 @@ const flagsFilter = (flags, tweet) => {
   if (!flags.retweet && tweet.hasOwnProperty("retweeted_status")) {
     return false;
   }
-  return tweet;
+  if (flags.noquote && tweet.is_quote_status) return false;
+  return true;
 };
 
 const streamData = tweet => {
@@ -232,12 +243,18 @@ const streamData = tweet => {
     return;
   }
   twitter.formatTweet(tweet, embed => {
-    twitterUserObject.subs
-      .filter(({ flags }) => flagsFilter(flags, tweet))
-      .forEach(({ qChannel }) => {
-        post.embed(qChannel, embed, true);
-      });
+    twitterUserObject.subs.forEach(({ qChannel, flags }) => {
+      if (flagsFilter(flags, tweet))
+        post.embed(qChannel, embed, !tweet.is_quote_status);
+    });
   });
+  if (tweet.is_quote_status) {
+    twitter.formatTweet(tweet.quoted_status, embed => {
+      twitterUserObject.subs.forEach(({ qChannel, flags }) => {
+        if (!flags.noquote) post.embed(qChannel, embed, true);
+      });
+    });
+  }
 };
 
 const streamEnd = response => {
