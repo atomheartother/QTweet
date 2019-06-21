@@ -5,7 +5,7 @@ import * as config from "../config.json";
 import * as users from "./users";
 
 const post = require("./post");
-const discord = require("./discord");
+import { getUser } from "./discord";
 
 const defaults = {
   data: [],
@@ -24,7 +24,7 @@ export const formatGChannel = async qChannel => {
     res += `**ID:** ${qChannel.id}\n`;
     res += `**CID:** ${obj.id}`;
   } else {
-    const owner = discord.getUser(qChannel.oid);
+    const owner = getUser(qChannel.oid);
     const guild = qChannel.guild();
     res += `**ID:** ${qChannel.id}\n`;
     res += `**Own:** ${owner.tag} (${qChannel.oid})\n`;

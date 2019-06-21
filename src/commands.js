@@ -9,7 +9,7 @@ import log from "./log";
 
 import * as checks from "./checks";
 const post = require("./post");
-const discord = require("./discord");
+import { getGuild, getChannel } from "./discord";
 const twitter = require("./twitter");
 
 const getScreenName = word => {
@@ -284,7 +284,7 @@ const start = (args, qChannel) => {
 const leaveGuild = (args, qChannel) => {
   let guild = null;
   if (args.length >= 1 && checks.isDm(null, qChannel)) {
-    guild = discord.getGuild(args[0]);
+    guild = getGuild(args[0]);
   } else if (!checks.isDm(null, qChannel)) {
     guild = qChannel.guild();
   } else {
@@ -350,7 +350,7 @@ const channelInfo = async (args, qChannel) => {
     return;
   }
   let qc = null;
-  if (discord.getChannel(id)) {
+  if (getChannel(id)) {
     qc = await QChannel.unserialize({ id, isDM: false });
   } else {
     qc = await QChannel.unserialize({ id, isDM: true });

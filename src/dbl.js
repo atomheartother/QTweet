@@ -1,19 +1,19 @@
-const DBL = require("dblapi.js");
-let dblClient = null;
-const discord = require("./discord");
+import DBL from "dblapi.js";
+import { getClient } from "./discord";
 import * as pw from "../pw.json";
 import log from "./log";
 
-let dbl = (module.exports = {});
+let dblClient = null;
 
-dbl.registerClient = () => {
+export default () => {
   if (pw.DBLToken === null) {
-    return;
+    return null;
   }
-  dblClient = new DBL(pw.DBLToken, discord.getClient()).on(
-    "error",
-    ({ status }) => {
+  dblClient = new DBL(pw.DBLToken, getClient())
+    .on("posted", () => {
+      log("Posted DBL stats");
+    })
+    .on("error", ({ status }) => {
       log(`Error with DBL client: ${status}`);
-    }
-  );
+    });
 };
