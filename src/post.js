@@ -1,5 +1,5 @@
 import * as config from "../config.json";
-import { rmChannel } from "./gets";
+import { rmChannel } from "./subs";
 import log from "./log";
 
 // Return values for post functions:
@@ -126,7 +126,6 @@ const handleDiscordPostError = async (
   return 1;
 };
 
-// React is a boolean, if true, add a reaction to the message after posting
 export const embed = async (qChannel, embed) => {
   try {
     await qChannel.send(embed);

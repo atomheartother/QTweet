@@ -2,9 +2,10 @@ import Twitter from "twitter-lite";
 
 import * as pw from "../pw.json";
 
-import * as users from "./users";
+import * as users from "./subs";
 import Backup from "./backup";
 import log from "./log";
+
 import { embed as postEmbed, message as postMessage } from "./post";
 import Stream from "./twitterStream";
 
@@ -233,6 +234,7 @@ export const formatTweet = tweet => {
   return { embed: { embed, files }, metadata };
 };
 
+// Takes a tweet and determines whether or not it should be posted with these flags
 const flagsFilter = (flags, tweet) => {
   if (flags.notext && !hasMedia(tweet)) {
     return false;

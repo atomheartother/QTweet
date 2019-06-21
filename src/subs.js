@@ -1,8 +1,14 @@
 import fs from "fs";
 import * as config from "../config.json";
 import QChannel from "./QChannel";
+import { userLookup, createStream } from "./twitter";
+import { message as postMessage } from "./post";
+import {
+  serialize as serializeFlags,
+  unserialize as unserializeFlags,
+  defaultFlags
+} from "./flags";
 
-import { add } from "./gets";
 import log from "./log";
 
 // Users:
@@ -75,49 +81,6 @@ export const getChannelGets = channelId =>
       ),
     []
   );
-
-const FlagsEnum = Object.freeze({
-  notext: 1,
-  retweet: 2,
-  noquote: 4,
-  ping: 8
-});
-
-const defaultFlags = (keys => {
-  let x = {};
-  keys.forEach(k => {
-    x[k] = false;
-  });
-  return x;
-})(Object.keys(FlagsEnum));
-
-const serializeFlags = flags => {
-  let f = 0;
-  Object.keys(FlagsEnum).forEach(k => {
-    if (flags[k]) {
-      f += FlagsEnum[k];
-    }
-  });
-  return f;
-};
-
-const unserializeFlags = f => {
-  const flags = {};
-  Object.keys(FlagsEnum).forEach(k => {
-    flags[k] = (f & FlagsEnum[k]) === FlagsEnum[k];
-  });
-  return flags;
-};
-
-export const computeFlags = options => {
-  const flags = { ...defaultFlags };
-  options.forEach(opt => {
-    if (FlagsEnum.hasOwnProperty(opt)) {
-      flags[opt] = true;
-    }
-  });
-  return flags;
-};
 
 export const getTwitterIdFromScreenName = screenName => {
   const array = Object.keys(collection);
@@ -218,4 +181,132 @@ export const load = callback => {
       callback();
     });
   });
+};
+
+// Add a subscription to this userId or update an existing one
+export const add = (qChannel, userId, name, flags) => {
+  if (!collection.hasOwnProperty(userId)) {
+    // Create the user object
+    collection[userId] = { subs: [] };
+  }
+  if (name !== null && !collection[userId].name !== name) {
+    collection[userId].name = name;
+  }
+
+  const idx = collection[userId].subs.findIndex(
+    get => get.qChannel.id == qChannel.id
+  );
+  if (idx > -1) {
+    // We already have a get from this channel for this user. Update it
+    collection[userId].subs[idx].flags = flags;
+  } else {
+    collection[userId].subs.push({
+      qChannel,
+      flags
+    });
+  }
+};
+
+// Remove a get from the user list
+// This function doesn't save to fs automatically
+export const rm = (qChannel, screenName) => {
+  userLookup({ screen_name: screenName })
+    .then(function(data) {
+      let userId = data[0].id_str;
+      if (!collection.hasOwnProperty(userId)) {
+        postMessage(
+          qChannel,
+          "**You're not  subscribed to this user.**\nUse `" +
+            config.prefix +
+            "start " +
+            screenName +
+            "` to get started!"
+        );
+        return;
+      }
+      const idx = collection[userId].subs.findIndex(
+        ({ qChannel: { id } }) => qChannel.id == id
+      );
+      if (idx == -1) {
+        postMessage(
+          qChannel,
+          "**You're not subscribed to this user.**\nUse `" +
+            config.prefix +
+            "start " +
+            screenName +
+            "` to get started!"
+        );
+        return;
+      }
+      // Remove element from channels
+      collection[userId].subs.splice(idx, 1);
+      if (collection[userId].subs.length < 1) {
+        // If no one needs this user's tweets we can delete the entry
+        delete collection[userId];
+        // ...and re-register the stream, which will now delete the user
+        createStream();
+      }
+      postMessage(
+        qChannel,
+        `**I've unsubscribed you from @${screenName}!**\nYou should now stop getting any messages from them.`
+      );
+      save();
+    })
+    .catch(() => {
+      postMessage(qChannel, "I can't find a user by the name of " + screenName);
+    });
+};
+
+export const rmChannel = channelId => {
+  let count = 0;
+  let usersChanged = false;
+  // Remove all instances of this channel from our gets
+  Object.keys(collection).forEach(userId => {
+    let user = collection[userId];
+    var i = user.subs.length;
+    while (i--) {
+      if (channelId === user.subs[i].qChannel.id) {
+        count++;
+        // We should remove this get
+        user.subs.splice(i, 1);
+      }
+    }
+    if (user.subs.length < 1) {
+      // If no one needs this user's tweets we can delete the enty
+      delete collection[userId];
+      usersChanged = true;
+    }
+  });
+  // Save any changes we did to the users object
+  save();
+  // ...and re-register the stream, which will be properly updated
+  if (usersChanged) createStream();
+  return count;
+};
+
+export const rmGuild = async id => {
+  let usersChanged = false;
+  // Remove all instances of this guild from our gets
+  const keysArray = Object.keys(collection);
+  for (let i = keysArray.length - 1; i >= 0; i--) {
+    const userId = keysArray[i];
+    let user = collection[userId];
+    let x = user.subs.length;
+    while (x--) {
+      const { gid } = user.subs[x].qChannel;
+      if (id === gid) {
+        // We should remove this get
+        user.subs.splice(x, 1);
+      }
+    }
+    if (user.subs.length < 1) {
+      usersChanged = true;
+      // If no one needs this user's tweets we can delete the enty
+      delete collection[userId];
+    }
+  }
+  // Save any changes we did to the users object
+  save();
+  // ...and re-register the stream, which will be properly updated
+  if (usersChanged) createStream();
 };
