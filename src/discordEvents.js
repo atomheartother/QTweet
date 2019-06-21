@@ -1,21 +1,21 @@
+import usage from "./usage";
+import Discord from "discord.js";
+
 // A module registering discord events and reacting to them
-const Discord = require("discord.js");
-var fortune = require("fortune-teller");
+import { fortune } from "fortune-teller";
 
 // Config file
-const config = require("../config.json");
-// Usage strings
-const usage = require("./usage.js");
-// logging
-const log = require("./log");
+import * as config from "../config.json";
+import * as users from "./users";
+import QChannel from "./QChannel";
 
-const gets = require("./gets");
+// logging
+import log from "./log";
+import { rmGuild } from "./gets";
 const post = require("./post");
 const twitter = require("./twitter");
-const users = require("./users");
-const commands = require("./commands");
+import commands from "./commands";
 const discord = require("./discord");
-const QChannel = require("./QChannel");
 
 const handleCommand = (commandName, author, qChannel, args) => {
   const command = commands[commandName];
@@ -57,7 +57,7 @@ const handleCommand = (commandName, author, qChannel, args) => {
   }
 };
 
-handleMessage = message => {
+const handleMessage = message => {
   // Ignore bots
   if (message.author.bot) return;
 
@@ -67,7 +67,7 @@ handleMessage = message => {
       !!message.mentions.members &&
       message.mentions.members.find(item => item.user.id === discord.user().id)
     ) {
-      message.reply(fortune.fortune());
+      message.reply(fortune());
     } else if (message.channel.type == "dm")
       post.message(
         message.channel,
@@ -127,12 +127,12 @@ handleMessage = message => {
   handleCommand(command, author, qc, args);
 };
 
-handleError = error => {
+const handleError = error => {
   log("Discord client encountered an error");
   console.error(error);
 };
 
-handleGuildCreate = async guild => {
+const handleGuildCreate = async guild => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
   const qc = await QChannel.unserialize({ id: guild.ownerID, isDM: true });
@@ -152,12 +152,12 @@ handleGuildCreate = async guild => {
   }
 };
 
-handleGuildDelete = ({ id, name }) => {
+const handleGuildDelete = ({ id, name }) => {
   log(`Left guild ${name}`);
-  gets.rmGuild(id);
+  rmGuild(id);
 };
 
-handleReady = () => {
+const handleReady = () => {
   log("Successfully logged in to Discord");
   // If our name changed, set it
   if (discord.user().username !== config.botName) {
@@ -171,19 +171,12 @@ handleReady = () => {
   });
 };
 
-handleRateLimit = ({ limit, timeDifference, path, method }) => {
-  // log(`Discord is rate-limiting us at ${method} ${path}. ${limit} requests max`);
-};
-
-module.exports = {
-  registerCallbacks: () => {
-    discord
-      .getClient()
-      .on("rateLimit", handleRateLimit)
-      .on("message", handleMessage)
-      .on("error", handleError)
-      .on("guildCreate", handleGuildCreate)
-      .on("guildDelete", handleGuildDelete)
-      .on("ready", handleReady);
-  }
+export default () => {
+  discord
+    .getClient()
+    .on("message", handleMessage)
+    .on("error", handleError)
+    .on("guildCreate", handleGuildCreate)
+    .on("guildDelete", handleGuildDelete)
+    .on("ready", handleReady);
 };

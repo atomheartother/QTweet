@@ -1,13 +1,9 @@
-let users = (module.exports = {});
+import fs from "fs";
+import * as config from "../config.json";
+import QChannel from "./QChannel";
 
-var fs = require("fs");
-
-// Config file
-var config = require("../config.json");
-
-const gets = require("./gets");
-const log = require("./log");
-const QChannel = require("./QChannel");
+import { add } from "./gets";
+import log from "./log";
 
 // Users:
 // Dict of TwitterUser, using userId as key
@@ -20,16 +16,15 @@ const QChannel = require("./QChannel");
 //    Flags:
 //      notext: Boolean, if true we don't post text posts to this channel
 //      retweet: Boolean, if true we post retweets to this channel
-
-users.collection = {};
+export const collection = {};
 
 // Returns a list of channel objects, each in an unique guild
 // DMs are also returned
-users.getUniqueChannels = async () => {
+export const getUniqueChannels = async () => {
   const qChannels = [];
-  const keysArray = Object.keys(users.collection);
+  const keysArray = Object.keys(collection);
   for (let i = 0; i < keysArray.length; i++) {
-    const user = users.collection[keysArray[i]];
+    const user = collection[keysArray[i]];
     for (let j = 0; j < user.subs.length; j++) {
       const getQChannel = user.subs[j].qChannel;
       const { gid: getId } = getQChannel;
@@ -48,12 +43,12 @@ users.getUniqueChannels = async () => {
 };
 
 // Returns a list of get objects matching this guild, with added userId of the get
-users.getGuildGets = async guildId => {
+export const getGuildGets = async guildId => {
   const gets = [];
-  const keysArray = Object.keys(users.collection);
+  const keysArray = Object.keys(collection);
   for (let i = 0; i < keysArray.length; i++) {
     const userId = keysArray[i];
-    const { subs } = users.collection[userId];
+    const { subs } = collection[userId];
     for (let j = 0; j < subs.length; j++) {
       const get = subs[j];
       if (get.qChannel.type === "dm") continue;
@@ -67,11 +62,11 @@ users.getGuildGets = async guildId => {
 };
 
 // Returns a list of get objects matching this channel, with added userid of the get
-users.getChannelGets = channelId =>
-  Object.keys(users.collection).reduce(
+export const getChannelGets = channelId =>
+  Object.keys(collection).reduce(
     (acc, userId) =>
       acc.concat(
-        users.collection[userId].subs
+        collection[userId].subs
           .filter(get => get.qChannel.id === channelId)
           .map(get => ({
             ...get,
@@ -81,7 +76,7 @@ users.getChannelGets = channelId =>
     []
   );
 
-users.defaultFlags = {
+export const defaultFlags = {
   notext: false,
   retweet: false,
   noquote: false
@@ -93,7 +88,7 @@ const FlagsEnum = Object.freeze({
   noquote: 4
 });
 
-users.serializeFlags = flags => {
+const serializeFlags = flags => {
   let f = 0;
   Object.keys(FlagsEnum).forEach(k => {
     if (flags[k]) {
@@ -103,7 +98,7 @@ users.serializeFlags = flags => {
   return f;
 };
 
-users.unserializeFlags = f => {
+const unserializeFlags = f => {
   const flags = {};
   Object.keys(FlagsEnum).forEach(k => {
     flags[k] = (f & FlagsEnum[k]) === FlagsEnum[k];
@@ -111,19 +106,17 @@ users.unserializeFlags = f => {
   return flags;
 };
 
-users.getTwitterIdFromScreenName = screenName => {
-  const array = Object.keys(users.collection);
+export const getTwitterIdFromScreenName = screenName => {
+  const array = Object.keys(collection);
   for (let i = 0; i < array.length; i++) {
     const userId = array[i];
-    if (
-      users.collection[userId].name.toLowerCase() === screenName.toLowerCase()
-    )
+    if (collection[userId].name.toLowerCase() === screenName.toLowerCase())
       return userId;
   }
   return null;
 };
 
-users.save = () => {
+export const save = () => {
   // We save users as:
   // {
   //    "userId" : {name: "screen_name", subs: [{id: qChannel.id, f: Int (bitfields)}]}
@@ -131,17 +124,17 @@ users.save = () => {
 
   // Create a copy of the channels object, remove all timeouts from it
   let usersCopy = {};
-  for (let userId in users.collection) {
+  for (let userId in collection) {
     // Iterate over twitter users
-    if (!users.collection.hasOwnProperty(userId)) continue;
+    if (!collection.hasOwnProperty(userId)) continue;
     usersCopy[userId] = { subs: [] };
-    if (users.collection[userId].hasOwnProperty("name")) {
-      usersCopy[userId].name = users.collection[userId].name;
+    if (collection[userId].hasOwnProperty("name")) {
+      usersCopy[userId].name = collection[userId].name;
     }
-    for (const { qChannel, flags } of users.collection[userId].subs) {
+    for (const { qChannel, flags } of collection[userId].subs) {
       usersCopy[userId].subs.push({
         qc: qChannel.serialize(),
-        f: users.serializeFlags(flags)
+        f: serializeFlags(flags)
       });
     }
   }
@@ -154,8 +147,8 @@ users.save = () => {
   });
 };
 
-users.load = callback => {
-  fs.stat(config.getFile, (err, stat) => {
+export const load = callback => {
+  fs.stat(config.getFile, err => {
     if (err) {
       log(err);
       return;
@@ -196,17 +189,17 @@ users.load = callback => {
           let flags = null;
           if (sub.f !== undefined) {
             // New format, we unserialize flags
-            flags = users.unserializeFlags(sub.f);
+            flags = unserializeFlags(sub.f);
           } else if (sub.text === false) {
             // Olf format, build flags and support the old text boolean
             flags = {
-              ...users.defaultFlags,
+              ...defaultFlags,
               notext: true
             };
           } else {
-            flags = users.defaultFlags;
+            flags = defaultFlags;
           }
-          gets.add(qChannel, userId, name, flags);
+          add(qChannel, userId, name, flags);
         }
       }
       callback();

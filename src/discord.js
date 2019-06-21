@@ -2,7 +2,7 @@
 const Discord = require("discord.js");
 
 // Passwords file
-const pw = require("../pw.json");
+import * as pw from "../pw.json";
 
 let dClient = new Discord.Client();
 

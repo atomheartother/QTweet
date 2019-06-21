@@ -1,14 +1,16 @@
-const config = require("../config.json");
-const usage = require("./usage.js");
-const checks = require("./checks");
-const gets = require("./gets");
+import usage from "./usage";
+
+import * as config from "../config.json";
+import * as format from "./format";
+import * as users from "./users";
+import QChannel from "./QChannel";
+import { rm, add, rmChannel } from "./gets";
+import log from "./log";
+
+import * as checks from "./checks";
 const post = require("./post");
 const discord = require("./discord");
 const twitter = require("./twitter");
-const users = require("./users");
-const log = require("./log");
-const QChannel = require("./QChannel");
-const format = require("./format");
 
 const getScreenName = word => {
   if (word.startsWith("@")) {
@@ -188,7 +190,6 @@ const tweetId = (args, qChannel) => {
         return;
       }
 
-      console.log(tweet);
       const embed = twitter.formatTweet(tweet);
       post.embed(qChannel, embed);
       log(`Posting tweet ${id}`, qChannel);
@@ -244,7 +245,7 @@ const start = (args, qChannel) => {
         if (!redoStream && !users.collection.hasOwnProperty(userId)) {
           redoStream = true;
         }
-        gets.add(qChannel, userId, name, flags);
+        add(qChannel, userId, name, flags);
       });
       let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
         config.prefix
@@ -285,7 +286,7 @@ const leaveGuild = (args, qChannel) => {
   if (args.length >= 1 && checks.isDm(null, qChannel)) {
     guild = discord.getGuild(args[0]);
   } else if (!checks.isDm(null, qChannel)) {
-    guild = channel.guild;
+    guild = qChannel.guild();
   } else {
     post.message(qChannel, "No valid guild ID provided");
     return;
@@ -299,7 +300,7 @@ const leaveGuild = (args, qChannel) => {
     .leave()
     .then(g => {
       log(`Left the guild ${g.name}`);
-      if (checks.isDm(author, qChannel))
+      if (checks.isDm(null, qChannel))
         post.message(qChannel, `Left the guild ${g}`);
     })
     .catch(err => {
@@ -311,14 +312,16 @@ const leaveGuild = (args, qChannel) => {
 const stop = (args, qChannel) => {
   const screenName = getScreenName(args[0]);
   log(`Removed ${screenName}`, qChannel);
-  gets.rm(qChannel, screenName);
+  rm(qChannel, screenName);
 };
 
 const stopchannel = (args, qChannel) => {
-  targetChannel = qChannel.id;
-  channelName = qChannel.name;
+  const targetChannel = qChannel.id;
+  let channelName = qChannel.name;
   if (args.length > 0 && qChannel.type !== "dm") {
-    channelObj = qChannel.guild().channels.find(c => c.id === targetChannel);
+    const channelObj = qChannel
+      .guild()
+      .channels.find(c => c.id === targetChannel);
     if (!channelObj) {
       post.message(
         qChannel,
@@ -328,7 +331,7 @@ const stopchannel = (args, qChannel) => {
     }
     channelName = new QChannel(channelObj).name;
   }
-  const count = gets.rmChannel(targetChannel);
+  const count = rmChannel(targetChannel);
   log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
   post.message(
     qChannel,
@@ -403,7 +406,7 @@ const announce = async args => {
   post.announcement(message, qChannels);
 };
 
-module.exports = {
+export default {
   start: {
     function: start,
     checks: [

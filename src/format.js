@@ -1,10 +1,9 @@
 // A module for formatting data for displaying
 
-module.exports = format = {};
+import Discord from "discord.js";
+import * as config from "../config.json";
+import * as users from "./users";
 
-const Discord = require("discord.js");
-const users = require("./users");
-const config = require("../config.json");
 const post = require("./post");
 const discord = require("./discord");
 
@@ -18,7 +17,7 @@ const defaults = {
   color: 0xf26d7a
 };
 
-format.qChannel = async qChannel => {
+export const formatGChannel = async qChannel => {
   const obj = await qChannel.obj();
   let res = `**${qChannel.formattedName}**\n`;
   if (qChannel.type === "dm") {
@@ -36,7 +35,7 @@ format.qChannel = async qChannel => {
   return res;
 };
 
-format.genericList = async (
+export const formatGenericList = async (
   qChannel,
   {
     data = defaults.data,
@@ -80,38 +79,38 @@ format.genericList = async (
   }
 };
 
-format.twitterUserShort = userId => {
+export const formatTwitterUserShort = userId => {
   const twitterUser = users.collection[userId];
   return twitterUser.name
     ? `@${twitterUser.name} (https://twitter.com/${twitterUser.name})`
     : userId;
 };
 
-format.flags = flags =>
+export const formatFlags = flags =>
   `With ${flags.notext ? "no text posts" : "text posts"}, ${
     flags.retweet ? "retweets" : "no retweets"
   }, ${flags.noquote ? "no quotes" : "quotes"}`;
 
-format.twitterUser = (qChannel, id) => {
+export const formatTwitterUser = (qChannel, id) => {
   const tUser = users.collection[id];
-  format.genericList(qChannel, {
+  formatGenericList(qChannel, {
     data: tUser.subs,
     formatTitle: ({ qChannel }) => qChannel.name,
     formatField: ({ qChannel, flags }) =>
       `**ID:** ${qChannel.id}\n**Type:** ${
         qChannel.type === "dm" ? "dm" : "serv"
-      } (${format.flags(flags)})`,
+      } (${formatFlags(flags)})`,
     noElements: `**This user has no subs**\nThis shouldn't happen`,
     objectName: "subscriptions"
   });
 };
 
-format.channelList = async (qChannel, targetChannel) => {
-  format.genericList(qChannel, {
+export const formatChannelList = async (qChannel, targetChannel) => {
+  formatGenericList(qChannel, {
     data: users.getChannelGets(targetChannel.id),
-    formatTitle: ({ userId }) => format.twitterUserShort(userId),
+    formatTitle: ({ userId }) => formatTwitterUserShort(userId),
     formatField: ({ userId, flags }) =>
-      `**ID:** ${userId}\n${format.flags(flags)}`,
+      `**ID:** ${userId}\n${formatFlags(flags)}`,
     noElements: `**You're not subscribed to anyone**\nUse \`${
       config.prefix
     }start <screen_name>\` to get started!`,
