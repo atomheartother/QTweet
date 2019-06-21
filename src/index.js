@@ -1,8 +1,4 @@
-// logging
 import log from "./log";
-import dbl from "./dbl";
-// Modules
-import registerCallbacks from "./discordEvents";
 import { login } from "./discord";
 
 process.on("unhandledRejection", function(err) {
@@ -10,6 +6,13 @@ process.on("unhandledRejection", function(err) {
   console.error(err);
 });
 
-registerCallbacks();
-login();
-dbl();
+const start = async () => {
+  try {
+    await login();
+  } catch (e) {
+    log("Error logging into Discord:");
+    log(e);
+  }
+};
+
+start();
