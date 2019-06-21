@@ -1,15 +1,37 @@
 // Direct mappings for discord.js methods
 import Discord from "discord.js";
+import DBL from "dblapi.js";
+import log from "./log";
+
+import {
+  handleMessage,
+  handleError,
+  handleGuildCreate,
+  handleGuildDelete,
+  handleReady
+} from "./discordEvents";
 // Passwords file
 import * as pw from "../pw.json";
 
-let dClient = new Discord.Client();
+let dClient = new Discord.Client()
+  .on("message", handleMessage)
+  .on("error", handleError)
+  .on("guildCreate", handleGuildCreate)
+  .on("guildDelete", handleGuildDelete)
+  .on("ready", handleReady);
+
+let dblClient = pw.DBLToken ? new DBL(pw.DBLToken, dClient) : null;
 
 export const getClient = () => {
   return dClient;
 };
 
-export const login = () => {
+export const login = async () => {
+  if (dblClient) {
+    dblClient.on("error", ({ status }) => {
+      log(`Error with DBL client: ${status}`);
+    });
+  }
   return dClient.login(pw.dToken);
 };
 

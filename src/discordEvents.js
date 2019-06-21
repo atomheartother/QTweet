@@ -15,7 +15,7 @@ import { rmGuild } from "./gets";
 import { message as postMessage, dm, embed as postEmbed } from "./post";
 import { createStream } from "./twitter";
 import commands from "./commands";
-import { user, getClient } from "./discord";
+import { user } from "./discord";
 
 const handleCommand = (commandName, author, qChannel, args) => {
   const command = commands[commandName];
@@ -57,7 +57,7 @@ const handleCommand = (commandName, author, qChannel, args) => {
   }
 };
 
-const handleMessage = message => {
+export const handleMessage = message => {
   // Ignore bots
   if (message.author.bot) return;
 
@@ -127,12 +127,12 @@ const handleMessage = message => {
   handleCommand(command, author, qc, args);
 };
 
-const handleError = error => {
+export const handleError = error => {
   log("Discord client encountered an error");
   console.error(error);
 };
 
-const handleGuildCreate = async guild => {
+export const handleGuildCreate = async guild => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
   const qc = await QChannel.unserialize({ id: guild.ownerID, isDM: true });
@@ -152,12 +152,12 @@ const handleGuildCreate = async guild => {
   }
 };
 
-const handleGuildDelete = ({ id, name }) => {
+export const handleGuildDelete = ({ id, name }) => {
   log(`Left guild ${name}`);
   rmGuild(id);
 };
 
-const handleReady = () => {
+export const handleReady = () => {
   log("Successfully logged in to Discord");
   // If our name changed, set it
   if (user().username !== config.botName) {
@@ -169,13 +169,4 @@ const handleReady = () => {
     // ... And save any changes we made
     users.save();
   });
-};
-
-export default () => {
-  getClient()
-    .on("message", handleMessage)
-    .on("error", handleError)
-    .on("guildCreate", handleGuildCreate)
-    .on("guildDelete", handleGuildDelete)
-    .on("ready", handleReady);
 };
