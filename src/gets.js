@@ -1,28 +1,28 @@
-let gets = (module.exports = {});
+import { save, collection } from "./users";
 
-let users = require("./users");
+import * as config from "../config.json";
+
 let twitter = require("./twitter");
 const post = require("./post");
-var config = require("../config.json");
 
 // Add a get to the user list
-gets.add = (qChannel, userId, name, flags) => {
-  if (!users.collection.hasOwnProperty(userId)) {
+export const add = (qChannel, userId, name, flags) => {
+  if (!collection.hasOwnProperty(userId)) {
     // Create the user object
-    users.collection[userId] = { subs: [] };
+    collection[userId] = { subs: [] };
   }
-  if (name !== null && !users.collection[userId].name !== name) {
-    users.collection[userId].name = name;
+  if (name !== null && !collection[userId].name !== name) {
+    collection[userId].name = name;
   }
 
-  const idx = users.collection[userId].subs.findIndex(
+  const idx = collection[userId].subs.findIndex(
     get => get.qChannel.id == qChannel.id
   );
   if (idx > -1) {
     // We already have a get from this channel for this user. Update it
-    users.collection[userId].subs[idx].flags = flags;
+    collection[userId].subs[idx].flags = flags;
   } else {
-    users.collection[userId].subs.push({
+    collection[userId].subs.push({
       qChannel,
       flags
     });
@@ -31,12 +31,12 @@ gets.add = (qChannel, userId, name, flags) => {
 
 // Remove a get from the user list
 // This function doesn't save to fs automatically
-gets.rm = (qChannel, screenName) => {
+export const rm = (qChannel, screenName) => {
   twitter
     .userLookup({ screen_name: screenName })
     .then(function(data) {
       let userId = data[0].id_str;
-      if (!users.collection.hasOwnProperty(userId)) {
+      if (!collection.hasOwnProperty(userId)) {
         post.message(
           qChannel,
           "**You're not  subscribed to this user.**\nUse `" +
@@ -47,7 +47,7 @@ gets.rm = (qChannel, screenName) => {
         );
         return;
       }
-      const idx = users.collection[userId].subs.findIndex(
+      const idx = collection[userId].subs.findIndex(
         ({ qChannel: { id } }) => qChannel.id == id
       );
       if (idx == -1) {
@@ -62,10 +62,10 @@ gets.rm = (qChannel, screenName) => {
         return;
       }
       // Remove element from channels
-      users.collection[userId].subs.splice(idx, 1);
-      if (users.collection[userId].subs.length < 1) {
+      collection[userId].subs.splice(idx, 1);
+      if (collection[userId].subs.length < 1) {
         // If no one needs this user's tweets we can delete the entry
-        delete users.collection[userId];
+        delete collection[userId];
         // ...and re-register the stream, which will now delete the user
         twitter.createStream();
       }
@@ -73,9 +73,9 @@ gets.rm = (qChannel, screenName) => {
         qChannel,
         `**I've unsubscribed you from @${screenName}!**\nYou should now stop getting any messages from them.`
       );
-      users.save();
+      save();
     })
-    .catch(function(err) {
+    .catch(() => {
       post.message(
         qChannel,
         "I can't find a user by the name of " + screenName
@@ -83,12 +83,12 @@ gets.rm = (qChannel, screenName) => {
     });
 };
 
-gets.rmChannel = channelId => {
+export const rmChannel = channelId => {
   let count = 0;
   let usersChanged = false;
   // Remove all instances of this channel from our gets
-  Object.keys(users.collection).forEach(userId => {
-    let user = users.collection[userId];
+  Object.keys(collection).forEach(userId => {
+    let user = collection[userId];
     var i = user.subs.length;
     while (i--) {
       if (channelId === user.subs[i].qChannel.id) {
@@ -99,24 +99,24 @@ gets.rmChannel = channelId => {
     }
     if (user.subs.length < 1) {
       // If no one needs this user's tweets we can delete the enty
-      delete users.collection[userId];
+      delete collection[userId];
       usersChanged = true;
     }
   });
   // Save any changes we did to the users object
-  users.save();
+  save();
   // ...and re-register the stream, which will be properly updated
   if (usersChanged) twitter.createStream();
   return count;
 };
 
-gets.rmGuild = async id => {
+export const rmGuild = async id => {
   let usersChanged = false;
   // Remove all instances of this guild from our gets
-  const keysArray = Object.keys(users.collection);
+  const keysArray = Object.keys(collection);
   for (let i = keysArray.length - 1; i >= 0; i--) {
     const userId = keysArray[i];
-    let user = users.collection[userId];
+    let user = collection[userId];
     let x = user.subs.length;
     while (x--) {
       const { gid } = user.subs[x].qChannel;
@@ -128,11 +128,11 @@ gets.rmGuild = async id => {
     if (user.subs.length < 1) {
       usersChanged = true;
       // If no one needs this user's tweets we can delete the enty
-      delete users.collection[userId];
+      delete collection[userId];
     }
   }
   // Save any changes we did to the users object
-  users.save();
+  save();
   // ...and re-register the stream, which will be properly updated
   if (usersChanged) twitter.createStream();
 };

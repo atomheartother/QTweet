@@ -1,4 +1,4 @@
-const log = require("./log");
+import log from "./log";
 
 // Idle delay
 const shortDelay = 1000 * 60 * 5;
@@ -23,7 +23,7 @@ class Stream {
   checkNewUsers() {
     if (this.newUserIds === true) {
       this.newUserIds = false;
-      if (!!this.stream) {
+      if (this.stream) {
         this.stream.destroy();
         setTimeout(() => {
           this.doCreate();
@@ -75,4 +75,4 @@ class Stream {
   }
 }
 
-module.exports = Stream;
+export default Stream;

@@ -1,8 +1,8 @@
 // logging
-const log = require("./log");
+import log from "./log";
 
 // Modules
-const discordEvents = require("./discordEvents");
+import registerCallbacks from "./discordEvents";
 const discord = require("./discord");
 const dbl = require("./dbl");
 
@@ -11,6 +11,6 @@ process.on("unhandledRejection", function(err) {
   console.error(err);
 });
 
-discordEvents.registerCallbacks();
+registerCallbacks();
 discord.login();
 dbl.registerClient();

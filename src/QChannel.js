@@ -1,6 +1,6 @@
 // Helper class to interact with channels and keep memory down
 const discord = require("./discord");
-const log = require("./log");
+import log from "./log";
 
 // Some selectors
 const getType = c => c.type;
@@ -119,4 +119,4 @@ class QChannel {
   }
 }
 
-module.exports = QChannel;
+export default QChannel;

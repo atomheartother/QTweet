@@ -1,18 +1,19 @@
-// Passwords file
-const pw = require("../pw.json");
-const post = require("./post");
-const log = require("./log");
-const users = require("./users");
-const Backup = require("./backup");
-const Stream = require("./twitterStream");
+import Twitter from "twitter-lite";
 
-var Twitter = require("twitter-lite");
+import * as pw from "../pw.json";
+
+import * as users from "./users";
+import Backup from "./backup";
+import log from "./log";
+
+import Stream from "./twitterStream";
+const post = require("./post");
 
 let twitter = (module.exports = {});
 
 // Timeout detecting when there haven't been new tweets in the past min
 let lastTweetTimeout = null;
-const lastTweetDelay = 1000 * 60 * 10;
+const lastTweetDelay = 1000 * 60 * 1;
 
 var tClient = new Twitter({
   consumer_key: pw.tId,

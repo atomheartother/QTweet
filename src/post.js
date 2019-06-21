@@ -1,8 +1,7 @@
 var post = (module.exports = {});
-const config = require("../config.json");
-
-const gets = require("./gets");
-const log = require("./log");
+import * as config from "../config.json";
+import { rmChannel } from "./gets";
+import log from "./log";
 
 post.colors = {
   text: 0x69b2d6,
@@ -49,13 +48,12 @@ const handleDiscordPostError = async (
   if (errCode === 404 || errCode === 10003) {
     // The channel was deleted or we don't have access to it, auto-delete it
     // And notify the user
-    const count = gets.rmChannel(qChannel.id);
+    const count = rmChannel(qChannel.id);
     logMsg = `${errCode}: Auto-deleted ${count} gets, qChannel removed`;
     newMsg = `**Inaccessible channel**: I tried to post in ${
       qChannel.name
     } but Discord says it doesn't exist anymore.\nI took the liberty of stopping all ${count} subscriptions in that channel.\n\nIf this isn't what you wanted, please contact my creator through our support server!`;
     newType = "404 notification";
-    resend = false;
   } else if (
     errCode === 403 ||
     errCode === 50013 ||

@@ -1,6 +1,6 @@
-var config = require("../config.json");
+import * as config from "../config.json";
 
-module.exports = {
+export default {
   tweet: `Post the latest tweet(s) from the given user.\n**Usage**: \`${
     config.prefix
   }tweet <twitter_screen_name> [count]\``,

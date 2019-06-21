@@ -1,15 +1,13 @@
-const config = require("../config.json");
-
-let checks = (module.exports = {});
-const log = require("./log");
+import * as config from "../config.json";
+import log from "./log";
 
 // Takes an author and returns whether or not they are an admin
-checks.isAdmin = (author, qChannel, callback) => {
+export const isAdmin = (author, qChannel, callback) => {
   callback(author.id === config.ownerID);
 };
 
 // Takes an author. checks that they're able to perform mod-level commands
-checks.isMod = async (author, qChannel, callback) => {
+export const isMod = async (author, qChannel, callback) => {
   const guild = qChannel.guild();
   const isSomeOwner =
     author.id === config.ownerID || (!!qChannel && author.id === qChannel.oid);
@@ -45,10 +43,10 @@ checks.isMod = async (author, qChannel, callback) => {
   }
 };
 
-checks.isDm = (author, qChannel, callback) => {
+export const isDm = (author, qChannel, callback) => {
   callback(qChannel.type === "dm");
 };
 
-checks.isNotDm = (author, qChannel, callback) => {
+export const isNotDm = (author, qChannel, callback) => {
   callback(qChannel.type !== "dm");
 };
