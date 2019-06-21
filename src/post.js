@@ -161,10 +161,14 @@ const handleDiscordPostError = async (
 };
 
 // React is a boolean, if true, add a reaction to the message after posting
-post.embed = (qChannel, embed) => {
-  qChannel.send(embed).catch(err => {
+post.embed = async (qChannel, embed) => {
+  try {
+    await qChannel.send(embed);
+  } catch (err) {
     handleDiscordPostError(err, qChannel, "embed", embed);
-  });
+    return 1;
+  }
+  return 0;
 };
 
 post.message = (qChannel, message) => {
