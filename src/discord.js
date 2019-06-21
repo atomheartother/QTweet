@@ -1,46 +1,45 @@
 // Direct mappings for discord.js methods
-const Discord = require("discord.js");
-
+import Discord from "discord.js";
 // Passwords file
 import * as pw from "../pw.json";
 
 let dClient = new Discord.Client();
 
-module.exports = {
-  getClient: () => {
-    return dClient;
-  },
-  login: () => {
-    return dClient.login(pw.dToken);
-  },
-  user: () => {
-    return dClient.user;
-  },
+export const getClient = () => {
+  return dClient;
+};
 
-  getChannel: id => {
-    return dClient.channels.get(id);
-  },
+export const login = () => {
+  return dClient.login(pw.dToken);
+};
 
-  getGuild: id => {
-    return dClient.guilds.get(id);
-  },
+export const user = () => {
+  return dClient.user;
+};
 
-  getUser: id => {
-    return dClient.users.get(id);
-  },
+export const getChannel = id => {
+  return dClient.channels.get(id);
+};
 
-  getUserDm: async id => {
-    const usr = dClient.users.get(id);
-    if (!usr) return null;
-    return usr.dmChannel ? usr.dmChannel : usr.createDM();
-  },
+export const getGuild = id => {
+  return dClient.guilds.get(id);
+};
 
-  canPostIn: channel => {
-    if (!channel) return false;
-    const permissions = channel.permissionsFor(dClient.user);
-    return (
-      permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES) &&
-      permissions.has(Discord.Permissions.FLAGS.VIEW_CHANNEL)
-    );
-  }
+export const getUser = id => {
+  return dClient.users.get(id);
+};
+
+export const getUserDm = async id => {
+  const usr = dClient.users.get(id);
+  if (!usr) return null;
+  return usr.dmChannel ? usr.dmChannel : usr.createDM();
+};
+
+export const canPostIn = channel => {
+  if (!channel) return false;
+  const permissions = channel.permissionsFor(dClient.user);
+  return (
+    permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES) &&
+    permissions.has(Discord.Permissions.FLAGS.VIEW_CHANNEL)
+  );
 };

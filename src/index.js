@@ -1,10 +1,9 @@
 // logging
 import log from "./log";
-
+import dbl from "./dbl";
 // Modules
 import registerCallbacks from "./discordEvents";
-const discord = require("./discord");
-const dbl = require("./dbl");
+import { login } from "./discord";
 
 process.on("unhandledRejection", function(err) {
   log("Unhandled exception:");
@@ -12,5 +11,5 @@ process.on("unhandledRejection", function(err) {
 });
 
 registerCallbacks();
-discord.login();
-dbl.registerClient();
+login();
+dbl();

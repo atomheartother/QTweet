@@ -141,8 +141,8 @@ export const save = () => {
   let json = JSON.stringify(usersCopy);
   fs.writeFile(config.getFile, json, "utf8", function(err) {
     if (err !== null) {
-      console.error("Error saving users object:");
-      console.error(err);
+      log("Error saving users object:");
+      log(err);
     }
   });
 };

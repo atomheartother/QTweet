@@ -1,5 +1,5 @@
 // Helper class to interact with channels and keep memory down
-const discord = require("./discord");
+import { getUserDm, getChannel, canPostIn, getGuild } from "./discord";
 import log from "./log";
 
 // Some selectors
@@ -21,7 +21,7 @@ const getFormattedName = c => {
 class QChannel {
   constructor({ id }) {
     // Check validity of object
-    const c = discord.getChannel(id);
+    const c = getChannel(id);
     if (!c) {
       log(`Got an invalid id for QChannel construction: ${id}`);
       this.id = null;
@@ -35,20 +35,20 @@ class QChannel {
     this.oid = this.type === "dm" ? c.recipient.id : c.guild.ownerID;
   }
 
-  // Returns a discord.js channel object
+  // Returns a js channel object
   async obj() {
     if (this.type === "dm") {
-      return discord.getUserDm(this.id);
+      return getUserDm(this.id);
     }
-    return discord.getChannel(this.id);
+    return getChannel(this.id);
   }
 
   // Return a direct channel to the owner of this qChannel
   async ownerObj() {
     if (this.type === "dm") {
-      return discord.getUserDm(this.id);
+      return getUserDm(this.id);
     }
-    return discord.getUserDm(this.oid);
+    return getUserDm(this.oid);
   }
 
   async send(content, options = null) {
@@ -66,29 +66,29 @@ class QChannel {
     if (this.type === "dm") {
       return null;
     }
-    return discord.getGuild(this.gid);
+    return getGuild(this.gid);
   }
 
   static async bestGuildChannel(guild) {
     // Check the system channel
     if (guild.systemChannelID) {
-      const sysChan = discord.getChannel(guild.systemChannelID);
-      if (sysChan && discord.canPostIn(sysChan)) return new QChannel(sysChan);
+      const sysChan = getChannel(guild.systemChannelID);
+      if (sysChan && canPostIn(sysChan)) return new QChannel(sysChan);
     }
 
     // Check #general
     const genChan = guild.channels.find(
       c => c.type === "text" && c.name === "general"
     );
-    if (genChan && discord.canPostIn(genChan)) return new QChannel(genChan);
+    if (genChan && canPostIn(genChan)) return new QChannel(genChan);
 
     // Iterate over all channels and find the first best one
     const firstBest = guild.channels.find(
-      c => c.type === "text" && discord.canPostIn(c)
+      c => c.type === "text" && canPostIn(c)
     );
     if (firstBest) return new QChannel(firstBest);
     // Try to reach the owner, this might fail, we'll return null here if all fails
-    const dm = await discord.getUserDm(guild.ownerID);
+    const dm = await getUserDm(guild.ownerID);
     if (dm) return new QChannel(dm);
     return null;
   }
@@ -97,7 +97,7 @@ class QChannel {
   // Can return null
   async bestChannel() {
     const c = await this.obj();
-    if (this.type === "dm" || discord.canPostIn(c)) {
+    if (this.type === "dm" || canPostIn(c)) {
       return this;
     }
     // From now on we can't post in this channel
@@ -113,7 +113,7 @@ class QChannel {
 
   static async unserialize({ id, isDM }) {
     if (!isDM) return new QChannel({ id });
-    const dm = await discord.getUserDm(id);
+    const dm = await getUserDm(id);
     if (dm) return new QChannel(dm);
     return null;
   }

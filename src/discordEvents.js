@@ -15,7 +15,7 @@ import { rmGuild } from "./gets";
 const post = require("./post");
 const twitter = require("./twitter");
 import commands from "./commands";
-const discord = require("./discord");
+import { user, getClient } from "./discord";
 
 const handleCommand = (commandName, author, qChannel, args) => {
   const command = commands[commandName];
@@ -65,7 +65,7 @@ const handleMessage = message => {
     if (
       !!message.mentions &&
       !!message.mentions.members &&
-      message.mentions.members.find(item => item.user.id === discord.user().id)
+      message.mentions.members.find(item => item.user.id === user().id)
     ) {
       message.reply(fortune());
     } else if (message.channel.type == "dm")
@@ -160,8 +160,8 @@ const handleGuildDelete = ({ id, name }) => {
 const handleReady = () => {
   log("Successfully logged in to Discord");
   // If our name changed, set it
-  if (discord.user().username !== config.botName) {
-    discord.user().setUsername(config.botName);
+  if (user().username !== config.botName) {
+    user().setUsername(config.botName);
   }
   users.load(() => {
     // All users have been registered, we can request the stream from Twitter
@@ -172,8 +172,7 @@ const handleReady = () => {
 };
 
 export default () => {
-  discord
-    .getClient()
+  getClient()
     .on("message", handleMessage)
     .on("error", handleError)
     .on("guildCreate", handleGuildCreate)
