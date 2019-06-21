@@ -1,8 +1,7 @@
-import { save, collection } from "./users";
-
 import * as config from "../config.json";
 
-let twitter = require("./twitter");
+import { userLookup, createStream } from "./twitter";
+import { save, collection } from "./users";
 const post = require("./post");
 
 // Add a get to the user list
@@ -32,8 +31,7 @@ export const add = (qChannel, userId, name, flags) => {
 // Remove a get from the user list
 // This function doesn't save to fs automatically
 export const rm = (qChannel, screenName) => {
-  twitter
-    .userLookup({ screen_name: screenName })
+  userLookup({ screen_name: screenName })
     .then(function(data) {
       let userId = data[0].id_str;
       if (!collection.hasOwnProperty(userId)) {
@@ -67,7 +65,7 @@ export const rm = (qChannel, screenName) => {
         // If no one needs this user's tweets we can delete the entry
         delete collection[userId];
         // ...and re-register the stream, which will now delete the user
-        twitter.createStream();
+        createStream();
       }
       post.message(
         qChannel,
@@ -106,7 +104,7 @@ export const rmChannel = channelId => {
   // Save any changes we did to the users object
   save();
   // ...and re-register the stream, which will be properly updated
-  if (usersChanged) twitter.createStream();
+  if (usersChanged) createStream();
   return count;
 };
 
@@ -134,5 +132,5 @@ export const rmGuild = async id => {
   // Save any changes we did to the users object
   save();
   // ...and re-register the stream, which will be properly updated
-  if (usersChanged) twitter.createStream();
+  if (usersChanged) createStream();
 };

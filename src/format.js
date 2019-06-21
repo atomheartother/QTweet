@@ -17,7 +17,7 @@ const defaults = {
   color: 0xf26d7a
 };
 
-export const formatGChannel = async qChannel => {
+export const formatQChannel = async qChannel => {
   const obj = await qChannel.obj();
   let res = `**${qChannel.formattedName}**\n`;
   if (qChannel.type === "dm") {
