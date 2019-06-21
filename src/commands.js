@@ -103,7 +103,7 @@ const tweet = (args, qChannel, author) => {
       return;
     }
     userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
-      .then(async (tweets, error) => {
+      .then(async tweets => {
         if (tweets.error) {
           if (tweets.error === "Not authorized.") {
             postMessage(
@@ -264,7 +264,7 @@ const start = (args, qChannel) => {
       }
       subs.save();
     })
-    .catch(function(error) {
+    .catch(() => {
       if (screenNames.length === 1) {
         postMessage(
           qChannel,
