@@ -14,6 +14,7 @@ You never have to use Twitter again, just get the good stuff posted to your Disc
 - Get the latest **text, image, album and video** tweet(s) from any twitter user, formatted for Discord.
 - Cross-post tweets from Twitter to Discord in **real time**.
 - Supports **retweets and quotes**, highlights hashtags and user mentions...
+- Ping your Discord server members directly from twitter with the `--ping` option!
 - **Can post to DMs** directly!
 
 # Usage, Permissions
@@ -54,7 +55,7 @@ You can allow anyone to be a QTweet mod by giving them the `qtweet-mod` role.
 
 ### start
 
-Usage: `!!start <screen_name> [screen_name2 screen_name3 ...] [--notext] [--retweet] [--noquote]`
+Usage: `!!start <screen_name> [screen_name2 screen_name3 ...] [--notext] [--retweet] [--noquote] [--ping]`
 
 This command will cause QTweet to start posting tweets from this user (or these users) automatically into this discord channel, in real-time. It will take her a bit (between 5 and 20min) to start posting them because of twitter rate limits, but once she gets started they will be real-time. Works in DMs.
 
@@ -65,6 +66,8 @@ Options:
 `--retweet`: Post retweets
 
 `--noquote`: Don't post quotes. Quotes are when an account retweets and adds a comment to the post. I make 2 posts for those, one for the quote and then one for the quoted message.
+
+`--ping`: Ping `@everyone` in the channel when a tweet with the hashtag "#qtweet" is posted from this account. Meant to be used for streamers and the likes.
 
 Examples:
 
