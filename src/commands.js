@@ -211,12 +211,13 @@ const tweetId = (args, qChannel) => {
 
 const start = (args, qChannel) => {
   let flags = { ...users.defaultFlags };
-  let { values: screenNames, options } = argParse(args);
+  let { values, options } = argParse(args);
   options.forEach(option => {
     if (option === "notext") flags.notext = true;
     else if (option === "noquote") flags.noquote = true;
     else if (option === "retweet") flags.retweet = true;
   });
+  const screenNames = values.map(getScreenName);
   if (screenNames.length < 1) {
     post.message(qChannel, usage["start"]);
     return;
