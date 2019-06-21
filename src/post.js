@@ -1,11 +1,8 @@
 var post = (module.exports = {});
 const config = require("../config.json");
 
-const { tall } = require("tall");
-let users = require("./users");
 const gets = require("./gets");
 const log = require("./log");
-const discord = require("./discord");
 
 post.colors = {
   text: 0x69b2d6,
@@ -13,46 +10,6 @@ post.colors = {
   image: 0xd667cf,
   images: 0x53a38d
 };
-
-function unshortenUrls(text, callback) {
-  let urls = [];
-  let re = /https:\/\/t\.co\/[\w]+/g;
-  let match = {};
-  while ((match = re.exec(text))) {
-    const url = text.substring(match.index, re.lastIndex);
-    urls.push(url);
-  }
-  if (urls.length < 1) {
-    callback(text);
-    return;
-  }
-
-  const promises = urls.map((shortUrl, idx) =>
-    tall(shortUrl).then(longUrl => ({
-      shortUrl,
-      longUrl,
-      idx
-    }))
-  );
-  Promise.all(promises)
-    .then(results => {
-      results.forEach(({ shortUrl, longUrl, idx }) => {
-        text = text.replace(
-          shortUrl,
-          urls.length > 1 && idx === urls.length - 1
-            ? `\n[Tweet](${longUrl})`
-            : longUrl
-        );
-      });
-      callback(text);
-    })
-    .catch(e => {
-      log("The elusive buggerino!");
-      log(`Total message: ${text}`);
-      log(`URL we tried shortening: ${shortUrl}`);
-      log(e);
-    });
-}
 
 // Handle an error with sending a message:
 // - Try to notify the user

@@ -13,7 +13,6 @@
     "discord.js": "latest",
     "esm": "^3.2.25",
     "fortune-teller": "latest",
-    "tall": "latest",
     "twitter-lite": "latest"
   }
 }
