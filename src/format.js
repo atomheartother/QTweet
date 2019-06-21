@@ -3,8 +3,7 @@
 import Discord from "discord.js";
 import * as config from "../config.json";
 import * as users from "./users";
-
-const post = require("./post");
+import { embed as postEmbed } from "./post";
 import { getUser } from "./discord";
 
 const defaults = {
@@ -66,7 +65,7 @@ export const formatGenericList = async (
     counter++;
     if (counter > 20) {
       page++;
-      post.embed(qChannel, { embed });
+      postEmbed(qChannel, { embed });
       embed = new Discord.RichEmbed()
         .setColor(color)
         .setTitle(`${data.length} ${objectName} (p.${page}):`)
@@ -75,7 +74,7 @@ export const formatGenericList = async (
     }
   }
   if (counter > 0) {
-    post.embed(qChannel, { embed });
+    postEmbed(qChannel, { embed });
   }
 };
 

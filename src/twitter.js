@@ -5,13 +5,19 @@ import * as pw from "../pw.json";
 import * as users from "./users";
 import Backup from "./backup";
 import log from "./log";
-
+import { embed as postEmbed } from "./post";
 import Stream from "./twitterStream";
-const post = require("./post");
 
 // Timeout detecting when there haven't been new tweets in the past min
 let lastTweetTimeout = null;
 const lastTweetDelay = 1000 * 60 * 1;
+
+const colors = Object.freeze({
+  text: 0x69b2d6,
+  video: 0x67d67d,
+  image: 0xd667cf,
+  images: 0x53a38d
+});
 
 var tClient = new Twitter({
   consumer_key: pw.tId,
@@ -181,7 +187,7 @@ export const formatTweet = tweet => {
   }
   if (!hasMedia(tweet)) {
     // Text tweet
-    embed.color = embed.color || post.colors["text"];
+    embed.color = embed.color || colors["text"];
   } else if (
     extended_entities.media[0].type === "animated_gif" ||
     extended_entities.media[0].type === "video"
@@ -209,7 +215,7 @@ export const formatTweet = tweet => {
       log("Found video tweet with no valid url");
       log(vidinfo);
     }
-    embed.color = embed.color || post.colors["video"];
+    embed.color = embed.color || colors["video"];
   } else {
     // Image(s)
     files = extended_entities.media.map(media => media.media_url_https);
@@ -217,7 +223,7 @@ export const formatTweet = tweet => {
       embed.image = { url: files[0] };
       files = null;
     }
-    embed.color = embed.color || post.colors["image"];
+    embed.color = embed.color || colors["image"];
   }
   embed.description = formatTweetText(txt, entities);
   return { embed, files };
@@ -252,12 +258,12 @@ const streamData = tweet => {
   }
   const embed = formatTweet(tweet);
   twitterUserObject.subs.forEach(({ qChannel, flags }) => {
-    if (flagsFilter(flags, tweet)) post.embed(qChannel, embed);
+    if (flagsFilter(flags, tweet)) postEmbed(qChannel, embed);
   });
   if (tweet.is_quote_status) {
     const quotedEmbed = formatTweet(tweet.quoted_status);
     twitterUserObject.subs.forEach(({ qChannel, flags }) => {
-      if (!flags.noquote) post.embed(qChannel, quotedEmbed);
+      if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
   }
 };

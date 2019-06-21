@@ -1,14 +1,6 @@
-var post = (module.exports = {});
 import * as config from "../config.json";
 import { rmChannel } from "./gets";
 import log from "./log";
-
-post.colors = {
-  text: 0x69b2d6,
-  video: 0x67d67d,
-  image: 0xd667cf,
-  images: 0x53a38d
-};
 
 // Handle an error with sending a message:
 // - Try to notify the user
@@ -116,7 +108,7 @@ const handleDiscordPostError = async (
 };
 
 // React is a boolean, if true, add a reaction to the message after posting
-post.embed = async (qChannel, embed) => {
+export const embed = async (qChannel, embed) => {
   try {
     await qChannel.send(embed);
   } catch (err) {
@@ -126,22 +118,22 @@ post.embed = async (qChannel, embed) => {
   return 0;
 };
 
-post.message = (qChannel, message) => {
-  qChannel.send(message).catch(err => {
-    handleDiscordPostError(err, qChannel, "message", message);
+export const message = (qChannel, content) => {
+  qChannel.send(content).catch(err => {
+    handleDiscordPostError(err, qChannel, "message", content);
   });
 };
 
-post.announcement = (message, qChannels) => {
+export const announcement = (content, qChannels) => {
   if (qChannels.length <= 0) return;
   const nextQChannel = qChannels.shift();
-  post.message(nextQChannel, message);
+  message(nextQChannel, content);
   setTimeout(() => {
-    post.announcement(message, qChannels);
+    announcement(content, qChannels);
   }, 1000);
 };
 
-post.dm = (qChannel, message) => {
+export const dm = (qChannel, message) => {
   qChannel.sendToOwner(message).catch(err => {
     handleDiscordPostError(err, qChannel, "dm", message);
   });
