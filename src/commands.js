@@ -25,11 +25,35 @@ const getScreenName = word => {
   return word;
 };
 
+const argParse = args => {
+  let values = [];
+  let options = [];
+  for (let arg of args) {
+    if (arg.substring(0, 2) == "--") {
+      options.push(arg.substring(2));
+    } else {
+      values.push(arg);
+    }
+  }
+  return { values, options };
+};
 const tweet = (args, qChannel, author) => {
-  const screenName = getScreenName(args[0]);
+  const { values, options } = argParse(args);
+  let force = false;
+  if (values.length < 1 || values.length > 2) {
+    post.message(qChannel, usage[tweet]);
+    return;
+  }
+  const screenName = getScreenName(values[0]);
+  options.forEach(option => {
+    if (option === "force") {
+      force = true;
+    }
+  });
+
   let count = 1;
-  if (args.length > 1) {
-    count = Number(args[1]);
+  if (values.length > 1) {
+    count = Number(values[1]);
   }
   if (isNaN(count)) {
     post.message(
@@ -41,6 +65,7 @@ const tweet = (args, qChannel, author) => {
     return;
   }
   const maxCount = 5;
+  const aLot = 15;
   checks.isMod(author, qChannel, isMod => {
     if (!isMod && count > maxCount) {
       post.message(
@@ -53,6 +78,16 @@ const tweet = (args, qChannel, author) => {
       post.message(
         qChannel,
         `**You asked me to post ${count} tweets, so I won't post any**\nNice try~`
+      );
+      return;
+    }
+    if (count >= aLot && !force) {
+      log("Asked user to confirm", qChannel);
+      post.message(
+        qChannel,
+        `**You're asking for a lot of tweets**\nAre you sure you want me to post ${count} tweets? Once I start, you won't be able to stop me!\n If you're sure you want me to do it, run:\n\`${
+          config.prefix
+        }tweet ${screenName} ${count} --force\``
       );
       return;
     }
@@ -176,17 +211,12 @@ const tweetId = (args, qChannel) => {
 
 const start = (args, qChannel) => {
   let flags = { ...users.defaultFlags };
-  let screenNames = [];
-  for (let arg of args) {
-    if (arg.substring(0, 2) == "--") {
-      let option = arg.substring(2);
-      if (option === "notext") flags.notext = true;
-      if (option === "noquote") flags.noquote = true;
-      if (option === "retweet") flags.retweet = true;
-    } else {
-      screenNames.push(getScreenName(arg));
-    }
-  }
+  let { values: screenNames, options } = argParse(args);
+  options.forEach(option => {
+    if (option === "notext") flags.notext = true;
+    else if (option === "noquote") flags.noquote = true;
+    else if (option === "retweet") flags.retweet = true;
+  });
   if (screenNames.length < 1) {
     post.message(qChannel, usage["start"]);
     return;
