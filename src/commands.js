@@ -8,8 +8,8 @@ import {
   embed as postEmbed,
   announcement
 } from "./post";
-import { rm, add, rmChannel } from "./gets";
-import * as users from "./users";
+import * as subs from "./subs";
+import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
 import { formatChannelList, formatQChannel, formatTwitterUser } from "./format";
 import {
@@ -219,7 +219,7 @@ const tweetId = (args, qChannel) => {
 
 const start = (args, qChannel) => {
   let { values, options } = argParse(args);
-  const flags = users.computeFlags(options);
+  const flags = computeFlags(options);
   const screenNames = values.map(getScreenName);
   if (screenNames.length < 1) {
     postMessage(qChannel, usage["start"]);
@@ -243,10 +243,10 @@ const start = (args, qChannel) => {
               ""
             )}`;
       data.forEach(({ id_str: userId, screen_name: name }) => {
-        if (!redoStream && !users.collection.hasOwnProperty(userId)) {
+        if (!redoStream && !subs.collection.hasOwnProperty(userId)) {
           redoStream = true;
         }
-        add(qChannel, userId, name, flags);
+        subs.add(qChannel, userId, name, flags);
       });
       let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
         config.prefix
@@ -262,7 +262,7 @@ const start = (args, qChannel) => {
       if (redoStream) {
         createStream();
       }
-      users.save();
+      subs.save();
     })
     .catch(function(error) {
       if (screenNames.length === 1) {
@@ -313,7 +313,7 @@ const leaveGuild = (args, qChannel) => {
 const stop = (args, qChannel) => {
   const screenName = getScreenName(args[0]);
   log(`Removed ${screenName}`, qChannel);
-  rm(qChannel, screenName);
+  subs.rm(qChannel, screenName);
 };
 
 const stopchannel = (args, qChannel) => {
@@ -333,7 +333,7 @@ const stopchannel = (args, qChannel) => {
     }
     channelName = new QChannel(channelObj).name;
   }
-  const count = rmChannel(targetChannel);
+  const count = subs.rmChannel(targetChannel);
   log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
   postMessage(
     qChannel,
@@ -375,7 +375,7 @@ const twitterInfo = (args, qChannel) => {
     postMessage(qChannel, "Usage: `!!admin t <screenName>`");
     return;
   }
-  const id = users.getTwitterIdFromScreenName(screenName);
+  const id = subs.getTwitterIdFromScreenName(screenName);
   if (!id) {
     postMessage(qChannel, `We're not getting any user called @${screenName}`);
     return;
@@ -403,7 +403,7 @@ const admin = (args, qChannel) => {
 
 const announce = async args => {
   const msg = args.join(" ");
-  const qChannels = await users.getUniqueChannels();
+  const qChannels = await subs.getUniqueChannels();
   log(`Posting announcement to ${qChannels.length} channels`);
   announcement(msg, qChannels);
 };

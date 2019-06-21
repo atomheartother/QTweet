@@ -2,7 +2,7 @@
 
 import Discord from "discord.js";
 import * as config from "../config.json";
-import * as users from "./users";
+import * as users from "./subs";
 import { embed as postEmbed, message as postMessage } from "./post";
 import { getUser } from "./discord";
 

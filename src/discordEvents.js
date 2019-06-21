@@ -6,12 +6,11 @@ import { fortune } from "fortune-teller";
 
 // Config file
 import * as config from "../config.json";
-import * as users from "./users";
+import * as subs from "./subs";
 import QChannel from "./QChannel";
 
 // logging
 import log from "./log";
-import { rmGuild } from "./gets";
 import { message as postMessage, dm, embed as postEmbed } from "./post";
 import { createStream } from "./twitter";
 import commands from "./commands";
@@ -155,7 +154,7 @@ export const handleGuildCreate = async guild => {
 
 export const handleGuildDelete = ({ id, name }) => {
   log(`Left guild ${name}`);
-  rmGuild(id);
+  subs.rmGuild(id);
 };
 
 export const handleReady = () => {
@@ -164,10 +163,10 @@ export const handleReady = () => {
   if (user().username !== config.botName) {
     user().setUsername(config.botName);
   }
-  users.load(() => {
+  subs.load(() => {
     // All users have been registered, we can request the stream from Twitter
     createStream();
     // ... And save any changes we made
-    users.save();
+    subs.save();
   });
 };
