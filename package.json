@@ -1,13 +1,13 @@
 {
   "name": "qtweet",
   "version": "1.0.0",
-  "description": "A bot who posts images from a twitter profile",
+  "description": "A cute bot who cross-posts twitter posts to Discord",
   "main": "src/index.js",
   "scripts": {
     "start": "node -r esm src/index.js"
   },
   "author": "Thomas N",
-  "license": "MIT",
+  "license": "AGPL",
   "dependencies": {
     "dblapi.js": "^2.3.0",
     "discord.js": "latest",
