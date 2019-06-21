@@ -112,16 +112,18 @@ export const embed = async (qChannel, embed) => {
   try {
     await qChannel.send(embed);
   } catch (err) {
-    handleDiscordPostError(err, qChannel, "embed", embed);
-    return 1;
+    return handleDiscordPostError(err, qChannel, "embed", embed);
   }
   return 0;
 };
 
-export const message = (qChannel, content) => {
-  qChannel.send(content).catch(err => {
-    handleDiscordPostError(err, qChannel, "message", content);
-  });
+export const message = async (qChannel, content) => {
+  try {
+    await qChannel.send(content);
+  } catch (err) {
+    return handleDiscordPostError(err, qChannel, "message", content);
+  }
+  return 0;
 };
 
 export const announcement = (content, qChannels) => {

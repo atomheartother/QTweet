@@ -3,7 +3,7 @@
 import Discord from "discord.js";
 import * as config from "../config.json";
 import * as users from "./users";
-import { embed as postEmbed } from "./post";
+import { embed as postEmbed, message as postMessage } from "./post";
 import { getUser } from "./discord";
 
 const defaults = {
@@ -48,7 +48,7 @@ export const formatGenericList = async (
   } = {}
 ) => {
   if (data.length === 0) {
-    qChannel.send(noElements);
+    postMessage(qChannel, noElements);
   }
   let page = 1;
   let embed = new Discord.RichEmbed()
