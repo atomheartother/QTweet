@@ -172,7 +172,7 @@ const tweetId = (args, qChannel) => {
 };
 
 const start = (args, qChannel) => {
-  let flags = users.defaultFlags;
+  let flags = { ...users.defaultFlags };
   let screenNames = [];
   for (let arg of args) {
     if (arg.substring(0, 2) == "--") {
