@@ -11,12 +11,12 @@ import {
 
 import log from "./log";
 
-// Users:
+// collection:
 // Dict of TwitterUser, using userId as key
 //  TwitterUser:
 //   name: screen name
-//   subs: Array of Gets
-//   Get:
+//   subs: Array of Subs
+//   Sub:
 //    qChannel: QChannel object, see QChannel.js
 //    flags: Flags object
 //    Flags:
