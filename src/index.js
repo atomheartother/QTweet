@@ -3,7 +3,7 @@ import { login } from "./discord";
 
 process.on("unhandledRejection", function(err) {
   log("Unhandled exception:");
-  console.error(err);
+  log(err);
 });
 
 const start = async () => {
