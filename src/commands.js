@@ -317,9 +317,10 @@ const stop = (args, qChannel) => {
 };
 
 const stopchannel = (args, qChannel) => {
-  const targetChannel = qChannel.id;
+  let targetChannel = qChannel.id;
   let channelName = qChannel.name;
   if (args.length > 0 && qChannel.type !== "dm") {
+    targetChannel = args[0];
     const channelObj = qChannel
       .guild()
       .channels.find(c => c.id === targetChannel);
