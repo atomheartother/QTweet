@@ -76,17 +76,20 @@ export const getChannelGets = channelId =>
     []
   );
 
-export const defaultFlags = {
-  notext: false,
-  retweet: false,
-  noquote: false
-};
-
 const FlagsEnum = Object.freeze({
   notext: 1,
   retweet: 2,
-  noquote: 4
+  noquote: 4,
+  ping: 8
 });
+
+const defaultFlags = (keys => {
+  let x = {};
+  keys.forEach(k => {
+    x[k] = false;
+  });
+  return x;
+})(Object.keys(FlagsEnum));
 
 const serializeFlags = flags => {
   let f = 0;
@@ -102,6 +105,16 @@ const unserializeFlags = f => {
   const flags = {};
   Object.keys(FlagsEnum).forEach(k => {
     flags[k] = (f & FlagsEnum[k]) === FlagsEnum[k];
+  });
+  return flags;
+};
+
+export const computeFlags = options => {
+  const flags = { ...defaultFlags };
+  options.forEach(opt => {
+    if (FlagsEnum.hasOwnProperty(opt)) {
+      flags[opt] = true;
+    }
   });
   return flags;
 };

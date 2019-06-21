@@ -140,7 +140,7 @@ const tweet = (args, qChannel, author) => {
           return;
         }
         for (let i = 0; i < validTweets.length; i++) {
-          const embed = formatTweet(validTweets[i]);
+          const { embed } = formatTweet(validTweets[i]);
           const res = await postEmbed(qChannel, embed);
           if (res) {
             log(`Stopped posting tweets after ${i}`);
@@ -197,12 +197,12 @@ const tweetId = (args, qChannel) => {
         return;
       }
 
-      const embed = formatTweet(tweet);
+      const { embed } = formatTweet(tweet);
       postEmbed(qChannel, embed);
       log(`Posting tweet ${id}`, qChannel);
 
       if (tweet.quoted_status && tweet.quoted_status.user) {
-        const quotedEmbed = formatTweet(tweet);
+        const { embed: quotedEmbed } = formatTweet(tweet);
         postEmbed(qChannel, quotedEmbed);
       }
     })
@@ -218,13 +218,8 @@ const tweetId = (args, qChannel) => {
 };
 
 const start = (args, qChannel) => {
-  let flags = { ...users.defaultFlags };
   let { values, options } = argParse(args);
-  options.forEach(option => {
-    if (option === "notext") flags.notext = true;
-    else if (option === "noquote") flags.noquote = true;
-    else if (option === "retweet") flags.retweet = true;
-  });
+  const flags = users.computeFlags(options);
   const screenNames = values.map(getScreenName);
   if (screenNames.length < 1) {
     postMessage(qChannel, usage["start"]);

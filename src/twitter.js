@@ -5,7 +5,7 @@ import * as pw from "../pw.json";
 import * as users from "./users";
 import Backup from "./backup";
 import log from "./log";
-import { embed as postEmbed } from "./post";
+import { embed as postEmbed, message as postMessage } from "./post";
 import Stream from "./twitterStream";
 
 // Timeout detecting when there haven't been new tweets in the past min
@@ -81,7 +81,7 @@ const formatTweetText = (text, entities) => {
   if (!entities) return text;
   const { user_mentions, urls, hashtags } = entities;
   const changes = [];
-
+  let metadata = {};
   if (user_mentions) {
     user_mentions
       .filter(
@@ -122,6 +122,9 @@ const formatTweetText = (text, entities) => {
           end,
           newText: `[#${hashtagTxt}](https://twitter.com/hashtag/${hashtagTxt}?src=hash)`
         });
+        if (hashtagTxt.toLowerCase() === "qtweet") {
+          metadata.ping = true;
+        }
       });
   }
   let offset = 0;
@@ -138,7 +141,7 @@ const formatTweetText = (text, entities) => {
       offset += nt.length - (end - start);
     });
 
-  return codePoints.join("");
+  return { text: codePoints.join(""), metadata };
 };
 
 // Takes a tweet and formats it for posting.
@@ -225,8 +228,9 @@ export const formatTweet = tweet => {
     }
     embed.color = embed.color || colors["image"];
   }
-  embed.description = formatTweetText(txt, entities);
-  return { embed, files };
+  const { text: formattedText, metadata } = formatTweetText(txt, entities);
+  embed.description = formattedText;
+  return { embed: { embed, files }, metadata };
 };
 
 const flagsFilter = (flags, tweet) => {
@@ -256,12 +260,18 @@ const streamData = tweet => {
   if (!twitterUserObject) {
     return;
   }
-  const embed = formatTweet(tweet);
+  const { embed, metadata } = formatTweet(tweet);
   twitterUserObject.subs.forEach(({ qChannel, flags }) => {
-    if (flagsFilter(flags, tweet)) postEmbed(qChannel, embed);
+    if (flagsFilter(flags, tweet)) {
+      if (metadata.ping && flags.ping) {
+        log("Pinging @everyone", qChannel);
+        postMessage(qChannel, "@everyone");
+      }
+      postEmbed(qChannel, embed);
+    }
   });
   if (tweet.is_quote_status) {
-    const quotedEmbed = formatTweet(tweet.quoted_status);
+    const { embed: quotedEmbed } = formatTweet(tweet.quoted_status);
     twitterUserObject.subs.forEach(({ qChannel, flags }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });

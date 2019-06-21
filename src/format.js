@@ -88,7 +88,9 @@ export const formatTwitterUserShort = userId => {
 export const formatFlags = flags =>
   `With ${flags.notext ? "no text posts" : "text posts"}, ${
     flags.retweet ? "retweets" : "no retweets"
-  }, ${flags.noquote ? "no quotes" : "quotes"}`;
+  }, ${flags.noquote ? "no quotes" : "quotes"}, pings ${
+    flags.ping ? "on" : "off"
+  }`;
 
 export const formatTwitterUser = (qChannel, id) => {
   const tUser = users.collection[id];
