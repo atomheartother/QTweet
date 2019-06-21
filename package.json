@@ -11,7 +11,6 @@
   "dependencies": {
     "dblapi.js": "^2.3.0",
     "discord.js": "latest",
-    "eslint": "^5.16.0",
     "esm": "^3.2.25",
     "fortune-teller": "latest",
     "twitter-lite": "latest"
