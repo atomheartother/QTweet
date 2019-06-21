@@ -63,7 +63,7 @@ const startTimeout = () => {
   }, lastTweetDelay);
 };
 
-const streamStart = response => {
+const streamStart = () => {
   log("Stream successfully started");
   reconnectionDelay.reset();
   startTimeout();
@@ -280,7 +280,7 @@ const streamData = tweet => {
   }
 };
 
-const streamEnd = response => {
+const streamEnd = () => {
   // The backup exponential algorithm will take care of reconnecting
   stream.disconnected();
   resetTimeout();
