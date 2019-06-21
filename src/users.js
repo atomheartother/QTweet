@@ -106,7 +106,7 @@ users.serializeFlags = flags => {
 users.unserializeFlags = f => {
   const flags = {};
   Object.keys(FlagsEnum).forEach(k => {
-    flags[k] = (f & FlagsEnum[k]) > 0;
+    flags[k] = (f & FlagsEnum[k]) === FlagsEnum[k];
   });
   return flags;
 };
