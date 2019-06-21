@@ -145,10 +145,20 @@ const tweetId = (args, qChannel) => {
   twitter
     .showTweet(id, { tweet_mode: "extended" })
     .then((tweet, error) => {
+      if (error) {
+        log(error, qChannel);
+        return;
+      }
+      console.log(tweet);
       twitter.formatTweet(tweet, embed => {
         log(`Posting tweet ${id}`, qChannel);
         post.embed(qChannel, embed);
       });
+      if (tweet.quoted_status && tweet.quoted_status.user) {
+        twitter.formatTweet(tweet.quoted_status, embed => {
+          post.embed(qChannel, embed);
+        });
+      }
     })
     .catch(response => {
       const err =
