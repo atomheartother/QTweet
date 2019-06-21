@@ -2,7 +2,7 @@ import * as config from "../config.json";
 
 import { userLookup, createStream } from "./twitter";
 import { save, collection } from "./users";
-const post = require("./post");
+import { message as postMessage } from "./post";
 
 // Add a get to the user list
 export const add = (qChannel, userId, name, flags) => {
@@ -35,7 +35,7 @@ export const rm = (qChannel, screenName) => {
     .then(function(data) {
       let userId = data[0].id_str;
       if (!collection.hasOwnProperty(userId)) {
-        post.message(
+        postMessage(
           qChannel,
           "**You're not  subscribed to this user.**\nUse `" +
             config.prefix +
@@ -49,7 +49,7 @@ export const rm = (qChannel, screenName) => {
         ({ qChannel: { id } }) => qChannel.id == id
       );
       if (idx == -1) {
-        post.message(
+        postMessage(
           qChannel,
           "**You're not subscribed to this user.**\nUse `" +
             config.prefix +
@@ -67,17 +67,14 @@ export const rm = (qChannel, screenName) => {
         // ...and re-register the stream, which will now delete the user
         createStream();
       }
-      post.message(
+      postMessage(
         qChannel,
         `**I've unsubscribed you from @${screenName}!**\nYou should now stop getting any messages from them.`
       );
       save();
     })
     .catch(() => {
-      post.message(
-        qChannel,
-        "I can't find a user by the name of " + screenName
-      );
+      postMessage(qChannel, "I can't find a user by the name of " + screenName);
     });
 };
 

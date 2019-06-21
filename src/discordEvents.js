@@ -12,7 +12,7 @@ import QChannel from "./QChannel";
 // logging
 import log from "./log";
 import { rmGuild } from "./gets";
-const post = require("./post");
+import { message as postMessage, dm, embed as postEmbed } from "./post";
 import { createStream } from "./twitter";
 import commands from "./commands";
 import { user, getClient } from "./discord";
@@ -23,7 +23,7 @@ const handleCommand = (commandName, author, qChannel, args) => {
   if (command) {
     // Check that there's the right number of args
     if (args.length < command.minArgs) {
-      post.message(qChannel, usage[commandName]);
+      postMessage(qChannel, usage[commandName]);
       return;
     }
     log(
@@ -41,7 +41,7 @@ const handleCommand = (commandName, author, qChannel, args) => {
           if (passed) validChecks++;
           else {
             isValid = false;
-            if (badB) post.message(qChannel, badB); // If it's not met and we were given a bad boy, post it
+            if (badB) postMessage(qChannel, badB); // If it's not met and we were given a bad boy, post it
             log(
               `Rejected command "${commandName} ${args}" with reason: ${badB}`
             );
@@ -69,7 +69,7 @@ const handleMessage = message => {
     ) {
       message.reply(fortune());
     } else if (message.channel.type == "dm")
-      post.message(
+      postMessage(
         message.channel,
         "Hello, I'm " +
           config.botName +
@@ -107,7 +107,7 @@ const handleMessage = message => {
       .addField(`${config.prefix}stop`, usage["stop"])
       .addField(`${config.prefix}list*`, usage["list"])
       .addField(`${config.prefix}help*`, "Print this help message.");
-    post.embed(message.channel, { embed });
+    postEmbed(message.channel, { embed });
     return;
   }
 
@@ -137,7 +137,7 @@ const handleGuildCreate = async guild => {
   log(`Joined guild ${guild.name}`);
   const qc = await QChannel.unserialize({ id: guild.ownerID, isDM: true });
   if (qc && qc.id)
-    post.dm(
+    dm(
       qc,
       `Hello, I'm ${
         config.botName
