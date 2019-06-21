@@ -123,13 +123,14 @@ export const handleMessage = message => {
     log(author);
     log(channel.guild);
     log(channel);
+    return;
   }
   handleCommand(command, author, qc, args);
 };
 
 export const handleError = error => {
   log("Discord client encountered an error");
-  console.error(error);
+  log(error);
 };
 
 export const handleGuildCreate = async guild => {
