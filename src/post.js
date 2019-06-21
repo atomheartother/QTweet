@@ -2,6 +2,19 @@ import * as config from "../config.json";
 import { rmChannel } from "./gets";
 import log from "./log";
 
+// Return values for post functions:
+// 0: Success
+// 1: Unknown error / exception thrown
+// 2: Error was handled and user warned
+// 3: Number of attempts expired
+
+const asyncTimeout = (f, ms) =>
+  new Promise(resolve =>
+    setTimeout(() => {
+      resolve(f());
+    }, ms)
+  );
+
 // Handle an error with sending a message:
 // - Try to notify the user
 // - Plan for the notification failing too
@@ -19,7 +32,7 @@ const handleDiscordPostError = async (
       `${errCode}: Discord servers failed receiving ${type} ${errorCount} times, giving up`,
       qChannel
     );
-    return;
+    return 3;
   }
   const postableQChannel = await qChannel.bestChannel();
   if (!postableQChannel || postableQChannel.id === null) {
@@ -35,9 +48,12 @@ const handleDiscordPostError = async (
   let logMsg = "";
   // delay before sending
   let delay = 0;
+  // Return code in case of success
+  let retCode = 0;
   // channel to post to
   let newQchannel = postableQChannel;
   if (errCode === 404 || errCode === 10003) {
+    retCode = 2;
     // The channel was deleted or we don't have access to it, auto-delete it
     // And notify the user
     const count = rmChannel(qChannel.id);
@@ -53,6 +69,7 @@ const handleDiscordPostError = async (
     errCode === 50004 ||
     errCode === 40001
   ) {
+    retCode = 2;
     // Discord MissingPermissions error
     // Try to notify the user that something is wrong
     logMsg = `Tried to post ${type} but lacked permissions: ${errCode} ${
@@ -82,6 +99,7 @@ const handleDiscordPostError = async (
     logMsg = `This user won't accept DMs from us`;
     newQchannel = null;
   } else {
+    retCode = 1;
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
     }`;
@@ -91,20 +109,21 @@ const handleDiscordPostError = async (
   }
   log(`${logMsg} (attempt #${errorCount})`, qChannel);
   if (newQchannel !== null)
-    setTimeout(() => {
-      newQchannel
-        .send(newMsg)
-        .then(log(`Sent ${newType}`, newQchannel))
-        .catch(err => {
-          handleDiscordPostError(
-            err,
-            newQchannel,
-            newType,
-            newMsg,
-            errorCount + 1
-          );
-        });
+    return asyncTimeout(async () => {
+      try {
+        await newQchannel.send(newMsg);
+      } catch (err) {
+        return handleDiscordPostError(
+          err,
+          newQchannel,
+          newType,
+          newMsg,
+          errorCount + 1
+        );
+      }
+      return retCode;
     }, delay);
+  return 1;
 };
 
 // React is a boolean, if true, add a reaction to the message after posting
@@ -135,8 +154,11 @@ export const announcement = (content, qChannels) => {
   }, 1000);
 };
 
-export const dm = (qChannel, message) => {
-  qChannel.sendToOwner(message).catch(err => {
-    handleDiscordPostError(err, qChannel, "dm", message);
-  });
+export const dm = async (qChannel, content) => {
+  try {
+    await qChannel.sendToOwner(content);
+  } catch (err) {
+    return handleDiscordPostError(err, qChannel, "dm", content);
+  }
+  return 0;
 };
