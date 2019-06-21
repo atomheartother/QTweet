@@ -9,8 +9,6 @@ import log from "./log";
 import Stream from "./twitterStream";
 const post = require("./post");
 
-let twitter = (module.exports = {});
-
 // Timeout detecting when there haven't been new tweets in the past min
 let lastTweetTimeout = null;
 const lastTweetDelay = 1000 * 60 * 1;
@@ -54,7 +52,7 @@ const startTimeout = () => {
   lastTweetTimeout = setTimeout(() => {
     lastTweetTimeout = null;
     log("⚠️ TIMEOUT: No tweets in a while, re-creating stream");
-    twitter.createStream();
+    createStream();
   }, lastTweetDelay);
 };
 
@@ -65,7 +63,7 @@ const streamStart = response => {
 };
 
 // Validation function for tweets
-twitter.isValid = tweet =>
+export const isValid = tweet =>
   !(
     !tweet ||
     !tweet.user ||
@@ -138,7 +136,7 @@ const formatTweetText = (text, entities) => {
 };
 
 // Takes a tweet and formats it for posting.
-twitter.formatTweet = tweet => {
+export const formatTweet = tweet => {
   let {
     user,
     full_text,
@@ -238,7 +236,7 @@ const flagsFilter = (flags, tweet) => {
 
 const streamData = tweet => {
   // Ignore invalid tweets
-  if (!twitter.isValid(tweet)) return;
+  if (!isValid(tweet)) return;
   // Ignore replies
   if (
     tweet.hasOwnProperty("in_reply_to_user_id") &&
@@ -252,12 +250,12 @@ const streamData = tweet => {
   if (!twitterUserObject) {
     return;
   }
-  const embed = twitter.formatTweet(tweet);
+  const embed = formatTweet(tweet);
   twitterUserObject.subs.forEach(({ qChannel, flags }) => {
     if (flagsFilter(flags, tweet)) post.embed(qChannel, embed);
   });
   if (tweet.is_quote_status) {
-    const quotedEmbed = twitter.formatTweet(tweet.quoted_status);
+    const quotedEmbed = formatTweet(tweet.quoted_status);
     twitterUserObject.subs.forEach(({ qChannel, flags }) => {
       if (!flags.noquote) post.embed(qChannel, quotedEmbed);
     });
@@ -271,7 +269,7 @@ const streamEnd = response => {
   log(
     `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`
   );
-  setTimeout(twitter.createStream, reconnectionDelay.value());
+  setTimeout(createStream, reconnectionDelay.value());
   reconnectionDelay.increment();
 };
 
@@ -294,7 +292,7 @@ let stream = new Stream(
 
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
-twitter.createStream = async () => {
+export const createStream = async () => {
   let userIds = [];
   // Get all the user IDs
   for (let id in users.collection) {
@@ -306,15 +304,14 @@ twitter.createStream = async () => {
   if (userIds.length < 1) return;
   stream.create(userIds);
 };
-
-twitter.userLookup = params => {
+export const userLookup = params => {
   return tClient.get("users/lookup", params);
 };
 
-twitter.userTimeline = params => {
+export const userTimeline = params => {
   return tClient.get("statuses/user_timeline", params);
 };
 
-twitter.showTweet = (id, params) => {
+export const showTweet = (id, params) => {
   return tClient.get(`statuses/show/${id}`, params);
 };

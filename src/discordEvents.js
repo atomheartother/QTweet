@@ -13,7 +13,7 @@ import QChannel from "./QChannel";
 import log from "./log";
 import { rmGuild } from "./gets";
 const post = require("./post");
-const twitter = require("./twitter");
+import { createStream } from "./twitter";
 import commands from "./commands";
 import { user, getClient } from "./discord";
 
@@ -165,7 +165,7 @@ const handleReady = () => {
   }
   users.load(() => {
     // All users have been registered, we can request the stream from Twitter
-    twitter.createStream();
+    createStream();
     // ... And save any changes we made
     users.save();
   });

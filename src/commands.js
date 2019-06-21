@@ -1,16 +1,21 @@
-import usage from "./usage";
-
 import * as config from "../config.json";
-import * as format from "./format";
-import * as users from "./users";
-import QChannel from "./QChannel";
-import { rm, add, rmChannel } from "./gets";
+import usage from "./usage";
 import log from "./log";
 
 import * as checks from "./checks";
 const post = require("./post");
+import { rm, add, rmChannel } from "./gets";
+import * as users from "./users";
+import QChannel from "./QChannel";
+import { formatChannelList, formatQChannel, formatTwitterUser } from "./format";
+import {
+  formatTweet,
+  createStream,
+  userTimeline,
+  showTweet,
+  userLookup
+} from "./twitter";
 import { getGuild, getChannel } from "./discord";
-const twitter = require("./twitter");
 
 const getScreenName = word => {
   if (word.startsWith("@")) {
@@ -93,8 +98,7 @@ const tweet = (args, qChannel, author) => {
       );
       return;
     }
-    twitter
-      .userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
+    userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
       .then(async (tweets, error) => {
         if (tweets.error) {
           if (tweets.error === "Not authorized.") {
@@ -132,7 +136,7 @@ const tweet = (args, qChannel, author) => {
           return;
         }
         for (let i = 0; i < validTweets.length; i++) {
-          const embed = twitter.formatTweet(validTweets[i]);
+          const embed = formatTweet(validTweets[i]);
           const res = await post.embed(qChannel, embed);
           if (res) {
             log(`Stopped posting tweets after ${i}`);
@@ -182,20 +186,19 @@ const tweet = (args, qChannel, author) => {
 
 const tweetId = (args, qChannel) => {
   const id = args[0];
-  twitter
-    .showTweet(id, { tweet_mode: "extended" })
+  showTweet(id, { tweet_mode: "extended" })
     .then((tweet, error) => {
       if (error) {
         log(error, qChannel);
         return;
       }
 
-      const embed = twitter.formatTweet(tweet);
+      const embed = formatTweet(tweet);
       post.embed(qChannel, embed);
       log(`Posting tweet ${id}`, qChannel);
 
       if (tweet.quoted_status && tweet.quoted_status.user) {
-        const quotedEmbed = twitter.formatTweet(tweet);
+        const quotedEmbed = formatTweet(tweet);
         post.embed(qChannel, quotedEmbed);
       }
     })
@@ -223,8 +226,7 @@ const start = (args, qChannel) => {
     post.message(qChannel, usage["start"]);
     return;
   }
-  twitter
-    .userLookup({ screen_name: screenNames.toString() })
+  userLookup({ screen_name: screenNames.toString() })
     .then(function(data) {
       let redoStream = false;
       const addedObjectName =
@@ -259,7 +261,7 @@ const start = (args, qChannel) => {
       log(`Added ${addedObjectName}`, qChannel);
       // Re-register the stream if we didn't know the user before
       if (redoStream) {
-        twitter.createStream();
+        createStream();
       }
       users.save();
     })
@@ -340,7 +342,7 @@ const stopchannel = (args, qChannel) => {
 };
 
 const list = (args, qChannel) => {
-  format.channelList(qChannel, qChannel);
+  formatChannelList(qChannel, qChannel);
 };
 
 const channelInfo = async (args, qChannel) => {
@@ -362,9 +364,9 @@ const channelInfo = async (args, qChannel) => {
     );
     return;
   }
-  let info = await format.qChannel(qc);
+  let info = await formatQChannel(qc);
   post.message(qChannel, info);
-  format.channelList(qChannel, qc);
+  formatChannelList(qChannel, qc);
 };
 
 const twitterInfo = (args, qChannel) => {
@@ -378,7 +380,7 @@ const twitterInfo = (args, qChannel) => {
     post.message(qChannel, `We're not getting any user called @${screenName}`);
     return;
   }
-  format.twitterUser(qChannel, id);
+  formatTwitterUser(qChannel, id);
 };
 
 const admin = (args, qChannel) => {
