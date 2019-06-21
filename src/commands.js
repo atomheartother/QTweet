@@ -58,7 +58,7 @@ const tweet = (args, qChannel, author) => {
     }
     twitter
       .userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
-      .then(function(tweets, error) {
+      .then(async (tweets, error) => {
         if (tweets.error) {
           if (tweets.error === "Not authorized.") {
             post.message(
@@ -94,11 +94,14 @@ const tweet = (args, qChannel, author) => {
           log(tweets, qChannel);
           return;
         }
-        validTweets.forEach(tweet => {
-          twitter.formatTweet(tweet, embed => {
-            post.embed(qChannel, embed);
-          });
-        });
+        for (let i = 0; i < validTweets.length; i++) {
+          const embed = twitter.formatTweet(validTweets[i]);
+          const res = await post.embed(qChannel, embed);
+          if (res) {
+            log(`Stopped posting tweets after ${i}`);
+            break;
+          }
+        }
         log(`Posted latest ${count} tweet(s) from ${screenName}`, qChannel);
       })
       .catch(function(response) {
@@ -149,15 +152,15 @@ const tweetId = (args, qChannel) => {
         log(error, qChannel);
         return;
       }
+
       console.log(tweet);
-      twitter.formatTweet(tweet, embed => {
-        log(`Posting tweet ${id}`, qChannel);
-        post.embed(qChannel, embed);
-      });
+      const embed = twitter.formatTweet(tweet);
+      post.embed(qChannel, embed);
+      log(`Posting tweet ${id}`, qChannel);
+
       if (tweet.quoted_status && tweet.quoted_status.user) {
-        twitter.formatTweet(tweet.quoted_status, embed => {
-          post.embed(qChannel, embed);
-        });
+        const quotedEmbed = twitter.formatTweet(tweet);
+        post.embed(qChannel, quotedEmbed);
       }
     })
     .catch(response => {

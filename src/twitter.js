@@ -137,7 +137,7 @@ const formatTweetText = (text, entities) => {
 };
 
 // Takes a tweet and formats it for posting.
-twitter.formatTweet = (tweet, callback) => {
+twitter.formatTweet = tweet => {
   let {
     user,
     full_text,
@@ -221,7 +221,7 @@ twitter.formatTweet = (tweet, callback) => {
     embed.color = embed.color || post.colors["image"];
   }
   embed.description = formatTweetText(txt, entities);
-  callback({ embed, files });
+  return { embed, files };
 };
 
 const flagsFilter = (flags, tweet) => {
@@ -251,16 +251,14 @@ const streamData = tweet => {
   if (!twitterUserObject) {
     return;
   }
-  twitter.formatTweet(tweet, embed => {
-    twitterUserObject.subs.forEach(({ qChannel, flags }) => {
-      if (flagsFilter(flags, tweet)) post.embed(qChannel, embed);
-    });
+  const embed = twitter.formatTweet(tweet);
+  twitterUserObject.subs.forEach(({ qChannel, flags }) => {
+    if (flagsFilter(flags, tweet)) post.embed(qChannel, embed);
   });
   if (tweet.is_quote_status) {
-    twitter.formatTweet(tweet.quoted_status, embed => {
-      twitterUserObject.subs.forEach(({ qChannel, flags }) => {
-        if (!flags.noquote) post.embed(qChannel, embed);
-      });
+    const quotedEmbed = twitter.formatTweet(tweet.quoted_status);
+    twitterUserObject.subs.forEach(({ qChannel, flags }) => {
+      if (!flags.noquote) post.embed(qChannel, quotedEmbed);
     });
   }
 };
