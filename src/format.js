@@ -100,7 +100,11 @@ export const formatTwitterUser = (qChannel, id) => {
     formatField: ({ qChannel, flags }) =>
       `**ID:** ${qChannel.id}\n**Type:** ${
         qChannel.type === "dm" ? "dm" : "serv"
-      } (${formatFlags(flags)})`,
+      }\n${
+        qChannel.type === "dm"
+          ? ""
+          : `**Gld:** ${qChannel.gid}\n**Own:** ${qChannel.oid}\n`
+      }${formatFlags(flags)}`,
     noElements: `**This user has no subs**\nThis shouldn't happen`,
     objectName: "subscriptions"
   });
