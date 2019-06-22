@@ -6,8 +6,7 @@ This bot will fetch Twitter posts in real time and link them to Discord. The typ
 server.
 
 You never have to use Twitter again, just get the good stuff posted to your Discord server.
-
-![A QT Tweeting](https://cdn.discordapp.com/attachments/141566322730467328/591402397285351446/unknown.png)
+!["universe"](img/preview.png?raw=true "A QT tweeting")
 
 # Features
 

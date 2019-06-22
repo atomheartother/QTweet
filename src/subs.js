@@ -98,7 +98,6 @@ export const save = () => {
   //    "userId" : {name: "screen_name", subs: [{id: qChannel.id, f: Int (bitfields)}]}
   // }
 
-  // Create a copy of the channels object, remove all timeouts from it
   let usersCopy = {};
   for (let userId in collection) {
     // Iterate over twitter users
