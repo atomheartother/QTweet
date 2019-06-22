@@ -308,6 +308,12 @@ let stream = new Stream(
   streamEnd
 );
 
+export const getError = response => {
+  if (!response || !response.errors || response.errors.length < 1)
+    return { code: null, msg: null };
+  return response.errors[0];
+};
+
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
 export const createStream = async () => {
@@ -323,7 +329,7 @@ export const createStream = async () => {
   stream.create(userIds);
 };
 export const userLookup = params => {
-  return tClient.get("users/lookup", params);
+  return tClient.post("users/lookup", params);
 };
 
 export const userTimeline = params => {
