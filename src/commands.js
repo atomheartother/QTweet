@@ -17,7 +17,8 @@ import {
   createStream,
   userTimeline,
   showTweet,
-  userLookup
+  userLookup,
+  getError
 } from "./twitter";
 import { getGuild, getChannel } from "./discord";
 
@@ -150,12 +151,8 @@ const tweet = (args, qChannel, author) => {
         log(`Posted latest ${count} tweet(s) from ${screenName}`, qChannel);
       })
       .catch(function(response) {
-        const err =
-          response &&
-          response.errors &&
-          response.errors.length > 0 &&
-          response.errors[0];
-        if (!err) {
+        const { code, msg } = getError(response);
+        if (!code) {
           log("Exception thrown without error", qChannel);
           log(response, qChannel);
           postMessage(
@@ -163,26 +160,8 @@ const tweet = (args, qChannel, author) => {
             `**Something went wrong getting tweets from ${screenName}**\nI'm looking into it, sorry for the trouble!`
           );
           return;
-        }
-        const { code, msg } = err;
-        if (code === 34)
-          // Not found
-          postMessage(
-            qChannel,
-            `**Twitter tells me @${screenName} doesn't exist!**\nMake sure you enter the screen name and not the display name.`
-          );
-        else {
-          postMessage(
-            qChannel,
-            `**There was a problem getting @${screenName}'s latest tweet**\nIt's possible Twitter is temporarily down.\nTwitter had this to say: \`${msg}\``
-          );
-          log(
-            `Couldn't get latest tweet from ${screenName}, user input was ${
-              args[0]
-            }:`,
-            qChannel
-          );
-          log(response, qChannel);
+        } else {
+          handleTwitterError(qChannel, code, msg, [screenName]);
         }
       });
   });
@@ -217,69 +196,78 @@ const tweetId = (args, qChannel) => {
     });
 };
 
-const start = (args, qChannel) => {
+const start = async (args, qChannel) => {
   let { values, options } = argParse(args);
   const flags = computeFlags(options);
-  const screenNames = values.map(getScreenName);
+  let screenNames = values.map(getScreenName);
   if (screenNames.length < 1) {
     postMessage(qChannel, usage["start"]);
     return;
   }
-  userLookup({ screen_name: screenNames.toString() })
-    .then(function(data) {
-      let redoStream = false;
-      const addedObjectName =
-        data.length === 1
-          ? `${data[0].screen_name}`
-          : `${data.length} users: ${data.reduce(
-              (acc, { screen_name }, idx) => {
-                if (idx === data.length - 1) {
-                  return acc.concat(` and ${screen_name}`);
-                } else if (idx === 0) {
-                  return screen_name;
-                }
-                return acc.concat(`, ${screen_name}`);
-              },
-              ""
-            )}`;
-      data.forEach(({ id_str: userId, screen_name: name }) => {
-        if (!redoStream && !subs.collection.hasOwnProperty(userId)) {
-          redoStream = true;
-        }
-        subs.add(qChannel, userId, name, flags);
+  const slices = 100;
+  try {
+    var data = [];
+    while (screenNames.length > 0) {
+      const res = await userLookup({
+        screen_name: screenNames.slice(0, slices).toString()
       });
-      let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
-        config.prefix
-      }stop ${
-        data.length === 1 ? data[0].screen_name : "<screen_name>"
-      }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
-      if (screenNames.length !== data.length) {
-        channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
-      }
-      postMessage(qChannel, channelMsg);
-      log(`Added ${addedObjectName}`, qChannel);
-      // Re-register the stream if we didn't know the user before
-      if (redoStream) {
-        createStream();
-      }
-      subs.save();
-    })
-    .catch(() => {
-      if (screenNames.length === 1) {
-        postMessage(
-          qChannel,
-          `**I can't find a user by the name of ${
-            screenNames[0]
-          }**\nYou most likely tried using their display name and not their twitter handle.`
-        );
-      } else {
-        postMessage(
-          qChannel,
-          `**I can't find any of those users:** ${screenNames.toString()}\nYou most likely tried using their display names and not their twitter handles.`
-        );
-      }
-      return;
-    });
+      data = data.concat(res);
+      screenNames = screenNames.slice(slices);
+    }
+  } catch (res) {
+    const { code, msg } = getError(res);
+    if (!code) {
+      log("Exception thrown without error", qChannel);
+      log(res, qChannel);
+      postMessage(
+        qChannel,
+        `**Something went wrong getting the info for ${
+          screenNames.length === 1 ? "this account" : "these accounts"
+        }**\nThe problem appears to be on my end, sorry for the trouble!`
+      );
+    } else {
+      handleTwitterError(qChannel, code, msg, screenNames);
+    }
+    return;
+  }
+  let redoStream = false;
+  let addedObjectName = `@${data[0].screen_name}`;
+  if (data.length > 1 && data.length < 10) {
+    addedObjectName = `${data.length} users: ${data.reduce(
+      (acc, { screen_name }, idx) => {
+        if (idx === data.length - 1) {
+          return acc.concat(` and ${screen_name}`);
+        } else if (idx === 0) {
+          return screen_name;
+        }
+        return acc.concat(`, ${screen_name}`);
+      },
+      ""
+    )}`;
+  } else if (data.length >= 10) {
+    addedObjectName = `${data.length} twitter users`;
+  }
+  data.forEach(({ id_str: userId, screen_name: name }) => {
+    if (!redoStream && !subs.collection.hasOwnProperty(userId)) {
+      redoStream = true;
+    }
+    subs.add(qChannel, userId, name, flags);
+  });
+  let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
+    config.prefix
+  }stop ${
+    data.length === 1 ? data[0].screen_name : "<screen_name>"
+  }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
+  if (screenNames.length !== data.length) {
+    channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
+  }
+  postMessage(qChannel, channelMsg);
+  log(`Added ${addedObjectName}`, qChannel);
+  // Re-register the stream if we didn't know the user before
+  if (redoStream) {
+    createStream();
+  }
+  subs.save();
 };
 
 const leaveGuild = (args, qChannel) => {
@@ -406,6 +394,43 @@ const announce = async args => {
   const qChannels = await subs.getUniqueChannels();
   log(`Posting announcement to ${qChannels.length} channels`);
   announcement(msg, qChannels);
+};
+
+const handleTwitterError = (qChannel, code, msg, screenNames) => {
+  if (code === 17) {
+    if (screenNames.length === 1) {
+      postMessage(
+        qChannel,
+        `**I can't find a user by the name of ${
+          screenNames[0]
+        }**\nYou most likely tried using their display name and not their twitter handle.`
+      );
+    } else {
+      postMessage(
+        qChannel,
+        `**I can't find any of those users:** ${screenNames.toString()}\nYou most likely tried using their display names and not their twitter handles.`
+      );
+    }
+  } else if (code === 18) {
+    log("Exceeded user lookup limit", qChannel);
+    postMessage(
+      qChannel,
+      "**Too many users requested**\nIt seems I requested too many users to twitter. This shouldn't happen, but in the meantime try requesting fewer users!"
+    );
+  } else if (code === 34) {
+    // Not found
+    postMessage(
+      qChannel,
+      `**Twitter tells me @${
+        screenNames[0]
+      } doesn't exist!**\nMake sure you enter the screen name and not the display name.`
+    );
+  } else {
+    log(`Unknown twitter error: ${code} ${msg}`);
+    postMessage(
+      "**Oops!**\nSomething went wrong, I've never seen this error before. I'll do my best to fix it soon!"
+    );
+  }
 };
 
 export default {
