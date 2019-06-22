@@ -87,25 +87,23 @@ export const handleMessage = message => {
   if (command === "help" || command === "?") {
     const embed = new Discord.RichEmbed()
       .setColor(0xd667cf)
-      .setTitle(config.botName)
+      .setTitle(`${config.botName} is here to help!`)
       .setURL(config.profileURL)
       .setDescription(
         `Hello, I'm ${
           config.botName
-        }, I'm a very simple bot who cross-posts twitter posts to Discord channels!\n**Want to invite me to your server?** [Click here](${
-          config.inviteLink
-        }) !\n**Need help, found a bug, have a feature idea?** Join our [support server](${
-          config.supportServ
-        }) !\nHere's a basic list of commands, you can find my complete documentation [here](${
+        }, I'm a very simple bot who cross-posts twitter posts to Discord!\n**You should read my [complete documentation](${
           config.docsURL
-        }).`
+        })**.\n\n**Want to invite me to your server?** [Click here](${
+          config.inviteLink
+        }) !\n**Problems, questions?** [We have a support server!](${
+          config.supportServ
+        })\nHere's a short list of commands to get you started:`
       )
-      .setFooter("*: Anyone can perform these commands.")
-      .addField(`${config.prefix}tweet*`, usage["tweet"])
+      .addField(`${config.prefix}tweet`, usage["tweet"])
       .addField(`${config.prefix}start`, usage["start"])
       .addField(`${config.prefix}stop`, usage["stop"])
-      .addField(`${config.prefix}list*`, usage["list"])
-      .addField(`${config.prefix}help*`, "Print this help message.");
+      .addField(`${config.prefix}list`, usage["list"]);
     postEmbed(message.channel, { embed });
     return;
   }

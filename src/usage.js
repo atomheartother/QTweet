@@ -6,7 +6,7 @@ export default {
   }tweet <twitter_screen_name> [count]\``,
   start: `Subscribe to a twitter user and post their tweets in real time.\n**Usage**: \`${
     config.prefix
-  }start <twitter_screen_name> [--notext] [--retweet] [--noquote] [--ping]\`\nYou can add multiple twitter users by separating their screen names with spaces.`,
+  }start <twitter_screen_name> [flags]\`\nSupports multiple users, retweets, filtering out text posts and more! Check out the documentation!`,
   stop: `Unsubscribe from the given user.\n**Usage**: \`${
     config.prefix
   }stop <twitter_screen_name>\``,
