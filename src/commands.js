@@ -205,6 +205,7 @@ const start = async (args, qChannel) => {
     return;
   }
   const slices = 100;
+  const totalScreenNames = screenNames.length;
   try {
     var data = [];
     while (screenNames.length > 0) {
@@ -258,7 +259,7 @@ const start = async (args, qChannel) => {
   }stop ${
     data.length === 1 ? data[0].screen_name : "<screen_name>"
   }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
-  if (screenNames.length !== data.length) {
+  if (totalScreenNames !== data.length) {
     channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
   }
   postMessage(qChannel, channelMsg);
