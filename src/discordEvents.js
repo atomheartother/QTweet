@@ -12,7 +12,7 @@ import QChannel from "./QChannel";
 // logging
 import log from "./log";
 import { message as postMessage, dm, embed as postEmbed } from "./post";
-import { createStream } from "./twitter";
+import { createStream, destroyStream } from "./twitter";
 import commands from "./commands";
 import { user } from "./discord";
 
@@ -125,9 +125,11 @@ export const handleMessage = message => {
   handleCommand(command, author, qc, args);
 };
 
-export const handleError = error => {
-  log("Discord client encountered an error");
+export const handleError = ({ message, error }) => {
+  log(`Discord client encountered an error: ${message}`);
   log(error);
+  // Destroy the twitter stream cleanly, we will re-intantiate it sooner that way
+  destroyStream();
 };
 
 export const handleGuildCreate = async guild => {

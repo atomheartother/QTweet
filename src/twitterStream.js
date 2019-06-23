@@ -66,12 +66,19 @@ class Stream {
     }
   }
 
-  // We've been disconnected, discard all info we have
+  // We've been disconnected, discard all info we have,
+  // effectively resetting the object until next creation
   disconnected() {
-    this.stream.destroy();
+    if (this.stream) {
+      this.stream.destroy();
+    }
     this.stream = null;
     this.userIds = [];
     this.newUserIds = false;
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
   }
 }
 

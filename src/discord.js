@@ -65,3 +65,13 @@ export const canPostIn = channel => {
     permissions.has(Discord.Permissions.FLAGS.VIEW_CHANNEL)
   );
 };
+
+export const canPostEmbedIn = channel => {
+  if (!channel) return false;
+  const permissions = channel.permissionsFor(dClient.user);
+  return (
+    permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES) &&
+    permissions.has(Discord.Permissions.FLAGS.VIEW_CHANNEL) &&
+    permissions.has(Discord.Permissions.FLAGS.EMBED_LINKS)
+  );
+};
