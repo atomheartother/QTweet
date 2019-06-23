@@ -101,7 +101,7 @@ export const save = () => {
   let usersCopy = {};
   for (let userId of Object.keys(collection)) {
     // Iterate over twitter users
-    if (!collection.userId) continue;
+    if (!collection[userId]) continue;
     usersCopy[userId] = { subs: [] };
     if (collection[userId].name) {
       usersCopy[userId].name = collection[userId].name;
@@ -182,7 +182,7 @@ export const load = callback => {
 
 // Add a subscription to this userId or update an existing one
 export const add = (qChannel, userId, name, flags) => {
-  if (!collection.userId) {
+  if (!collection[userId]) {
     // Create the user object
     collection[userId] = { subs: [] };
   }
@@ -210,7 +210,7 @@ export const rm = (qChannel, screenName) => {
   userLookup({ screen_name: screenName })
     .then(function(data) {
       let userId = data[0].id_str;
-      if (!collection.userId) {
+      if (!collection[userId]) {
         postMessage(
           qChannel,
           "**You're not  subscribed to this user.**\nUse `" +
