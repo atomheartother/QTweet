@@ -2,7 +2,7 @@ import Twitter from "twitter-lite";
 
 import * as pw from "../pw.json";
 
-import * as users from "./subs";
+import * as subs from "./subs";
 import Backup from "./backup";
 import log from "./log";
 
@@ -181,13 +181,13 @@ export const formatTweet = tweet => {
   // For any additional files
   let files = null;
   if (
-    users.collection.hasOwnProperty(user.id_str) &&
-    (!users.collection[user.id_str].hasOwnProperty("name") ||
-      users.collection[user.id_str].name !== user.screen_name)
+    subs.collection.hasOwnProperty(user.id_str) &&
+    (!subs.collection[user.id_str].hasOwnProperty("name") ||
+      subs.collection[user.id_str].name !== user.screen_name)
   ) {
     // Add or update the username from that user
-    users.collection[user.id_str].name = user.screen_name;
-    users.save();
+    subs.collection[user.id_str].name = user.screen_name;
+    subs.save();
   }
   if (!hasMedia(tweet)) {
     // Text tweet
@@ -258,7 +258,7 @@ const streamData = tweet => {
   // Reset the last tweet timeout
   startTimeout();
 
-  const twitterUserObject = users.collection[tweet.user.id_str];
+  const twitterUserObject = subs.collection[tweet.user.id_str];
   if (!twitterUserObject) {
     return;
   }
@@ -291,12 +291,21 @@ const streamEnd = () => {
   reconnectionDelay.increment();
 };
 
-const streamError = err => {
+const streamError = ({ url, status, statusText }) => {
   // We simply can't get a stream, don't retry
   stream.disconnected();
   resetTimeout();
-  log(`Error getting a stream (${err.status}: ${err.statusText})`);
-  log(err);
+  let delay = 0;
+  if (status === 420) {
+    delay = 30000;
+  } else {
+    delay = reconnectionDelay.value();
+    reconnectionDelay.increment();
+  }
+  log(
+    `Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`
+  );
+  setTimeout(createStream, delay);
 };
 
 // Stream object, holds the twitter feed we get posts from
@@ -319,8 +328,8 @@ export const getError = response => {
 export const createStream = async () => {
   let userIds = [];
   // Get all the user IDs
-  for (let id in users.collection) {
-    if (!users.collection.hasOwnProperty(id)) continue;
+  for (let id of Object.keys(subs.collection)) {
+    if (!subs.collection.hasOwnProperty(id)) continue;
 
     userIds.push(id);
   }
@@ -328,6 +337,12 @@ export const createStream = async () => {
   if (userIds.length < 1) return;
   stream.create(userIds);
 };
+
+export const destroyStream = () => {
+  resetTimeout();
+  stream.disconnected();
+};
+
 export const userLookup = params => {
   return tClient.post("users/lookup", params);
 };
