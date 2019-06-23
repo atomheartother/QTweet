@@ -43,7 +43,7 @@ const resetTimeout = () => {
 // Checks if a tweet has any media attached. If false, it's a text tweet
 const hasMedia = ({ extended_entities, extended_tweet, retweeted_status }) =>
   (extended_entities &&
-    extended_entities.hasOwnProperty("media") &&
+    extended_entities.media &&
     extended_entities.media.length > 0) ||
   (extended_tweet &&
     extended_tweet.extended_entities &&
@@ -181,8 +181,8 @@ export const formatTweet = tweet => {
   // For any additional files
   let files = null;
   if (
-    subs.collection.hasOwnProperty(user.id_str) &&
-    (!subs.collection[user.id_str].hasOwnProperty("name") ||
+    subs.collection[user.id_str] &&
+    (!subs.collection[user.id_str].name ||
       subs.collection[user.id_str].name !== user.screen_name)
   ) {
     // Add or update the username from that user
@@ -239,7 +239,7 @@ const flagsFilter = (flags, tweet) => {
   if (flags.notext && !hasMedia(tweet)) {
     return false;
   }
-  if (!flags.retweet && tweet.hasOwnProperty("retweeted_status")) {
+  if (!flags.retweet && tweet.retweeted_status) {
     return false;
   }
   if (flags.noquote && tweet.is_quote_status) return false;
@@ -250,11 +250,7 @@ const streamData = tweet => {
   // Ignore invalid tweets
   if (!isValid(tweet)) return;
   // Ignore replies
-  if (
-    tweet.hasOwnProperty("in_reply_to_user_id") &&
-    tweet.in_reply_to_user_id !== null
-  )
-    return;
+  if (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== null) return;
   // Reset the last tweet timeout
   startTimeout();
 
@@ -329,7 +325,7 @@ export const createStream = async () => {
   let userIds = [];
   // Get all the user IDs
   for (let id of Object.keys(subs.collection)) {
-    if (!subs.collection.hasOwnProperty(id)) continue;
+    if (!subs.collection[id]) continue;
 
     userIds.push(id);
   }
