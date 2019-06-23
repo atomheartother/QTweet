@@ -99,11 +99,11 @@ export const save = () => {
   // }
 
   let usersCopy = {};
-  for (let userId in collection) {
+  for (let userId of Object.keys(collection)) {
     // Iterate over twitter users
-    if (!collection.hasOwnProperty(userId)) continue;
+    if (!collection.userId) continue;
     usersCopy[userId] = { subs: [] };
-    if (collection[userId].hasOwnProperty("name")) {
+    if (collection[userId].name) {
       usersCopy[userId].name = collection[userId].name;
     }
     for (const { qChannel, flags } of collection[userId].subs) {
@@ -137,11 +137,9 @@ export const load = callback => {
       let usersCopy = JSON.parse(data);
       for (let userId in usersCopy) {
         // Iterate over users
-        if (!usersCopy.hasOwnProperty(userId)) continue;
+        if (!usersCopy.userId) continue;
 
-        let name = usersCopy[userId].hasOwnProperty("name")
-          ? usersCopy[userId].name
-          : null;
+        let name = usersCopy[userId].name ? usersCopy[userId].name : null;
         // Support the old format where subs were named channels
         const subList = usersCopy[userId].subs || usersCopy[userId].channels;
         // Iterate over every subscription
@@ -184,7 +182,7 @@ export const load = callback => {
 
 // Add a subscription to this userId or update an existing one
 export const add = (qChannel, userId, name, flags) => {
-  if (!collection.hasOwnProperty(userId)) {
+  if (!collection.userId) {
     // Create the user object
     collection[userId] = { subs: [] };
   }
@@ -212,7 +210,7 @@ export const rm = (qChannel, screenName) => {
   userLookup({ screen_name: screenName })
     .then(function(data) {
       let userId = data[0].id_str;
-      if (!collection.hasOwnProperty(userId)) {
+      if (!collection.userId) {
         postMessage(
           qChannel,
           "**You're not  subscribed to this user.**\nUse `" +

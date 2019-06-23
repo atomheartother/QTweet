@@ -249,7 +249,7 @@ const start = async (args, qChannel) => {
     addedObjectName = `${data.length} twitter users`;
   }
   data.forEach(({ id_str: userId, screen_name: name }) => {
-    if (!redoStream && !subs.collection.hasOwnProperty(userId)) {
+    if (!redoStream && !subs.collection[userId]) {
       redoStream = true;
     }
     subs.add(qChannel, userId, name, flags);
