@@ -142,7 +142,10 @@ const formatTweetText = (text, entities) => {
       offset += nt.length - (end - start);
     });
 
-  return { text: codePoints.join(""), metadata };
+  return {
+    text: codePoints.join("").replace(new RegExp(/&amp;/, "g"), "&"),
+    metadata
+  };
 };
 
 // Takes a tweet and formats it for posting.
