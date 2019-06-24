@@ -6,13 +6,4 @@ process.on("unhandledRejection", function(err) {
   log(err);
 });
 
-const start = async () => {
-  try {
-    await login();
-  } catch (e) {
-    log("Error logging into Discord:");
-    log(e);
-  }
-};
-
-start();
+login();
