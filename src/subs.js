@@ -99,7 +99,10 @@ export const save = () => {
   // }
 
   let usersCopy = {};
-  for (let userId of Object.keys(collection)) {
+  const idArray = Object.keys(collection);
+  console.log(idArray);
+  for (let i = 0; i < idArray.length; i++) {
+    const userId = idArray[i];
     // Iterate over twitter users
     if (!collection[userId]) continue;
     usersCopy[userId] = { subs: [] };
@@ -113,6 +116,7 @@ export const save = () => {
       });
     }
   }
+  console.log(usersCopy);
   let json = JSON.stringify(usersCopy);
   fs.writeFile(config.getFile, json, "utf8", function(err) {
     if (err !== null) {
@@ -135,9 +139,9 @@ export const load = callback => {
       }
       // Restore the channels object from saved file
       let usersCopy = JSON.parse(data);
-      for (let userId in usersCopy) {
-        // Iterate over users
-        if (!usersCopy.userId) continue;
+      const idArray = Object.keys(usersCopy);
+      for (let i = 0; i < idArray.length; i++) {
+        const userId = idArray[i];
 
         let name = usersCopy[userId].name ? usersCopy[userId].name : null;
         // Support the old format where subs were named channels
@@ -172,6 +176,7 @@ export const load = callback => {
           } else {
             flags = defaultFlags;
           }
+          console.log(userId);
           add(qChannel, userId, name, flags);
         }
       }
