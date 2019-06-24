@@ -86,7 +86,7 @@ export const handleMessage = message => {
 
   if (command === "help" || command === "?") {
     const embed = new Discord.RichEmbed()
-      .setColor(0xd667cf)
+      .setColor(0x0e7675)
       .setTitle(`${config.botName} is here to help!`)
       .setURL(config.profileURL)
       .setDescription(
