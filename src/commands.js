@@ -186,13 +186,18 @@ const tweetId = (args, qChannel) => {
       }
     })
     .catch(response => {
-      const err =
-        response &&
-        response.errors &&
-        response.errors.length > 0 &&
-        response.errors[0];
-      log(response, qChannel);
-      postMessage(qChannel, `${err}`);
+      const { code, msg } = getError(response);
+      if (!code) {
+        log("Exception thrown without error", qChannel);
+        log(response, qChannel);
+        postMessage(
+          qChannel,
+          `**Something went wrong getting tweet #${id}**\nI'm looking into it, sorry for the trouble!`
+        );
+        return;
+      } else {
+        handleTwitterError(qChannel, code, msg, [id]);
+      }
     });
 };
 
@@ -426,9 +431,15 @@ const handleTwitterError = (qChannel, code, msg, screenNames) => {
         screenNames[0]
       } doesn't exist!**\nMake sure you enter the screen name and not the display name.`
     );
+  } else if (code === 144) {
+    postMessage(
+      qChannel,
+      `**No such ID**\nTwitter says there's no tweet with this id!`
+    );
   } else {
     log(`Unknown twitter error: ${code} ${msg}`);
     postMessage(
+      qChannel,
       "**Oops!**\nSomething went wrong, I've never seen this error before. I'll do my best to fix it soon!"
     );
   }
