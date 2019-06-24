@@ -103,7 +103,8 @@ export const handleMessage = message => {
       .addField(`${config.prefix}tweet`, usage["tweet"])
       .addField(`${config.prefix}start`, usage["start"])
       .addField(`${config.prefix}stop`, usage["stop"])
-      .addField(`${config.prefix}list`, usage["list"]);
+      .addField(`${config.prefix}list`, usage["list"])
+      .setFooter(`Profile picture art by ryusukehamamoto`);
     postEmbed(message.channel, { embed });
     return;
   }
