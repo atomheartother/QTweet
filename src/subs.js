@@ -100,7 +100,6 @@ export const save = () => {
 
   let usersCopy = {};
   const idArray = Object.keys(collection);
-  console.log(idArray);
   for (let i = 0; i < idArray.length; i++) {
     const userId = idArray[i];
     // Iterate over twitter users
@@ -116,7 +115,6 @@ export const save = () => {
       });
     }
   }
-  console.log(usersCopy);
   let json = JSON.stringify(usersCopy);
   fs.writeFile(config.getFile, json, "utf8", function(err) {
     if (err !== null) {
@@ -176,7 +174,6 @@ export const load = callback => {
           } else {
             flags = defaultFlags;
           }
-          console.log(userId);
           add(qChannel, userId, name, flags);
         }
       }
