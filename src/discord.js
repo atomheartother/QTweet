@@ -2,6 +2,7 @@
 import Discord from "discord.js";
 import DBL from "dblapi.js";
 import log from "./log";
+import Backup from "./backup";
 
 import {
   handleMessage,
@@ -20,6 +21,12 @@ let dClient = new Discord.Client()
   .on("guildDelete", handleGuildDelete)
   .on("ready", handleReady);
 
+const reconnectionDelay = new Backup({
+  mode: "exponential",
+  startValue: 5000,
+  maxValue: 60000
+});
+
 let dblClient = pw.DBLToken ? new DBL(pw.DBLToken, dClient) : null;
 
 export const getClient = () => {
@@ -32,7 +39,15 @@ export const login = async () => {
       log(`Error with DBL client: ${status}`);
     });
   }
-  return dClient.login(pw.dToken);
+  try {
+    await dClient.login(pw.dToken);
+    reconnectionDelay.reset();
+  } catch (err) {
+    log("Couldn't log into discord:");
+    log(err);
+    setTimeout(login, reconnectionDelay.value());
+    reconnectionDelay.increment();
+  }
 };
 
 export const user = () => {
