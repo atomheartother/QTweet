@@ -23,7 +23,7 @@ let dClient = new Discord.Client()
 
 const reconnectionDelay = new Backup({
   mode: "exponential",
-  startValue: 5000,
+  startValue: 1000,
   maxValue: 60000
 });
 
