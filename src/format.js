@@ -13,7 +13,7 @@ const defaults = {
   description: null,
   noElements: "List is empty, nothing to display.",
   objectName: "objects",
-  color: 0xf26d7a
+  color: 0x0e7675
 };
 
 export const formatQChannel = async qChannel => {
