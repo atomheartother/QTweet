@@ -141,9 +141,13 @@ const formatTweetText = (text, entities) => {
         .concat(codePoints.slice(end + offset));
       offset += nt.length - (end - start);
     });
-
+  let fixedText = codePoints.join("").replace(new RegExp(/&amp;/, "g"), "&");
+  const linkIdx = fixedText.indexOf("https://t.co/");
+  if (linkIdx > -1) {
+    fixedText = fixedText.substring(0, linkIdx);
+  }
   return {
-    text: codePoints.join("").replace(new RegExp(/&amp;/, "g"), "&"),
+    text: fixedText,
     metadata
   };
 };
@@ -151,6 +155,7 @@ const formatTweetText = (text, entities) => {
 // Takes a tweet and formats it for posting.
 export const formatTweet = tweet => {
   let {
+    id_str,
     user,
     full_text,
     text,
@@ -172,7 +177,7 @@ export const formatTweet = tweet => {
   let embed = {
     author: {
       name: `${user.name} (@${user.screen_name})`,
-      url: "https://twitter.com/" + user.screen_name
+      url: `https://twitter.com/statuses/${id_str}`
     },
     thumbnail: {
       url: user.profile_image_url_https

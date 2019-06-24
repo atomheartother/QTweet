@@ -427,9 +427,9 @@ const handleTwitterError = (qChannel, code, msg, screenNames) => {
     // Not found
     postMessage(
       qChannel,
-      `**Twitter tells me @${
+      `**Invalid name:${
         screenNames[0]
-      } doesn't exist!**\nMake sure you enter the screen name and not the display name.`
+      }**\nMake sure you enter the screen name and not the display name.`
     );
   } else if (code === 144) {
     postMessage(
