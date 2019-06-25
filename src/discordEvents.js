@@ -14,7 +14,7 @@ import log from "./log";
 import { message as postMessage, dm, embed as postEmbed } from "./post";
 import { createStream, destroyStream } from "./twitter";
 import commands from "./commands";
-import { user, getClient } from "./discord";
+import { user, login } from "./discord";
 
 const handleCommand = (commandName, author, qChannel, args) => {
   const command = commands[commandName];
@@ -131,7 +131,7 @@ export const handleError = ({ message, error }) => {
   log(error);
   // Destroy the twitter stream cleanly, we will re-intantiate it sooner that way
   destroyStream();
-  getClient().login();
+  login();
 };
 
 export const handleGuildCreate = async guild => {
