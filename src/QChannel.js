@@ -1,5 +1,11 @@
 // Helper class to interact with channels and keep memory down
-import { getUserDm, getChannel, canPostIn, getGuild } from "./discord";
+import {
+  getUserDm,
+  getChannel,
+  canPostIn,
+  getGuild,
+  canPostEmbedIn
+} from "./discord";
 import log from "./log";
 
 // Some selectors
@@ -69,22 +75,23 @@ class QChannel {
     return getGuild(this.gid);
   }
 
-  static async bestGuildChannel(guild) {
+  static async bestGuildChannel(guild, msgType = "message") {
+    const checkFunction = msgType === "embed" ? canPostEmbedIn : canPostIn;
     // Check the system channel
     if (guild.systemChannelID) {
       const sysChan = getChannel(guild.systemChannelID);
-      if (sysChan && canPostIn(sysChan)) return new QChannel(sysChan);
+      if (sysChan && checkFunction(sysChan)) return new QChannel(sysChan);
     }
 
     // Check #general
     const genChan = guild.channels.find(
       c => c.type === "text" && c.name === "general"
     );
-    if (genChan && canPostIn(genChan)) return new QChannel(genChan);
+    if (genChan && checkFunction(genChan)) return new QChannel(genChan);
 
     // Iterate over all channels and find the first best one
     const firstBest = guild.channels.find(
-      c => c.type === "text" && canPostIn(c)
+      c => c.type === "text" && checkFunction(c)
     );
     if (firstBest) return new QChannel(firstBest);
     // Try to reach the owner, this might fail, we'll return null here if all fails
@@ -95,13 +102,14 @@ class QChannel {
 
   // Best channel starting from this channel
   // Can return null
-  async bestChannel() {
+  async bestChannel(msgType = "message") {
     const c = await this.obj();
-    if (this.type === "dm" || canPostIn(c)) {
+    const checkFunction = msgType === "embed" ? canPostEmbedIn : canPostIn;
+    if (this.type === "dm" || checkFunction(c)) {
       return this;
     }
     // From now on we can't post in this channel
-    return QChannel.bestGuildChannel(this.guild());
+    return QChannel.bestGuildChannel(this.guild(), msgType);
   }
 
   serialize() {

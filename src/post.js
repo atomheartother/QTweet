@@ -34,12 +34,6 @@ const handleDiscordPostError = async (
     );
     return 3;
   }
-  const postableQChannel = await qChannel.bestChannel();
-  if (!postableQChannel || postableQChannel.id === null) {
-    log(`Couldn't find a way to send ${type}`, qChannel);
-    log(msg);
-    return;
-  }
   // New message type
   let newType = type;
   // New message to send
@@ -51,7 +45,7 @@ const handleDiscordPostError = async (
   // Return code in case of success
   let retCode = 0;
   // channel to post to
-  let newQchannel = postableQChannel;
+  let channelToPostIn = "best";
   if (errCode === 404 || errCode === 10003) {
     retCode = 2;
     // The channel was deleted or we don't have access to it, auto-delete it
@@ -94,28 +88,32 @@ const handleDiscordPostError = async (
     logMsg = `${errCode}: Discord servers failed when I tried to send ${type}`;
     delay = errorCount * 1500;
     // retry posting in the same channel
-    newQchannel = qChannel;
+    channelToPostIn = "same";
   } else if (errCode === 50007) {
     logMsg = `This user won't accept DMs from us`;
-    newQchannel = null;
+    channelToPostIn = "none";
   } else {
     retCode = 1;
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
     }`;
-    newQchannel = null;
+    channelToPostIn = "none";
     log(qChannel);
     log(msg);
   }
   log(`${logMsg} (attempt #${errorCount})`, qChannel);
-  if (newQchannel !== null)
+  if (channelToPostIn !== "none") {
+    const targetChannel =
+      channelToPostIn === "same"
+        ? qChannel
+        : await qChannel.bestChannel(newType);
     return asyncTimeout(async () => {
       try {
-        await newQchannel.send(newMsg);
+        await targetChannel.send(newMsg);
       } catch (err) {
         return handleDiscordPostError(
           err,
-          newQchannel,
+          targetChannel,
           newType,
           newMsg,
           errorCount + 1
@@ -123,6 +121,7 @@ const handleDiscordPostError = async (
       }
       return retCode;
     }, delay);
+  }
   return 1;
 };
 
