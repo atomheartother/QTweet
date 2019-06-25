@@ -259,7 +259,7 @@ const streamData = tweet => {
   if (!isValid(tweet)) return;
   // Ignore tweets from people we don't follow, and replies unless they're replies to oneself (threads)
   if (
-    !subs.collection[tweet.in_reply_to_user_id_str] ||
+    !subs.collection[tweet.user.id_str] ||
     (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id)
   )
     return;
