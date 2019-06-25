@@ -257,15 +257,17 @@ const flagsFilter = (flags, tweet) => {
 const streamData = tweet => {
   // Ignore invalid tweets
   if (!isValid(tweet)) return;
-  // Ignore replies
-  if (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== null) return;
+  // Ignore tweets from people we don't follow, and replies unless they're replies to oneself (threads)
+  if (
+    !subs.collection[tweet.in_reply_to_user_id_str] ||
+    (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id)
+  )
+    return;
   // Reset the last tweet timeout
   startTimeout();
 
   const twitterUserObject = subs.collection[tweet.user.id_str];
-  if (!twitterUserObject) {
-    return;
-  }
+
   const { embed, metadata } = formatTweet(tweet);
   twitterUserObject.subs.forEach(({ qChannel, flags }) => {
     if (flagsFilter(flags, tweet)) {
