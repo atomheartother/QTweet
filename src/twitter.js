@@ -83,6 +83,10 @@ const formatTweetText = (text, entities) => {
   const { user_mentions, urls, hashtags } = entities;
   const changes = [];
   let metadata = {};
+  let offset = 0;
+  // Remove all the @s at the start of the tweet to make it shorter
+  let inReplies = true;
+  let replyIndex = 0;
   if (user_mentions) {
     user_mentions
       .filter(
@@ -91,13 +95,19 @@ const formatTweetText = (text, entities) => {
       )
       .forEach(({ screen_name, name, indices }) => {
         const [start, end] = indices;
-        changes.push({
-          start,
-          end,
-          newText: `[@${
-            name ? name : screen_name
-          }](https://twitter.com/${screen_name})`
-        });
+        if (inReplies && start === replyIndex) {
+          changes.push({ start, end: end + 1, newText: "" });
+          replyIndex = end + 1;
+        } else {
+          inReplies = false;
+          changes.push({
+            start,
+            end,
+            newText: `[@${
+              name ? name : screen_name
+            }](https://twitter.com/${screen_name})`
+          });
+        }
       });
   }
 
@@ -128,7 +138,6 @@ const formatTweetText = (text, entities) => {
         }
       });
   }
-  let offset = 0;
 
   let codePoints = [...text.normalize("NFC")];
   changes
