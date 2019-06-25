@@ -39,7 +39,7 @@ export const unserialize = f => {
 export const compute = options => {
   const flags = { ...defaultFlags };
   options.forEach(opt => {
-    if (FlagsEnum.hasOwnProperty(opt)) {
+    if (FlagsEnum[opt]) {
       flags[opt] = true;
     }
   });
