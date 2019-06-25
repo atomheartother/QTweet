@@ -278,18 +278,19 @@ const streamData = tweet => {
   const twitterUserObject = subs.collection[tweet.user.id_str];
 
   const { embed, metadata } = formatTweet(tweet);
-  twitterUserObject.subs.forEach(({ qChannel, flags }) => {
-    if (flagsFilter(flags, tweet)) {
-      if (metadata.ping && flags.ping) {
-        log("Pinging @everyone", qChannel);
-        postMessage(qChannel, "@everyone");
-      }
-      postEmbed(qChannel, embed);
+  const targetsubs = twitterUserObject.subs.filter(({ flags }) =>
+    flagsFilter(flags, tweet)
+  );
+  targetsubs.forEach(({ qChannel, flags }) => {
+    if (metadata.ping && flags.ping) {
+      log("Pinging @everyone", qChannel);
+      postMessage(qChannel, "@everyone");
     }
+    postEmbed(qChannel, embed);
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = formatTweet(tweet.quoted_status);
-    twitterUserObject.subs.forEach(({ qChannel, flags }) => {
+    targetsubs.forEach(({ qChannel, flags }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
   }
