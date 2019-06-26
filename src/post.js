@@ -4,9 +4,10 @@ import log from "./log";
 
 // Return values for post functions:
 // 0: Success
-// 1: Unknown error / exception thrown
+// 1: Unknown error / exception thrown, user wasn't warned
 // 2: Error was handled and user warned
-// 3: Number of attempts expired
+// 3: Number of attempts expired, user wasn't warned
+// 4: No way to contact user about error
 
 const asyncTimeout = (f, ms) =>
   new Promise(resolve =>
@@ -46,7 +47,11 @@ const handleDiscordPostError = async (
   let retCode = 0;
   // channel to post to
   let channelToPostIn = "best";
-  if (errCode === 404 || errCode === 10003) {
+  if (
+    errCode === 404 ||
+    errCode === 10003 ||
+    (errCode === undefined && error.name === "TypeError")
+  ) {
     retCode = 2;
     // The channel was deleted or we don't have access to it, auto-delete it
     // And notify the user
@@ -107,6 +112,10 @@ const handleDiscordPostError = async (
       channelToPostIn === "same"
         ? qChannel
         : await qChannel.bestChannel(newType);
+    if (!targetChannel || !targetChannel.id) {
+      log("Couldn't find a way to send error notification", qChannel);
+      return 4;
+    }
     return asyncTimeout(async () => {
       try {
         await targetChannel.send(newMsg);
