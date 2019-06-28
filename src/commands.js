@@ -144,7 +144,7 @@ const tweet = (args, qChannel, author) => {
           const { embed } = formatTweet(validTweets[i]);
           const res = await postEmbed(qChannel, embed);
           if (res) {
-            log(`Stopped posting tweets after ${i}`);
+            log(`Stopped posting tweets after ${i}`, qChannel);
             break;
           }
         }

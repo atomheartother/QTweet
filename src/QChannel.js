@@ -76,6 +76,7 @@ class QChannel {
   }
 
   static async bestGuildChannel(guild, msgType = "message") {
+    if (!guild) return null;
     const checkFunction = msgType === "embed" ? canPostEmbedIn : canPostIn;
     // Check the system channel
     if (guild.systemChannelID) {
