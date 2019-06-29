@@ -186,7 +186,7 @@ export const formatTweet = tweet => {
   let embed = {
     author: {
       name: `${user.name} (@${user.screen_name})`,
-      url: `https://twitter.com/statuses/${id_str}`
+      url: `https://twitter.com/${user.screen_name}/status/${id_str}`
     },
     thumbnail: {
       url: user.profile_image_url_https
