@@ -206,6 +206,8 @@ export const formatTweet = tweet => {
     subs.collection[user.id_str].name = user.screen_name;
     subs.save();
   }
+  const { text: formattedText, metadata } = formatTweetText(txt, entities);
+  txt = formattedText;
   if (!hasMedia(tweet)) {
     // Text tweet
     embed.color = embed.color || colors["text"];
@@ -230,7 +232,7 @@ export const formatTweet = tweet => {
       if (vidinfo.duration_millis < 20000 || bitrate === 0) files = [vidurl];
       else {
         embed.image = { url: extended_entities.media[0].media_url_https };
-        txt = `[Link to video](${vidurl})\n\n${txt}`;
+        txt = `${txt}\n[Link to video](${vidurl})`;
       }
     } else {
       log("Found video tweet with no valid url");
@@ -246,8 +248,7 @@ export const formatTweet = tweet => {
     }
     embed.color = embed.color || colors["image"];
   }
-  const { text: formattedText, metadata } = formatTweetText(txt, entities);
-  embed.description = formattedText;
+  embed.description = txt;
   return { embed: { embed, files }, metadata };
 };
 
