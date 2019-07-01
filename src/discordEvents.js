@@ -161,10 +161,6 @@ export const handleGuildDelete = ({ id, name }) => {
 
 export const handleReady = () => {
   log("Successfully logged in to Discord");
-  // If our name changed, set it
-  if (user().username !== config.botName) {
-    user().setUsername(config.botName);
-  }
   subs.load(() => {
     // All users have been registered, we can request the stream from Twitter
     createStream();
