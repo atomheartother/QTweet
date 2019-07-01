@@ -172,3 +172,14 @@ export const handleReady = () => {
     subs.save();
   });
 };
+
+export const handleChannelDelete = channel => {
+  const count = subs.rmChannel(channel.id);
+  if (count > 0) {
+    log(
+      `Channel #${channel.name} (${
+        channel.id
+      }) deleted. Removed ${count} subscriptions.`
+    );
+  }
+};

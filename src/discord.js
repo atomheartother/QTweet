@@ -9,7 +9,8 @@ import {
   handleError,
   handleGuildCreate,
   handleGuildDelete,
-  handleReady
+  handleReady,
+  handleChannelDelete
 } from "./discordEvents";
 // Passwords file
 import * as pw from "../pw.json";
@@ -19,7 +20,8 @@ let dClient = new Discord.Client()
   .on("error", handleError)
   .on("guildCreate", handleGuildCreate)
   .on("guildDelete", handleGuildDelete)
-  .on("ready", handleReady);
+  .on("ready", handleReady)
+  .on("channelDelete", handleChannelDelete);
 
 const reconnectionDelay = new Backup({
   mode: "exponential",
