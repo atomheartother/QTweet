@@ -9,6 +9,9 @@ import log from "./log";
 import { embed as postEmbed, message as postMessage } from "./post";
 import Stream from "./twitterStream";
 
+// Stream object, holds the twitter feed we get posts from, initialized at the first
+let stream = null;
+
 // Timeout detecting when there haven't been new tweets in the past min
 let lastTweetTimeout = null;
 const lastTweetDelay = 1000 * 60 * 1;
@@ -325,15 +328,6 @@ const streamError = ({ url, status, statusText }) => {
   setTimeout(createStream, delay);
 };
 
-// Stream object, holds the twitter feed we get posts from
-let stream = new Stream(
-  tClient,
-  streamStart,
-  streamData,
-  streamError,
-  streamEnd
-);
-
 export const getError = response => {
   if (!response || !response.errors || response.errors.length < 1)
     return { code: null, msg: null };
@@ -343,6 +337,15 @@ export const getError = response => {
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
 export const createStream = async () => {
+  if (!stream) {
+    stream = new Stream(
+      tClient,
+      streamStart,
+      streamData,
+      streamError,
+      streamEnd
+    );
+  }
   let userIds = [];
   // Get all the user IDs
   for (let id of Object.keys(subs.collection)) {
