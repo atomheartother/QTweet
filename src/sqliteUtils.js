@@ -92,7 +92,10 @@ getClient().on("ready", () => {
         const { id, oid, gid, isDM } = channels[channelId];
         stmt.run([id, oid, gid, isDM]);
       });
-      stmt.finalize();
+      stmt.finalize(err => {
+        console.log(`Error saving channels`);
+        console.log(err);
+      });
       db.close(err => {
         if (err) {
           return console.error(err.message);
