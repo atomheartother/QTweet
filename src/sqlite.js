@@ -7,9 +7,12 @@ let db = null;
 
 export const open = () =>
   new Promise((resolve, reject) => {
-    db = new sqlite3.Database(config.getFile, err => {
+    db = new sqlite3.Database(config.dbFile, err => {
       if (err) reject(err);
-      else resolve();
+      else {
+        console.log(`Successfully opened database: ${config.dbFile}`);
+        resolve();
+      }
     });
   });
 
@@ -28,7 +31,7 @@ export const close = () => {
 
 export const getUserSubs = (twitterId, withInfo = false) =>
   new Promise((resolve, reject) =>
-    db.run(
+    db.all(
       withInfo
         ? "SELECT subs.channelId AS channelId, flags, guildId, ownerId, subs.isDM AS isDM FROM subs INNER JOIN channels ON subs.channelId = channels.channelId WHERE twitterId=?;"
         : "SELECT channelId, flags, isDM FROM subs WHERE twitterId=?",
@@ -42,7 +45,7 @@ export const getUserSubs = (twitterId, withInfo = false) =>
 
 export const getChannelSubs = (channelId, withName = false) =>
   new Promise((resolve, reject) =>
-    db.run(
+    db.all(
       withName
         ? "SELECT twitterId, name, flags FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId=?"
         : "SELECT twitterId, flags FROM subs WHERE subs.channelId=?",
@@ -56,7 +59,7 @@ export const getChannelSubs = (channelId, withName = false) =>
 
 export const getUserIds = () =>
   new Promise((resolve, reject) => {
-    db.run(`SELECT twitterId FROM twitterUsers`, null, (err, rows) => {
+    db.all(`SELECT twitterId FROM twitterUsers`, [], (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });

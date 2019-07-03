@@ -16,9 +16,6 @@ process.on("unhandledRejection", function(err) {
 });
 
 process.on("exit", closeDb);
-process.on("SIGINT", closeDb);
-process.on("SIGKILL", closeDb);
-process.on("SIGQUIT", closeDb);
 
 const start = async () => {
   await openDb();

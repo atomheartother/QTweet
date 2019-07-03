@@ -161,12 +161,7 @@ export const handleGuildDelete = ({ id, name }) => {
 
 export const handleReady = () => {
   log("Successfully logged in to Discord");
-  subs.load(() => {
-    // All users have been registered, we can request the stream from Twitter
-    createStream();
-    // ... And save any changes we made
-    subs.save();
-  });
+  createStream();
 };
 
 export const handleChannelDelete = channel => {

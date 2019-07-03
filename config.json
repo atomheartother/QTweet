@@ -2,6 +2,7 @@
   "prefix": "!!",
   "ownerID": "135712262156451840",
   "getFile": "data/gets.json",
+  "dbFile": "data/qtweetData.db",
   "botName": "QTweet",
   "profileURL": "https://discordbots.org/bot/433615162394804224",
   "docsURL": "https://github.com/atomheartother/QTweet",
