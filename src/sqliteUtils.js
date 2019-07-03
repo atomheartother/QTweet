@@ -87,6 +87,7 @@ getClient().on("ready", () => {
       const stmt = db.prepare(
         "INSERT INTO channels(channelId, ownerId, guildId, isDM) VALUES(?,?,?,?)"
       );
+      console.log(`Saving ${Object.keys(channels).length} channels`);
       Object.keys(channels).forEach(channelId => {
         const { id, oid, gid, isDM } = channels[channelId];
         stmt.run([id, oid, gid, isDM]);
