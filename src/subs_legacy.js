@@ -3,15 +3,26 @@ import * as config from "../config.json";
 import QChannel from "./QChannel";
 import { userLookup, createStream } from "./twitter";
 import { message as postMessage } from "./post";
-
-import { getUserIds as SQL_getUserIds } from "./sqlite";
+import {
+  serialize as serializeFlags,
+  unserialize as unserializeFlags,
+  defaultFlags
+} from "./flags";
 
 import log from "./log";
 
-export const getUserIds = async () => {
-  const rows = SQL_getUserIds();
-  return rows.map(row => row.twitterId);
-};
+// collection:
+// Dict of TwitterUser, using userId as key
+//  TwitterUser:
+//   name: screen name
+//   subs: Array of Subs
+//   Sub:
+//    qChannel: QChannel object, see QChannel.js
+//    flags: Flags object
+//    Flags:
+//      notext: Boolean, if true we don't post text posts to this channel
+//      retweet: Boolean, if true we post retweets to this channel
+export const collection = {};
 
 // Returns a list of channel objects, each in an unique guild
 // DMs are also returned
@@ -79,6 +90,96 @@ export const getTwitterIdFromScreenName = screenName => {
       return userId;
   }
   return null;
+};
+
+export const save = () => {
+  // We save users as:
+  // {
+  //    "userId" : {name: "screen_name", subs: [{id: qChannel.id, f: Int (bitfields)}]}
+  // }
+
+  let usersCopy = {};
+  const idArray = Object.keys(collection);
+  for (let i = 0; i < idArray.length; i++) {
+    const userId = idArray[i];
+    // Iterate over twitter users
+    if (!collection[userId]) continue;
+    usersCopy[userId] = { subs: [] };
+    if (collection[userId].name) {
+      usersCopy[userId].name = collection[userId].name;
+    }
+    for (const { qChannel, flags } of collection[userId].subs) {
+      usersCopy[userId].subs.push({
+        qc: qChannel.serialize(),
+        f: serializeFlags(flags)
+      });
+    }
+  }
+  let json = JSON.stringify(usersCopy);
+  fs.writeFile(config.getFile, json, "utf8", function(err) {
+    if (err !== null) {
+      log("Error saving users object:");
+      log(err);
+    }
+  });
+};
+
+export const load = callback => {
+  fs.stat(config.getFile, err => {
+    if (err) {
+      log(err);
+      return;
+    }
+    fs.readFile(config.getFile, "utf8", async (err, data) => {
+      if (err) {
+        log("There was a problem reading the config file");
+        return;
+      }
+      // Restore the channels object from saved file
+      let usersCopy = JSON.parse(data);
+      const idArray = Object.keys(usersCopy);
+      for (let i = 0; i < idArray.length; i++) {
+        const userId = idArray[i];
+
+        let name = usersCopy[userId].name ? usersCopy[userId].name : null;
+        // Support the old format where subs were named channels
+        const subList = usersCopy[userId].subs || usersCopy[userId].channels;
+        // Iterate over every subscription
+        for (const sub of subList) {
+          let qChannel = null;
+          if (sub.qc) {
+            // New format, we can unserialize
+            qChannel = await QChannel.unserialize(sub.qc);
+          } else if (sub.id) {
+            // Old format, no DMs
+            qChannel = new QChannel({ id: sub.id });
+          }
+          if (!qChannel || qChannel.id === null) {
+            log(
+              `Tried to load invalid qChannel for userId ${userId} (${name})`
+            );
+            log(sub);
+            continue;
+          }
+          let flags = null;
+          if (sub.f !== undefined) {
+            // New format, we unserialize flags
+            flags = unserializeFlags(sub.f);
+          } else if (sub.text === false) {
+            // Olf format, build flags and support the old text boolean
+            flags = {
+              ...defaultFlags,
+              notext: true
+            };
+          } else {
+            flags = defaultFlags;
+          }
+          add(qChannel, userId, name, flags);
+        }
+      }
+      callback();
+    });
+  });
 };
 
 // Add a subscription to this userId or update an existing one

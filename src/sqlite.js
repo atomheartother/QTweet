@@ -3,22 +3,35 @@ import * as config from "../config.json";
 const sqlite3 = SQLite3.verbose();
 import log from "./log";
 
-const db = new sqlite3.Database(config.getFile, err => {
-  if (err) {
-    return console.error(err.message);
-  }
-  log(`Connected to database at ${config.getFile}`);
-});
+let db = null;
 
-const closeDb = () => {
-  log("Closing database");
-  db.close();
+export const open = () =>
+  new Promise((resolve, reject) => {
+    db = new sqlite3.Database(config.getFile, err => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
+export const close = () => {
+  if (!db) return;
+  db.close(err => {
+    if (err) {
+      log("Error closing database");
+      log(err);
+      return;
+    }
+    log("Closed database successfully");
+  });
+  db = null;
 };
 
-export const getUserSubs = twitterId =>
+export const getUserSubs = (twitterId, withInfo = false) =>
   new Promise((resolve, reject) =>
     db.run(
-      "SELECT channelId, flags, isDM FROM subs WHERE twitterId=?",
+      withInfo
+        ? "SELECT subs.channelId AS channelId, flags, guildId, ownerId, subs.isDM AS isDM FROM subs INNER JOIN channels ON subs.channelId = channels.channelId WHERE twitterId=?;"
+        : "SELECT channelId, flags, isDM FROM subs WHERE twitterId=?",
       [twitterId],
       (err, rows) => {
         if (err) reject(err);
@@ -27,10 +40,12 @@ export const getUserSubs = twitterId =>
     )
   );
 
-export const getChannelSubs = channelId =>
+export const getChannelSubs = (channelId, withName = false) =>
   new Promise((resolve, reject) =>
     db.run(
-      "SELECT twitterId, name, flags, isDM FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId=?",
+      withName
+        ? "SELECT twitterId, name, flags FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId=?"
+        : "SELECT twitterId, flags FROM subs WHERE subs.channelId=?",
       [channelId],
       (err, rows) => {
         if (err) reject(err);
@@ -39,6 +54,22 @@ export const getChannelSubs = channelId =>
     )
   );
 
-process.on("exit", closeDb);
-process.on("SIGINT", closeDb);
-process.on("SIGKILL", closeDb);
+export const getUserIds = () =>
+  new Promise((resolve, reject) => {
+    db.run(`SELECT twitterId FROM twitterUsers`, null, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+
+export const getUserInfo = twitterId =>
+  new Promise((resolve, reject) =>
+    db.get(
+      `SELECT name FROM twitterUsers WHERE twitterId = ?`,
+      [twitterId],
+      (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      }
+    )
+  );

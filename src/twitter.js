@@ -2,7 +2,7 @@ import Twitter from "twitter-lite";
 
 import * as pw from "../pw.json";
 
-import * as subs from "./subs";
+import { getUserIds } from "./subs";
 import Backup from "./backup";
 import log from "./log";
 
@@ -346,13 +346,8 @@ export const createStream = async () => {
       streamEnd
     );
   }
-  let userIds = [];
   // Get all the user IDs
-  for (let id of Object.keys(subs.collection)) {
-    if (!subs.collection[id]) continue;
-
-    userIds.push(id);
-  }
+  const userIds = await getUserIds();
   // If there are none, we can just leave stream at null
   if (userIds.length < 1) return;
   stream.create(userIds);
