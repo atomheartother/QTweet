@@ -1,4 +1,4 @@
-import { login, getClient } from "./discord_legacy";
+import { login, getClient } from "./discord";
 import { load, collection } from "./subs_legacy";
 import { serialize } from "./flags";
 

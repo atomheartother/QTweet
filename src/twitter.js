@@ -2,7 +2,7 @@ import Twitter from "twitter-lite";
 
 import * as pw from "../pw.json";
 
-import { getUserIds } from "./subs";
+import { getUserIds, getUserSubs } from "./subs";
 import Backup from "./backup";
 import log from "./log";
 
@@ -200,15 +200,6 @@ export const formatTweet = tweet => {
   };
   // For any additional files
   let files = null;
-  if (
-    subs.collection[user.id_str] &&
-    (!subs.collection[user.id_str].name ||
-      subs.collection[user.id_str].name !== user.screen_name)
-  ) {
-    // Add or update the username from that user
-    subs.collection[user.id_str].name = user.screen_name;
-    subs.save();
-  }
   const { text: formattedText, metadata } = formatTweetText(txt, entities);
   txt = formattedText;
   if (!hasMedia(tweet)) {
@@ -273,19 +264,16 @@ const streamData = tweet => {
   // Reset the last tweet timeout
   startTimeout();
   // Ignore tweets from people we don't follow, and replies unless they're replies to oneself (threads)
+  const subs = getUserSubs(tweet.user.id_str);
   if (
-    !subs.collection[tweet.user.id_str] ||
+    subs.length === 0 ||
     (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id)
   )
     return;
 
-  const twitterUserObject = subs.collection[tweet.user.id_str];
-
   const { embed, metadata } = formatTweet(tweet);
-  const targetsubs = twitterUserObject.subs.filter(({ flags }) =>
-    flagsFilter(flags, tweet)
-  );
-  targetsubs.forEach(({ qChannel, flags }) => {
+  const targetSubs = subs.filter(({ flags }) => flagsFilter(flags, tweet));
+  targetSubs.forEach(({ channelId, flags }) => {
     if (metadata.ping && flags.ping) {
       log("Pinging @everyone", qChannel);
       postMessage(qChannel, "@everyone");
@@ -294,7 +282,7 @@ const streamData = tweet => {
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = formatTweet(tweet.quoted_status);
-    targetsubs.forEach(({ qChannel, flags }) => {
+    targetSubs.forEach(({ qChannel, flags }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
   }
@@ -349,7 +337,7 @@ export const createStream = async () => {
   // Get all the user IDs
   const userIds = await getUserIds();
   // If there are none, we can just leave stream at null
-  if (userIds.length < 1) return;
+  if (!userIds || userIds.length < 1) return;
   stream.create(userIds);
 };
 

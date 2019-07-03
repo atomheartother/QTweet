@@ -4,13 +4,27 @@ import QChannel from "./QChannel";
 import { userLookup, createStream } from "./twitter";
 import { message as postMessage } from "./post";
 
-import { getUserIds as SQL_getUserIds } from "./sqlite";
+import {
+  getUserIds as SQL_getUserIds,
+  getUserSubs as SQL_getUserSubs
+} from "./sqlite";
 
 import log from "./log";
 
 export const getUserIds = async () => {
-  const rows = SQL_getUserIds();
-  return rows.map(row => row.twitterId);
+  try {
+    const rows = await SQL_getUserIds();
+    console.log(rows);
+    return rows.map(row => row.twitterId);
+  } catch (e) {
+    log("Something went wrong getting user IDs");
+    log(e);
+    return null;
+  }
+};
+
+export const getUserSubs = async () => {
+  return SQL_getUserSubs();
 };
 
 // Returns a list of channel objects, each in an unique guild
