@@ -11,8 +11,7 @@ getClient().on("ready", () => {
       if (err) {
         return console.error(err.message);
       }
-      console.log("Connected to the in-memory SQlite database.");
-      // close the database connection
+      console.log("Connected to SQlite database.");
     });
     db.serialize(() => {
       db.run(
@@ -92,16 +91,21 @@ getClient().on("ready", () => {
         const { id, oid, gid, isDM } = channels[channelId];
         stmt.run([id, oid, gid, isDM]);
       });
-      stmt.finalize(err => {
-        console.log(`Error saving channels`);
-        console.log(err);
-      });
-      db.close(err => {
-        if (err) {
-          return console.error(err.message);
-        }
-        console.log("Close the database connection.");
-      });
+      stmt
+        .finalize(err => {
+          if (err) {
+            console.log(`Error saving channels`);
+            console.log(err);
+          }
+        })
+        .close(err => {
+          if (err) {
+            console.log("Error closing db");
+            console.log(err);
+            return;
+          }
+          console.log("Database closed successfully");
+        });
     });
   });
 });
