@@ -1,6 +1,4 @@
-import fs from "fs";
 import * as config from "../config.json";
-import QChannel from "./QChannel";
 import { userLookup, createStream } from "./twitter";
 import { message as postMessage } from "./post";
 
@@ -14,7 +12,6 @@ import log from "./log";
 export const getUserIds = async () => {
   try {
     const rows = await SQL_getUserIds();
-    console.log(rows);
     return rows.map(row => row.twitterId);
   } catch (e) {
     log("Something went wrong getting user IDs");
