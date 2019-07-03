@@ -1,5 +1,5 @@
-import { login, getClient } from "./discord";
-import { load, collection } from "./subs";
+import { login, getClient } from "./discord_legacy";
+import { load, collection } from "./subs_legacy";
 import { serialize } from "./flags";
 
 import SQLite3 from "sqlite3";

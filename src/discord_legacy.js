@@ -75,7 +75,6 @@ export const canPostEmbedIn = channel => {
   return (
     permissions.has(Discord.Permissions.FLAGS.SEND_MESSAGES) &&
     permissions.has(Discord.Permissions.FLAGS.VIEW_CHANNEL) &&
-    permissions.has(Discord.Permissions.FLAGS.EMBED_LINKS) &&
-    permissions.has(Discord.Permissions.FLAGS.ATTACH_FILES)
+    permissions.has(Discord.Permissions.FLAGS.EMBED_LINKS)
   );
 };
