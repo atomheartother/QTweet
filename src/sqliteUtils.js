@@ -23,15 +23,26 @@ getClient().on("ready", () => {
             console.log(err);
           }
         }
-      ).run(
-        `CREATE TABLE IF NOT EXISTS subs(twitterId INTEGER, channelId INTEGER, isDM INTEGER NOT NULL, flags INTEGER NOT NULL, PRIMARY KEY(twitterId, channelId))`,
-        err => {
-          if (err) {
-            console.log("Error creating subs table");
-            console.log(err);
+      )
+        .run(
+          `CREATE TABLE IF NOT EXISTS subs(twitterId INTEGER, channelId INTEGER, isDM INTEGER NOT NULL, flags INTEGER NOT NULL, PRIMARY KEY(twitterId, channelId))`,
+          err => {
+            if (err) {
+              console.log("Error creating subs table");
+              console.log(err);
+            }
           }
-        }
-      );
+        )
+        .run(
+          `CREATE TABLE IF NOT EXISTS channels(channelId INTEGER PRIMARY KEY, ownerId INTEGER NOT NULL, guildId INTEGER NOT NULL, isDM INTEGER NOT NULL)`,
+          err => {
+            if (err) {
+              console.log("Error creating channels table");
+              console.log(err);
+            }
+          }
+        );
+      const channels = {};
       Object.keys(collection).forEach(twitterId => {
         const { name, subs } = collection[twitterId];
         db.run(
@@ -39,6 +50,9 @@ getClient().on("ready", () => {
           [twitterId, name],
           err => {
             if (err) {
+              console.log(
+                `Error adding twitter user to twitterUsers: ${twitterId} ${name}`
+              );
               console.error(err);
             }
           }
@@ -47,6 +61,14 @@ getClient().on("ready", () => {
           `INSERT INTO subs(twitterId, channelId, isDM, flags) VALUES (?, ?, ?, ?)`
         );
         subs.forEach(({ qChannel, flags }) => {
+          if (!channels[qChannel.id]) {
+            channels[qChannel.id] = {
+              id: qChannel.id,
+              oid: qChannel.oid,
+              gid: qChannel.gid,
+              isDM: qChannel.type === "dm" ? 1 : 0
+            };
+          }
           stmt.run([
             twitterId,
             qChannel.id,
@@ -57,9 +79,19 @@ getClient().on("ready", () => {
         stmt.finalize(err => {
           if (err) {
             console.error(err);
+            return;
           }
         });
+        console.log(`Inserted subs for user ${twitterId}`);
       });
+      const stmt = db.prepare(
+        "INSERT INTO channels(channelId, ownerId, guildId, isDM) VALUES(?,?,?,?)"
+      );
+      Object.keys(channels).forEach(channelId => {
+        const { id, oid, gid, isDM } = channels[channelId];
+        stmt.run([id, oid, gid, isDM]);
+      });
+      stmt.finalize();
       db.close(err => {
         if (err) {
           return console.error(err.message);
