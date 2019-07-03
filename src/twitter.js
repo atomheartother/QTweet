@@ -8,6 +8,7 @@ import log from "./log";
 
 import { embed as postEmbed, message as postMessage } from "./post";
 import Stream from "./twitterStream";
+import QChannel from "./QChannel.js";
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -258,22 +259,29 @@ const flagsFilter = (flags, tweet) => {
   return true;
 };
 
-const streamData = tweet => {
+const streamData = async tweet => {
   // Ignore invalid tweets
   if (!isValid(tweet)) return;
   // Reset the last tweet timeout
   startTimeout();
   // Ignore tweets from people we don't follow, and replies unless they're replies to oneself (threads)
-  const subs = getUserSubs(tweet.user.id_str);
+  const subs = await getUserSubs(tweet.user.id_str);
   if (
+    !subs ||
     subs.length === 0 ||
     (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id)
   )
     return;
 
   const { embed, metadata } = formatTweet(tweet);
-  const targetSubs = subs.filter(({ flags }) => flagsFilter(flags, tweet));
-  targetSubs.forEach(({ channelId, flags }) => {
+  const targetSubs = subs.reduce((acc, { flags, channelId, isDM }) => {
+    if (!flagsFilter(flags)) return acc;
+    return acc.push({
+      flags,
+      qChannel: QChannel.unserialize({ id: channelId, isDM })
+    });
+  }, []);
+  targetSubs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && flags.ping) {
       log("Pinging @everyone", qChannel);
       postMessage(qChannel, "@everyone");
@@ -282,7 +290,7 @@ const streamData = tweet => {
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = formatTweet(tweet.quoted_status);
-    targetSubs.forEach(({ qChannel, flags }) => {
+    targetSubs.forEach(({ flags, ...qChannel }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
   }

@@ -10,7 +10,7 @@ export const open = () =>
     db = new sqlite3.Database(config.dbFile, err => {
       if (err) reject(err);
       else {
-        console.log(`Successfully opened database: ${config.dbFile}`);
+        log(`Successfully opened database: ${config.dbFile}`);
         resolve();
       }
     });
