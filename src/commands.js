@@ -8,7 +8,7 @@ import {
   embed as postEmbed,
   announcement
 } from "./post";
-import * as subs from "./subs";
+import { rm, add, getUniqueChannels, getTwitterIdFromScreenName } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
 import { formatChannelList, formatQChannel, formatTwitterUser } from "./format";
@@ -236,44 +236,40 @@ const start = async (args, qChannel) => {
     }
     return;
   }
-  let redoStream = false;
-  let addedObjectName = `@${data[0].screen_name}`;
-  if (data.length > 1 && data.length < 10) {
-    addedObjectName = `${data.length} users: ${data.reduce(
-      (acc, { screen_name }, idx) => {
-        if (idx === data.length - 1) {
-          return acc.concat(` and ${screen_name}`);
-        } else if (idx === 0) {
-          return screen_name;
-        }
-        return acc.concat(`, ${screen_name}`);
-      },
-      ""
-    )}`;
-  } else if (data.length >= 10) {
-    addedObjectName = `${data.length} twitter users`;
-  }
+  const promises = [];
   data.forEach(({ id_str: userId, screen_name: name }) => {
-    if (!redoStream && !subs.collection[userId]) {
-      redoStream = true;
-    }
-    subs.add(qChannel, userId, name, flags);
+    promises.push(add(qChannel, userId, name, flags));
   });
-  let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
-    config.prefix
-  }stop ${
-    data.length === 1 ? data[0].screen_name : "<screen_name>"
-  }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
-  if (totalScreenNames !== data.length) {
-    channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
-  }
-  postMessage(qChannel, channelMsg);
-  log(`Added ${addedObjectName}`, qChannel);
-  // Re-register the stream if we didn't know the user before
-  if (redoStream) {
-    createStream();
-  }
-  subs.save();
+  Promise.all(promises).then(results => {
+    let addedObjectName = `@${data[0].screen_name}`;
+    if (data.length > 1 && data.length < 10) {
+      addedObjectName = `${data.length} users: ${data.reduce(
+        (acc, { screen_name }, idx) => {
+          if (idx === data.length - 1) {
+            return acc.concat(` and ${screen_name}`);
+          } else if (idx === 0) {
+            return screen_name;
+          }
+          return acc.concat(`, ${screen_name}`);
+        },
+        ""
+      )}`;
+    } else if (data.length >= 10) {
+      addedObjectName = `${data.length} twitter users`;
+    }
+    let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
+      config.prefix
+    }stop ${
+      data.length === 1 ? data[0].screen_name : "<screen_name>"
+    }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
+    if (totalScreenNames !== data.length) {
+      channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
+    }
+    postMessage(qChannel, channelMsg);
+    log(`Added ${addedObjectName}`, qChannel);
+    // Re-register the stream if we didn't know the user before
+    // TODO
+  });
 };
 
 const leaveGuild = (args, qChannel) => {
@@ -306,8 +302,38 @@ const leaveGuild = (args, qChannel) => {
 
 const stop = (args, qChannel) => {
   const screenName = getScreenName(args[0]);
-  log(`Removed ${screenName}`, qChannel);
-  subs.rm(qChannel, screenName);
+  userLookup({ screen_name: screenName })
+    .then(async data => {
+      let twitterId = data[0].id_str;
+      const res = await rm(qChannel, twitterId);
+      if (res === 0) {
+        postMessage(
+          qChannel,
+          `**Not subscribed to @${screenName}**\nUse \`${
+            config.prefix
+          }list\` for a list of subscriptions!`
+        );
+      } else {
+        postMessage(
+          qChannel,
+          `**I've unsubscribed you from @${screenName}**\nYou should stop getting any tweets from them.`
+        );
+      }
+    })
+    .catch(function(response) {
+      const { code, msg } = getError(response);
+      if (!code) {
+        log("Exception thrown without error", qChannel);
+        log(response, qChannel);
+        postMessage(
+          qChannel,
+          `**Something went wrong trying to unsubscribe from ${screenName}**\nI'm looking into it, sorry for the trouble!`
+        );
+        return;
+      } else {
+        handleTwitterError(qChannel, code, msg, [screenName]);
+      }
+    });
 };
 
 const stopchannel = (args, qChannel) => {
@@ -363,13 +389,13 @@ const channelInfo = async (args, qChannel) => {
   formatChannelList(qChannel, qc);
 };
 
-const twitterInfo = (args, qChannel) => {
+const twitterInfo = async (args, qChannel) => {
   const screenName = args.shift();
   if (!screenName) {
     postMessage(qChannel, "Usage: `!!admin t <screenName>`");
     return;
   }
-  const id = subs.getTwitterIdFromScreenName(screenName);
+  const id = await getTwitterIdFromScreenName(screenName);
   if (!id) {
     postMessage(qChannel, `We're not getting any user called @${screenName}`);
     return;
@@ -397,7 +423,7 @@ const admin = (args, qChannel) => {
 
 const announce = async args => {
   const msg = args.join(" ");
-  const qChannels = await subs.getUniqueChannels();
+  const channels = await getUniqueChannels();
   log(`Posting announcement to ${qChannels.length} channels`);
   announcement(msg, qChannels);
 };
