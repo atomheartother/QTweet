@@ -2,7 +2,7 @@
 
 import Discord from "discord.js";
 import * as config from "../config.json";
-import * as users from "./subs";
+import { getChannelSubs } from "./subs";
 import { embed as postEmbed, message as postMessage } from "./post";
 import { getUser } from "./discord";
 
@@ -78,12 +78,8 @@ export const formatGenericList = async (
   }
 };
 
-export const formatTwitterUserShort = userId => {
-  const twitterUser = users.collection[userId];
-  return twitterUser.name
-    ? `@${twitterUser.name} (https://twitter.com/${twitterUser.name})`
-    : userId;
-};
+export const formatTwitterUserShort = name =>
+  `@${name} (https://twitter.com/${twitterUser.name})`;
 
 export const formatFlags = flags =>
   `With ${flags.notext ? "no text posts" : "text posts"}, ${
@@ -112,10 +108,10 @@ export const formatTwitterUser = (qChannel, id) => {
 
 export const formatChannelList = async (qChannel, targetChannel) => {
   formatGenericList(qChannel, {
-    data: users.getChannelGets(targetChannel.id),
-    formatTitle: ({ userId }) => formatTwitterUserShort(userId),
-    formatField: ({ userId, flags }) =>
-      `**ID:** ${userId}\n${formatFlags(flags)}`,
+    data: getChannelSubs(targetChannel.id, true),
+    formatTitle: ({ name }) => formatTwitterUserShort(name),
+    formatField: ({ twitterId, flags }) =>
+      `**ID:** ${twitterId}\n${formatFlags(flags)}`,
     noElements: `**You're not subscribed to anyone**\nUse \`${
       config.prefix
     }start <screen_name>\` to get started!`,
