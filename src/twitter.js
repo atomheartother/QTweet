@@ -259,7 +259,7 @@ const flagsFilter = (flags, tweet) => {
   return true;
 };
 
-const streamData = async tweet => {
+export const streamData = async tweet => {
   // Ignore invalid tweets
   if (!isValid(tweet)) return;
   // Reset the last tweet timeout
@@ -274,13 +274,14 @@ const streamData = async tweet => {
     return;
 
   const { embed, metadata } = formatTweet(tweet);
-  const targetSubs = subs.reduce((acc, { flags, channelId, isDM }) => {
-    if (!flagsFilter(flags)) return acc;
-    return acc.push({
-      flags,
-      qChannel: QChannel.unserialize({ id: channelId, isDM })
-    });
-  }, []);
+  const targetSubs = [];
+  for (let i = 0; i < subs.length; i++) {
+    const { flags, channelId: id, isDM } = subs[i];
+    if (flagsFilter(flags, tweet)) {
+      const qChannel = await QChannel.unserialize({ id, isDM });
+      targetSubs.push({ flags, qChannel });
+    }
+  }
   targetSubs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && flags.ping) {
       log("Pinging @everyone", qChannel);
@@ -290,7 +291,7 @@ const streamData = async tweet => {
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = formatTweet(tweet.quoted_status);
-    targetSubs.forEach(({ flags, ...qChannel }) => {
+    targetSubs.forEach(({ flags, qChannel }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
   }
