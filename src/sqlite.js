@@ -5,6 +5,8 @@ import log from "./log";
 
 let db = null;
 
+const GETINT = val => `CAST(${val} AS TEXT) AS ${val}`;
+
 export const open = () =>
   new Promise((resolve, reject) => {
     db = new sqlite3.Database(config.dbFile, err => {
@@ -33,8 +35,14 @@ export const getUserSubs = (twitterId, withInfo = false) =>
   new Promise((resolve, reject) =>
     db.all(
       withInfo
-        ? "SELECT subs.channelId AS channelId, flags, guildId, ownerId, subs.isDM AS isDM FROM subs INNER JOIN channels ON subs.channelId = channels.channelId WHERE twitterId=?;"
-        : "SELECT channelId, flags, isDM FROM subs WHERE twitterId=?",
+        ? `SELECT CAST(subs.channelId AS TEXT) AS channelId, flags, ${GETINT(
+            "guildId"
+          )}, ${GETINT(
+            "ownerId"
+          )}, subs.isDM AS isDM FROM subs INNER JOIN channels ON subs.channelId = channels.channelId WHERE twitterId=?;`
+        : `SELECT ${GETINT(
+            "channelId"
+          )}, flags, isDM FROM subs WHERE twitterId=?`,
       [twitterId],
       (err, rows) => {
         if (err) reject(err);
@@ -47,8 +55,12 @@ export const getChannelSubs = (channelId, withName = false) =>
   new Promise((resolve, reject) =>
     db.all(
       withName
-        ? "SELECT twitterId, name, flags FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId=?"
-        : "SELECT twitterId, flags FROM subs WHERE subs.channelId=?",
+        ? `SELECT ${GETINT(
+            "twitterId"
+          )}, name, flags FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId=?`
+        : `SELECT ${GETINT(
+            "twitterId"
+          )}, flags FROM subs WHERE subs.channelId=?`,
       [channelId],
       (err, rows) => {
         if (err) reject(err);
@@ -59,16 +71,20 @@ export const getChannelSubs = (channelId, withName = false) =>
 
 export const getUserIds = () =>
   new Promise((resolve, reject) => {
-    db.all(`SELECT twitterId FROM twitterUsers`, [], (err, rows) => {
-      if (err) reject(err);
-      resolve(rows);
-    });
+    db.all(
+      `SELECT ${GETINT("twitterId")} FROM twitterUsers`,
+      [],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
   });
 
 export const getUniqueChannels = () =>
   new Promise((resolve, reject) =>
     db.all(
-      `SELECT channelId, isDM FROM channels GROUP BY guildId`,
+      `SELECT ${GETINT("channelId")}, isDM FROM channels GROUP BY guildId`,
       [],
       (err, rows) => {
         if (err) reject(err);
@@ -91,7 +107,9 @@ export const getUserInfo = twitterId =>
 export const getGuildSubs = async guildId =>
   new Promise((resolve, reject) =>
     db.all(
-      `SELECT subs.channelId AS channelId, twitterId, subs.isDM AS isDM, flags FROM subs INNER JOIN channels ON channels.channelId = subs.channelId WHERE guildId = ?`,
+      `SELECT CAST(subs.channelId AS TEXT) AS channelId, ${GETINT(
+        "twitterId"
+      )}, subs.isDM AS isDM, flags FROM subs INNER JOIN channels ON channels.channelId = subs.channelId WHERE guildId = ?`,
       [guildId],
       (err, rows) => {
         if (err) reject(err);
@@ -103,7 +121,7 @@ export const getGuildSubs = async guildId =>
 export const getTwitterIdFromScreenName = async name =>
   new Promise((resolve, reject) => {
     db.get(
-      `SELECT userId FROM twitterUsers WHERE name = ?`,
+      `SELECT ${GETINT("userId")} FROM twitterUsers WHERE name = ?`,
       [name],
       (err, rows) => {
         if (err) reject(err);
