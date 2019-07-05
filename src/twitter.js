@@ -2,6 +2,7 @@ import Twitter from "twitter-lite";
 
 import * as pw from "../pw.json";
 
+import { isSet } from "./flags";
 import { getUserIds, getUserSubs } from "./subs";
 import Backup from "./backup";
 import log from "./log";
@@ -249,21 +250,19 @@ export const formatTweet = tweet => {
 
 // Takes a tweet and determines whether or not it should be posted with these flags
 const flagsFilter = (flags, tweet) => {
-  if (flags.notext && !hasMedia(tweet)) {
+  if (isSet(flags, "notext") && !hasMedia(tweet)) {
     return false;
   }
-  if (!flags.retweet && tweet.retweeted_status) {
+  if (!isSet(flags, "retweet") && tweet.retweeted_status) {
     return false;
   }
-  if (flags.noquote && tweet.is_quote_status) return false;
+  if (isSet(flags, "noquote") && tweet.is_quote_status) return false;
   return true;
 };
 
-export const streamData = async tweet => {
+export const getFilteredSubs = async tweet => {
   // Ignore invalid tweets
-  if (!isValid(tweet)) return;
-  // Reset the last tweet timeout
-  startTimeout();
+  if (!isValid(tweet)) return [];
   // Ignore tweets from people we don't follow, and replies unless they're replies to oneself (threads)
   const subs = await getUserSubs(tweet.user.id_str);
   if (
@@ -271,9 +270,8 @@ export const streamData = async tweet => {
     subs.length === 0 ||
     (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id)
   )
-    return;
+    return [];
 
-  const { embed, metadata } = formatTweet(tweet);
   const targetSubs = [];
   for (let i = 0; i < subs.length; i++) {
     const { flags, channelId: id, isDM } = subs[i];
@@ -282,7 +280,17 @@ export const streamData = async tweet => {
       targetSubs.push({ flags, qChannel });
     }
   }
-  targetSubs.forEach(({ flags, qChannel }) => {
+  return targetSubs;
+};
+
+const streamData = async tweet => {
+  console.log(JSON.stringify(tweet));
+  // Reset the last tweet timeout
+  startTimeout();
+  const subs = await getFilteredSubs(tweet);
+  if (subs.length === 0) return;
+  const { embed, metadata } = formatTweet(tweet);
+  subs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && flags.ping) {
       log("Pinging @everyone", qChannel);
       postMessage(qChannel, "@everyone");
@@ -291,7 +299,7 @@ export const streamData = async tweet => {
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = formatTweet(tweet.quoted_status);
-    targetSubs.forEach(({ flags, qChannel }) => {
+    subs.forEach(({ flags, qChannel }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
   }

@@ -5,6 +5,7 @@ import * as config from "../config.json";
 import { getChannelSubs } from "./subs";
 import { embed as postEmbed, message as postMessage } from "./post";
 import { getUser } from "./discord";
+import { isSet } from "./flags";
 
 const defaults = {
   data: [],
@@ -79,13 +80,13 @@ export const formatGenericList = async (
 };
 
 export const formatTwitterUserShort = name =>
-  `@${name} (https://twitter.com/${twitterUser.name})`;
+  `@${name} (https://twitter.com/${name})`;
 
 export const formatFlags = flags =>
-  `With ${flags.notext ? "no text posts" : "text posts"}, ${
-    flags.retweet ? "retweets" : "no retweets"
-  }, ${flags.noquote ? "no quotes" : "quotes"}, pings ${
-    flags.ping ? "on" : "off"
+  `With ${isSet(flags, "notext") ? "no text posts" : "text posts"}, ${
+    isSet(flags, "retweet") ? "retweets" : "no retweets"
+  }, ${isSet(flags, "noquote") ? "no quotes" : "quotes"}, pings ${
+    isSet(flags, "ping") ? "on" : "off"
   }`;
 
 export const formatTwitterUser = (qChannel, id) => {
@@ -107,8 +108,9 @@ export const formatTwitterUser = (qChannel, id) => {
 };
 
 export const formatChannelList = async (qChannel, targetChannel) => {
+  const subs = await getChannelSubs(targetChannel.id, true);
   formatGenericList(qChannel, {
-    data: getChannelSubs(targetChannel.id, true),
+    data: subs,
     formatTitle: ({ name }) => formatTwitterUserShort(name),
     formatField: ({ twitterId, flags }) =>
       `**ID:** ${twitterId}\n${formatFlags(flags)}`,
