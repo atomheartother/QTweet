@@ -241,6 +241,7 @@ const start = async (args, qChannel) => {
     promises.push(add(qChannel, userId, name, flags));
   });
   Promise.all(promises).then(results => {
+    console.log(results);
     let addedObjectName = `@${data[0].screen_name}`;
     if (data.length > 1 && data.length < 10) {
       addedObjectName = `${data.length} users: ${data.reduce(
@@ -267,8 +268,6 @@ const start = async (args, qChannel) => {
     }
     postMessage(qChannel, channelMsg);
     log(`Added ${addedObjectName}`, qChannel);
-    // Re-register the stream if we didn't know the user before
-    // TODO
   });
 };
 

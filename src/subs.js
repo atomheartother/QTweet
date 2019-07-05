@@ -35,7 +35,7 @@ export const getChannelSubs = SQL_getChannelSubs;
 export const getTwitterIdFromScreenName = SQL_getTwitterIdFromScreenName;
 
 export const addUserIfExists = async (twitterId, name) => {
-  const shouldAddUser = await hasUser(twitterId);
+  const shouldAddUser = !(await hasUser(twitterId));
   if (shouldAddUser) {
     await addUser(twitterId, name);
     createStream();
@@ -43,12 +43,12 @@ export const addUserIfExists = async (twitterId, name) => {
 };
 
 // Add a subscription to this userId or update an existing one
-export const add = async (qChannel, twitterId, name, flags) => {
+export const add = async ({ id: channelId, type }, twitterId, name, flags) => {
   const res = await addSubscription(
-    qChannel.id,
+    channelId,
     twitterId,
     flags,
-    qChannel.type === "dm" ? 1 : 0
+    type === "dm" ? 1 : 0
   );
   addUserIfExists(twitterId, name);
   return res;

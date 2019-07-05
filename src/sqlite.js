@@ -2,19 +2,66 @@ import SQLite3 from "sqlite3";
 import * as config from "../config.json";
 const sqlite3 = SQLite3.verbose();
 import log from "./log";
-
 let db = null;
 
-const GETINT = val => `CAST(${val} AS TEXT) AS ${val}`;
+const GETINT = (val, alias = val) => `CAST(${val} AS TEXT) AS ${alias}`;
 
 export const open = () =>
   new Promise((resolve, reject) => {
     db = new sqlite3.Database(config.dbFile, err => {
       if (err) reject(err);
       else {
-        log(`Successfully opened database: ${config.dbFile}`);
+        db.all(
+          "select name from sqlite_master where type='table'",
+          [],
+          async (err, tables) => {
+            if (err) reject(err);
+            if (tables.length === 3) {
+              log(`Successfully opened database at ${config.dbFile}`);
+              resolve();
+            } else {
+              await initTables();
+              log(`Database at ${config.dbFile} successfully initialized`);
+              resolve();
+            }
+          }
+        );
         resolve();
       }
+    });
+  });
+
+const initTables = () =>
+  new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.run(
+        `CREATE TABLE IF NOT EXISTS twitterUsers(twitterId INTEGER PRIMARY KEY, name TEXT)`,
+        err => {
+          if (err) {
+            log("Error creating twitterUsers table");
+            reject(err);
+          }
+        }
+      )
+        .run(
+          `CREATE TABLE IF NOT EXISTS subs(twitterId INTEGER, channelId INTEGER, isDM INTEGER NOT NULL, flags INTEGER NOT NULL, PRIMARY KEY(twitterId, channelId))`,
+          err => {
+            if (err) {
+              log("Error creating subs table");
+              reject(err);
+            }
+          }
+        )
+        .run(
+          `CREATE TABLE IF NOT EXISTS channels(channelId INTEGER PRIMARY KEY, ownerId INTEGER NOT NULL, guildId INTEGER NOT NULL, isDM INTEGER NOT NULL)`,
+          err => {
+            if (err) {
+              log("Error creating channels table");
+              reject(err);
+            }
+            resolve();
+          }
+        );
     });
   });
 
@@ -35,7 +82,7 @@ export const getUserSubs = (twitterId, withInfo = false) =>
   new Promise((resolve, reject) =>
     db.all(
       withInfo
-        ? `SELECT CAST(subs.channelId AS TEXT) AS channelId, flags, ${GETINT(
+        ? `SELECT ${GETINT("subs.channelId", "channelId")}, flags, ${GETINT(
             "guildId"
           )}, ${GETINT(
             "ownerId"
@@ -56,6 +103,7 @@ export const getChannelSubs = (channelId, withName = false) =>
     db.all(
       withName
         ? `SELECT ${GETINT(
+            "subs.twitterId",
             "twitterId"
           )}, name, flags FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId=?`
         : `SELECT ${GETINT(
@@ -97,9 +145,9 @@ export const getUserInfo = twitterId =>
     db.get(
       `SELECT name FROM twitterUsers WHERE twitterId = ?`,
       [twitterId],
-      (err, rows) => {
+      (err, row) => {
         if (err) reject(err);
-        resolve(rows);
+        resolve(row);
       }
     )
   );
@@ -107,7 +155,7 @@ export const getUserInfo = twitterId =>
 export const getGuildSubs = async guildId =>
   new Promise((resolve, reject) =>
     db.all(
-      `SELECT CAST(subs.channelId AS TEXT) AS channelId, ${GETINT(
+      `SELECT ${GETINT("subs.channelId", "channelId")}, ${GETINT(
         "twitterId"
       )}, subs.isDM AS isDM, flags FROM subs INNER JOIN channels ON channels.channelId = subs.channelId WHERE guildId = ?`,
       [guildId],
@@ -123,16 +171,16 @@ export const getTwitterIdFromScreenName = async name =>
     db.get(
       `SELECT ${GETINT("userId")} FROM twitterUsers WHERE name = ?`,
       [name],
-      (err, rows) => {
+      (err, row) => {
         if (err) reject(err);
-        resolve(rows);
+        resolve(row);
       }
     );
   });
 
 export const hasUser = async twitterId => {
-  const rows = await getUserInfo(twitterId);
-  return rows.length !== 0;
+  const row = await getUserInfo(twitterId);
+  return !!row;
 };
 
 export const hasSubscription = async (twitterId, channelId) =>
@@ -140,9 +188,9 @@ export const hasSubscription = async (twitterId, channelId) =>
     db.get(
       `SELECT 1 FROM subs WHERE twitterId=? AND channelId=?`,
       [twitterId, channelId],
-      (err, rows) => {
+      (err, row) => {
         if (err) reject(err);
-        resolve(rows.length !== 0);
+        resolve(row !== undefined);
       }
     )
   );
@@ -154,11 +202,14 @@ export const addSubscription = async (channelId, twitterId, flags, isDM) => {
   const subExists = await hasSubscription(twitterId, channelId);
   return new Promise((resolve, reject) => {
     if (subExists) {
-      // TODO: Update
-      db.run("UPDATE ...", [channelId, twitterId, flags], err => {
-        if (err) reject(err);
-        resolve(1);
-      });
+      db.run(
+        "UPDATE subs SET flags = ? WHERE channelId = ? AND twitterId = ?",
+        [flags, channelId, twitterId],
+        err => {
+          if (err) reject(err);
+          resolve(1);
+        }
+      );
     } else {
       db.run(
         "INSERT INTO subs(channelId, twitterId, flags, isDM) VALUES(?, ?, ?, ?)",
@@ -186,8 +237,7 @@ export const addUser = async (twitterId, name) =>
 
 export const rmUser = async twitterId =>
   new Promise((resolve, reject) =>
-    // TODO: DELETE
-    db.run(`DELETE ...`, [twitterId], err => {
+    db.run(`DELETE FROM twitterUsers WHERE twitterId = ?`, [twitterId], err => {
       if (err) reject(err);
       resolve();
     })
@@ -199,19 +249,20 @@ export const removeSubscription = async (channelId, twitterId) =>
     db.get(
       `SELECT 1 FROM subs WHERE twitterId=? AND channelId=?`,
       [twitterId, channelId],
-      (err, rows) => {
+      (err, row) => {
         if (err) reject(err);
-        else if (rows.length === 0) {
+        else if (row === undefined) {
           resolve(0);
         } else {
           // TODO: delete
-          db.run("DELETE ...", [channelId, twitterId], err => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(rows.length);
+          db.run(
+            "DELETE FROM subs WHERE channelId = ? AND twitterId = ?",
+            [channelId, twitterId],
+            err => {
+              if (err) reject(err);
+              resolve(1);
             }
-          });
+          );
         }
       }
     )
