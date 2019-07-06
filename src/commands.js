@@ -304,7 +304,7 @@ const stop = (args, qChannel) => {
   userLookup({ screen_name: screenName })
     .then(async data => {
       let twitterId = data[0].id_str;
-      const res = await rm(qChannel, twitterId);
+      const res = await rm(qChannel.id, twitterId);
       if (res === 0) {
         postMessage(
           qChannel,

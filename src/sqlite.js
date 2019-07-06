@@ -117,6 +117,18 @@ export const getChannelSubs = (channelId, withName = false) =>
     )
   );
 
+export const getGuildChannels = guildId =>
+  new Promise((resolve, reject) =>
+    db.all(
+      `SELECT ${GETINT("channelId")} FROM channels WHERE guildId = ?`,
+      [guildId],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    )
+  );
+
 export const getUserIds = () =>
   new Promise((resolve, reject) => {
     db.all(
@@ -266,4 +278,12 @@ export const removeSubscription = async (channelId, twitterId) =>
         }
       }
     )
+  );
+
+export const rmChannel = channelId =>
+  new Promise((resolve, reject) =>
+    db.run(`DELETE FROM channels WHERE channelId = ?`, [channelId], err => {
+      if (err) reject(err);
+      resolve();
+    })
   );

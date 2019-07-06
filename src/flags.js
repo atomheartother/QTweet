@@ -7,6 +7,28 @@ const FlagsEnum = Object.freeze({
   ping: 8
 });
 
+// OBSOLETE
+// Returns a serialized int from flags
+export const serialize = flags => {
+  let f = 0;
+  Object.keys(FlagsEnum).forEach(k => {
+    if (flags[k]) {
+      f += FlagsEnum[k];
+    }
+  });
+  return f;
+};
+
+// OBSOLETE
+// Returns flags object from a serialized int
+export const unserialize = f => {
+  const flags = {};
+  Object.keys(FlagsEnum).forEach(k => {
+    flags[k] = (f & FlagsEnum[k]) === FlagsEnum[k];
+  });
+  return flags;
+};
+
 // Return a serialized flag from a bunch of strings
 export const compute = options => {
   const flags = new Flags();
