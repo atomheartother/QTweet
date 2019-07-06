@@ -274,9 +274,9 @@ export const getFilteredSubs = async tweet => {
 
   const targetSubs = [];
   for (let i = 0; i < subs.length; i++) {
-    const { flags, channelId: id, isDM } = subs[i];
+    const { flags, channelId, isDM } = subs[i];
     if (flagsFilter(flags, tweet)) {
-      const qChannel = await QChannel.unserialize({ id, isDM });
+      const qChannel = QChannel.unserialize({ channelId, isDM });
       targetSubs.push({ flags, qChannel });
     }
   }
@@ -284,7 +284,6 @@ export const getFilteredSubs = async tweet => {
 };
 
 const streamData = async tweet => {
-  console.log(JSON.stringify(tweet));
   // Reset the last tweet timeout
   startTimeout();
   const subs = await getFilteredSubs(tweet);

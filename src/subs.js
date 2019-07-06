@@ -6,7 +6,7 @@ import {
   getChannelSubs as SQL_getChannelSubs,
   rmChannel as SQL_rmChannel,
   getSubscription as SQL_getSub,
-  getTwitterIdFromScreenName as SQL_getTwitterIdFromScreenName,
+  getUserFromScreenName as SQL_getUserFromScreenName,
   rmUser as SQL_rmUser,
   addSubscription,
   removeSubscription,
@@ -37,7 +37,7 @@ export const getGuildSubs = SQL_getGuildSubs;
 // Returns a list of subscriptions matching this channel
 export const getChannelSubs = SQL_getChannelSubs;
 
-export const getTwitterIdFromScreenName = SQL_getTwitterIdFromScreenName;
+export const getUserFromScreenName = SQL_getUserFromScreenName;
 
 export const addUserIfNoExists = async (twitterId, name) => {
   const shouldAddUser = !(await hasUser(twitterId));

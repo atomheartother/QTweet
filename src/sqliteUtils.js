@@ -65,13 +65,13 @@ getClient().on("ready", () => {
               id: qChannel.id,
               oid: qChannel.oid,
               gid: qChannel.gid,
-              isDM: qChannel.type === "dm" ? 1 : 0
+              isDM: qChannel.isDM ? 1 : 0
             };
           }
           stmt.run([
             twitterId,
             qChannel.id,
-            qChannel.type === "dm" ? 1 : 0,
+            qChannel.isDM ? 1 : 0,
             serialize(flags)
           ]);
         });
