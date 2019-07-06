@@ -16,7 +16,6 @@ export const open = () =>
           [],
           async (err, tables) => {
             if (err) reject(err);
-            console.log(tables);
             if (tables.length === 3) {
               log(`Successfully opened database at ${config.dbFile}`);
               resolve();
@@ -27,7 +26,6 @@ export const open = () =>
             }
           }
         );
-        resolve();
       }
     });
   });
@@ -79,7 +77,7 @@ export const close = () => {
   db = null;
 };
 
-export const getSubscription = (twitterId, channelId, withName = false) =>
+export const getSubscription = (channelId, twitterId, withName = false) =>
   new Promise((resolve, reject) =>
     db.get(
       withName
