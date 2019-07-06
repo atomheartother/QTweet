@@ -49,12 +49,10 @@ export const addUserIfNoExists = async (twitterId, name) => {
 };
 
 // Add a subscription to this userId or update an existing one
-// Return values:
-// 0: Subscription added
-// 1: Subscription updated
 export const add = async (channelId, twitterId, name, flags, isDM) => {
   const subs = await addSubscription(channelId, twitterId, flags, isDM);
-  const users = await addUserIfNoExists(twitterId, name);
+  // If we didn't update any subs we don't have to check for new users
+  const users = subs === 0 ? 0 : await addUserIfNoExists(twitterId, name);
   return { subs, users };
 };
 
@@ -73,7 +71,7 @@ const deleteUserIfEmpty = async twitterId => {
 // If this user doesn't have any more subs, delete it as well
 export const rm = async (channelId, twitterId) => {
   const subs = await removeSubscription(channelId, twitterId);
-  const users = await deleteUserIfEmpty(twitterId);
+  const users = subs === 0 ? 0 : await deleteUserIfEmpty(twitterId);
   return { subs, users };
 };
 
