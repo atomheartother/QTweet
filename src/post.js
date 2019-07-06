@@ -1,7 +1,7 @@
 import * as config from "../config.json";
 import { rmChannel } from "./subs";
 import log from "./log";
-
+import QChannel from "./QChannel";
 // Return values for post functions:
 // 0: Success
 // 1: Unknown error / exception thrown, user wasn't warned
@@ -57,9 +57,7 @@ const handleDiscordPostError = async (
     // And notify the user
     const count = rmChannel(qChannel.id);
     logMsg = `${errCode}: Auto-deleted ${count} gets, qChannel removed`;
-    newMsg = `**Inaccessible channel**: I tried to post in ${
-      qChannel.name
-    } but Discord says it doesn't exist anymore.\nI took the liberty of stopping all ${count} subscriptions in that channel.\n\nIf this isn't what you wanted, please contact my creator through our support server!`;
+    newMsg = `**Inaccessible channel**: I tried to post in ${await qChannel.name()} but Discord says it doesn't exist anymore.\nI took the liberty of stopping all ${count} subscriptions in that channel.\n\nIf this isn't what you wanted, please contact my creator through our support server!`;
     newType = "404 notification";
   } else if (
     errCode === 403 ||
@@ -74,9 +72,7 @@ const handleDiscordPostError = async (
     logMsg = `Tried to post ${type} but lacked permissions: ${errCode} ${
       error.name
     }`;
-    newMsg = `**Missing Permissions:** I couldn't send a ${type} in ${
-      qChannel.name
-    }.\nIf a mod could give me the **Send Messages**, **Send Embeds** and **Attach Files** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
+    newMsg = `**Missing Permissions:** I couldn't send a ${type} in ${await qChannel.name()}.\nIf a mod could give me the **Send Messages**, **Send Embeds** and **Attach Files** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
       config.prefix
     }stopchannel ${
       qChannel.id
@@ -152,12 +148,12 @@ export const message = async (qChannel, content) => {
   return 0;
 };
 
-export const announcement = (content, qChannels) => {
-  if (qChannels.length <= 0) return;
-  const nextQChannel = qChannels.shift();
+export const announcement = (content, channels) => {
+  if (channels.length <= 0) return;
+  const nextQChannel = QChannel.unserialize(channels.shift());
   message(nextQChannel, content);
   setTimeout(() => {
-    announcement(content, qChannels);
+    announcement(content, channels);
   }, 1000);
 };
 

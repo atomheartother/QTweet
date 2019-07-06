@@ -57,7 +57,7 @@ export const getGuildGets = async guildId => {
     const { subs } = collection[userId];
     for (let j = 0; j < subs.length; j++) {
       const get = subs[j];
-      if (get.qChannel.type === "dm") continue;
+      if (get.qChannel.isDM) continue;
       const { gid } = get.qChannel;
       if (gid === guildId) {
         gets.push({ ...get, userId });

@@ -6,11 +6,8 @@ import {
   getGuild,
   canPostEmbedIn
 } from "./discord";
-import log from "./log";
 
-// Some selectors
-const getType = c => c.type;
-const getName = c => {
+const getChannelName = c => {
   if (c.type === "dm") {
     return `${c.recipient.tag}`;
   }
@@ -25,36 +22,47 @@ const getFormattedName = c => {
 };
 
 class QChannel {
-  constructor({ id }) {
+  // Created from a discord channel object
+  constructor({ id, type, recipient }) {
     // Check validity of object
-    const c = getChannel(id);
-    if (!c) {
-      log(`Got an invalid id for QChannel construction: ${id}`);
-      this.id = null;
-      return;
-    }
-    this.type = getType(c);
-    this.name = getName(c);
-    this.formattedName = getFormattedName(c);
-    this.id = this.type === "dm" ? c.recipient.id : id;
-    this.gid = this.type === "dm" ? c.recipient.id : c.guild.id;
-    this.oid = this.type === "dm" ? c.recipient.id : c.guild.ownerID;
+    this.id = type === "dm" ? recipient.id : id;
+    this.isDM = type === "dm";
+  }
+
+  async formattedName() {
+    return getFormattedName(await this.obj());
+  }
+
+  async name() {
+    return getChannelName(await this.obj());
   }
 
   // Returns a js channel object
   async obj() {
-    if (this.type === "dm") {
+    if (this.isDM) {
       return getUserDm(this.id);
     }
     return getChannel(this.id);
   }
 
+  async ownerId() {
+    if (this.isDM) return this.id;
+    const channel = await this.obj();
+    return channel.guild.ownerID;
+  }
+
+  async guildId() {
+    if (this.isDM) return null;
+    const channel = await this.obj();
+    return channel.guild.id;
+  }
+
   // Return a direct channel to the owner of this qChannel
   async ownerObj() {
-    if (this.type === "dm") {
+    if (this.isDM) {
       return getUserDm(this.id);
     }
-    return getUserDm(this.oid);
+    return getUserDm(await this.ownerId());
   }
 
   async send(content, options = null) {
@@ -68,11 +76,11 @@ class QChannel {
   }
 
   // Returns a raw Discord guild object
-  guild() {
-    if (this.type === "dm") {
+  async guild() {
+    if (this.isDM) {
       return null;
     }
-    return getGuild(this.gid);
+    return getGuild(await this.guildId());
   }
 
   static async bestGuildChannel(guild, msgType = "message") {
@@ -106,11 +114,11 @@ class QChannel {
   async bestChannel(msgType = "message") {
     const c = await this.obj();
     const checkFunction = msgType === "embed" ? canPostEmbedIn : canPostIn;
-    if (this.type === "dm" || checkFunction(c)) {
+    if (this.isDM || checkFunction(c)) {
       return this;
     }
     // From now on we can't post in this channel
-    return QChannel.bestGuildChannel(this.guild(), msgType);
+    return QChannel.bestGuildChannel(await this.guild(), msgType);
   }
 
   serialize() {
@@ -120,11 +128,8 @@ class QChannel {
     };
   }
 
-  static async unserialize({ id, isDM }) {
-    if (!isDM) return new QChannel({ id });
-    const dm = await getUserDm(id);
-    if (dm) return new QChannel(dm);
-    return null;
+  static unserialize({ channelId, isDM }) {
+    return new QChannel({ id: channelId, type: isDM ? "dm" : "text" });
   }
 }
 

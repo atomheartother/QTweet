@@ -8,7 +8,13 @@ import {
   embed as postEmbed,
   announcement
 } from "./post";
-import { rm, add, getUniqueChannels, getTwitterIdFromScreenName } from "./subs";
+import {
+  rm,
+  add,
+  getUniqueChannels,
+  getUserFromScreenName,
+  rmChannel
+} from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
 import { formatChannelList, formatQChannel, formatTwitterUser } from "./format";
@@ -238,12 +244,9 @@ const start = async (args, qChannel) => {
   }
   const promises = [];
   data.forEach(({ id_str: userId, screen_name: name }) => {
-    promises.push(
-      add(qChannel.id, userId, name, flags, qChannel.type === "dm")
-    );
+    promises.push(add(qChannel.id, userId, name, flags, qChannel.isDM));
   });
   Promise.all(promises).then(results => {
-    console.log(results);
     let addedObjectName = `@${data[0].screen_name}`;
     if (data.length > 1 && data.length < 10) {
       addedObjectName = `${data.length} users: ${data.reduce(
@@ -270,6 +273,8 @@ const start = async (args, qChannel) => {
     }
     postMessage(qChannel, channelMsg);
     log(`Added ${addedObjectName}`, qChannel);
+    const redoStream = !!results.find(({ users }) => users !== 0);
+    if (redoStream) createStream();
   });
 };
 
@@ -337,9 +342,9 @@ const stop = (args, qChannel) => {
     });
 };
 
-const stopchannel = (args, qChannel) => {
+const stopchannel = async (args, qChannel) => {
   let targetChannel = qChannel.id;
-  let channelName = qChannel.name;
+  let channelName = await qChannel.name();
   if (args.length > 0 && qChannel.type !== "dm") {
     targetChannel = args[0];
     const channelObj = qChannel
@@ -354,7 +359,7 @@ const stopchannel = (args, qChannel) => {
     }
     channelName = new QChannel(channelObj).name;
   }
-  const count = subs.rmChannel(targetChannel);
+  const count = rmChannel(targetChannel);
   log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
   postMessage(
     qChannel,
@@ -367,21 +372,21 @@ const list = (args, qChannel) => {
 };
 
 const channelInfo = async (args, qChannel) => {
-  const id = args.shift();
-  if (!id) {
+  const channelId = args.shift();
+  if (!channelId) {
     postMessage(qChannel, "Usage: `!!admin c <id>`");
     return;
   }
   let qc = null;
-  if (getChannel(id)) {
-    qc = await QChannel.unserialize({ id, isDM: false });
+  if (getChannel(channelId)) {
+    qc = QChannel.unserialize({ channelId, isDM: false });
   } else {
-    qc = await QChannel.unserialize({ id, isDM: true });
+    qc = QChannel.unserialize({ channelId, isDM: true });
   }
   if (!qc || !qc.id) {
     postMessage(
       qChannel,
-      `I couldn't build a valid channel object with id: ${id}`
+      `I couldn't build a valid channel object with id: ${channelId}`
     );
     return;
   }
@@ -396,12 +401,12 @@ const twitterInfo = async (args, qChannel) => {
     postMessage(qChannel, "Usage: `!!admin t <screenName>`");
     return;
   }
-  const id = await getTwitterIdFromScreenName(screenName);
-  if (!id) {
+  const user = await getUserFromScreenName(screenName);
+  if (!user) {
     postMessage(qChannel, `We're not getting any user called @${screenName}`);
     return;
   }
-  formatTwitterUser(qChannel, id);
+  formatTwitterUser(qChannel, user.twitterId);
 };
 
 const admin = (args, qChannel) => {
@@ -425,8 +430,8 @@ const admin = (args, qChannel) => {
 const announce = async args => {
   const msg = args.join(" ");
   const channels = await getUniqueChannels();
-  log(`Posting announcement to ${qChannels.length} channels`);
-  announcement(msg, qChannels);
+  log(`Posting announcement to ${channels.length} channels`);
+  announcement(msg, channels);
 };
 
 const handleTwitterError = (qChannel, code, msg, screenNames) => {

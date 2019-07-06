@@ -198,10 +198,10 @@ export const getGuildSubs = guildId =>
     )
   );
 
-export const getTwitterIdFromScreenName = name =>
+export const getUserFromScreenName = name =>
   new Promise((resolve, reject) => {
     db.get(
-      `SELECT ${GETINT("userId")} FROM twitterUsers WHERE name = ?`,
+      `SELECT ${GETINT("twitterId")} FROM twitterUsers WHERE name = ?`,
       [name],
       (err, row) => {
         if (err) reject(err);
