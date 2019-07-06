@@ -43,7 +43,9 @@ export const addUserIfNoExists = async (twitterId, name) => {
   const shouldAddUser = !(await hasUser(twitterId));
   if (shouldAddUser) {
     await addUser(twitterId, name);
+    return 1;
   }
+  return 0;
 };
 
 // Add a subscription to this userId or update an existing one
@@ -51,9 +53,9 @@ export const addUserIfNoExists = async (twitterId, name) => {
 // 0: Subscription added
 // 1: Subscription updated
 export const add = async (channelId, twitterId, name, flags, isDM) => {
-  const res = await addSubscription(channelId, twitterId, flags, isDM);
-  await addUserIfNoExists(twitterId, name);
-  return res;
+  const subs = await addSubscription(channelId, twitterId, flags, isDM);
+  const users = await addUserIfNoExists(twitterId, name);
+  return { subs, users };
 };
 
 export const rmUser = SQL_rmUser;
@@ -62,34 +64,42 @@ const deleteUserIfEmpty = async twitterId => {
   const subs = await getUserSubs(twitterId);
   if (subs.length === 0) {
     await rmUser(twitterId);
+    return 1;
   }
+  return 0;
 };
 
 // Remove a subscription
 // If this user doesn't have any more subs, delete it as well
 export const rm = async (channelId, twitterId) => {
-  const res = await removeSubscription(channelId, twitterId);
-  await deleteUserIfEmpty(twitterId);
-  return res;
+  const subs = await removeSubscription(channelId, twitterId);
+  const users = await deleteUserIfEmpty(twitterId);
+  return { subs, users };
 };
 
 export const rmChannel = async channelId => {
-  const subs = await getChannelSubs(channelId);
-  for (let i = 0; i < subs.length; i++) {
-    const { twitterId } = subs[i];
-    await rm(channelId, twitterId);
+  const subArray = await getChannelSubs(channelId);
+  let deletedSubs = 0;
+  let deletedUsrs = 0;
+  for (let i = 0; i < subArray.length; i++) {
+    const { twitterId } = subArray[i];
+    const { subs, users } = await rm(channelId, twitterId);
+    deletedSubs += subs;
+    deletedUsrs += users;
   }
   SQL_rmChannel(channelId);
-  return subs.length;
+  return { subs: deletedSubs, users: deletedUsrs };
 };
 
 export const rmGuild = async guildId => {
   const channels = await getGuildChannels(guildId);
-  let subCount = 0;
+  let deletedSubs = 0;
+  let deletedUsrs = 0;
   for (let i = 0; i < channels.length; i++) {
     const { channelId } = channels[i];
-    const res = await rmChannel(channelId);
-    subCount += res;
+    const { subs, users } = await rmChannel(channelId);
+    deletedSubs += subs;
+    deletedUsrs += users;
   }
-  return { subs: subCount, channels: channels.length };
+  return { subs: deletedSubs, users: deletedUsrs, channels: channels.length };
 };

@@ -227,9 +227,7 @@ export const hasSubscription = (twitterId, channelId) =>
     )
   );
 
-// Return values:
-// 0: Subscription added
-// 1: Subscription updated
+// Return value: how many subs were created. If 0, sub was updated.
 export const addSubscription = async (channelId, twitterId, flags, isDM) => {
   const subExists = await hasSubscription(twitterId, channelId);
   return await new Promise((resolve, reject) => {
@@ -239,7 +237,7 @@ export const addSubscription = async (channelId, twitterId, flags, isDM) => {
         [flags, channelId, twitterId],
         err => {
           if (err) reject(err);
-          resolve(1);
+          resolve(0);
         }
       );
     } else {
@@ -248,7 +246,7 @@ export const addSubscription = async (channelId, twitterId, flags, isDM) => {
         [channelId, twitterId, flags, isDM],
         err => {
           if (err) reject(err);
-          resolve(0);
+          resolve(1);
         }
       );
     }
@@ -262,7 +260,7 @@ export const addUser = (twitterId, name) =>
       [twitterId, name],
       err => {
         if (err) reject(err);
-        resolve();
+        resolve(1);
       }
     )
   );
@@ -271,7 +269,7 @@ export const rmUser = twitterId =>
   new Promise((resolve, reject) =>
     db.run(`DELETE FROM twitterUsers WHERE twitterId = ?`, [twitterId], err => {
       if (err) reject(err);
-      resolve();
+      resolve(1);
     })
   );
 
@@ -304,6 +302,6 @@ export const rmChannel = channelId =>
   new Promise((resolve, reject) =>
     db.run(`DELETE FROM channels WHERE channelId = ?`, [channelId], err => {
       if (err) reject(err);
-      resolve();
+      resolve(1);
     })
   );
