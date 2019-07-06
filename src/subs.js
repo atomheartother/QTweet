@@ -13,7 +13,8 @@ import {
   hasUser,
   addUser,
   open as openDb,
-  close as closeDb
+  close as closeDb,
+  getGuildChannels
 } from "./sqlite";
 
 export const init = openDb;
@@ -76,7 +77,7 @@ export const rmChannel = async channelId => {
   const subs = await getChannelSubs(channelId);
   for (let i = 0; i < subs.length; i++) {
     const { twitterId } = subs[i];
-    rm(channelId, twitterId);
+    await rm(channelId, twitterId);
   }
   SQL_rmChannel(channelId);
   return subs.length();
@@ -84,9 +85,11 @@ export const rmChannel = async channelId => {
 
 export const rmGuild = async guildId => {
   const channels = await getGuildChannels(guildId);
+  let subCount = 0;
   for (let i = 0; i < channels.length; i++) {
     const { channelId } = channels[i];
-    rmChannel(channelId);
+    const res = await rmChannel(channelId);
+    subCount += res;
   }
-  return channels.length;
+  return { subs: subCount, channels: channels.length };
 };
