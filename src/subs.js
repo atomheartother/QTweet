@@ -8,6 +8,8 @@ import {
   getUniqueChannels as SQL_getUniqueChannels,
   getGuildSubs as SQL_getGuildSubs,
   getChannelSubs as SQL_getChannelSubs,
+  rmChannel as SQL_rmChannel,
+  rmGuild as SQL_rmGuild,
   getTwitterIdFromScreenName as SQL_getTwitterIdFromScreenName,
   rmUser as SQL_rmUser,
   addSubscription,
@@ -66,16 +68,27 @@ const deleteUserIfEmpty = async twitterId => {
 
 // Remove a subscription
 // If this user doesn't have any more subs, delete it as well
-export const rm = async (qChannel, twitterId) => {
-  const res = await removeSubscription(qChannel.id, twitterId);
+export const rm = async (channelId, twitterId) => {
+  const res = await removeSubscription(channelId, twitterId);
   deleteUserIfEmpty(twitterId);
   return res;
 };
 
 export const rmChannel = async channelId => {
-  // TODO
+  const subs = await getChannelSubs(channelId);
+  for (let i = 0; i < subs.length; i++) {
+    const { twitterId } = subs[i];
+    rm(channelId, twitterId);
+  }
+  SQL_rmChannel(channelId);
+  return subs.length();
 };
 
-export const rmGuild = async id => {
-  // TODO
+export const rmGuild = async guildId => {
+  const channels = await getGuildChannels(guildId);
+  for (let i = 0; i < channels.length; i++) {
+    const { channelId } = channels[i];
+    rmChannel(channelId);
+  }
+  return channels.length;
 };
