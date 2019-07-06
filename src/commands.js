@@ -238,7 +238,9 @@ const start = async (args, qChannel) => {
   }
   const promises = [];
   data.forEach(({ id_str: userId, screen_name: name }) => {
-    promises.push(add(qChannel, userId, name, flags));
+    promises.push(
+      add(qChannel.id, userId, name, flags, qChannel.type === "dm")
+    );
   });
   Promise.all(promises).then(results => {
     console.log(results);

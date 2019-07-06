@@ -16,6 +16,7 @@ export const open = () =>
           [],
           async (err, tables) => {
             if (err) reject(err);
+            console.log(tables);
             if (tables.length === 3) {
               log(`Successfully opened database at ${config.dbFile}`);
               resolve();
@@ -78,6 +79,25 @@ export const close = () => {
   db = null;
 };
 
+export const getSubscription = (twitterId, channelId, withName = false) =>
+  new Promise((resolve, reject) =>
+    db.get(
+      withName
+        ? `SELECT ${GETINT("subs.channelId", "channelId")}, ${GETINT(
+            "subs.twitterId",
+            "twitterId"
+          )}, name, flags, subs.isDM FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId = ? AND subs.twitterId = ?`
+        : `SELECT ${GETINT("channelId")}, ${GETINT(
+            "twitterId"
+          )}, flags, isDM FROM subs WHERE channelId = ? AND twitterId = ?`,
+      [channelId, twitterId],
+      (err, row) => {
+        if (err) reject(err);
+        resolve(row);
+      }
+    )
+  );
+
 export const getUserSubs = (twitterId, withInfo = false) =>
   new Promise((resolve, reject) =>
     db.all(
@@ -86,7 +106,7 @@ export const getUserSubs = (twitterId, withInfo = false) =>
             "guildId"
           )}, ${GETINT(
             "ownerId"
-          )}, subs.isDM AS isDM FROM subs INNER JOIN channels ON subs.channelId = channels.channelId WHERE twitterId=?;`
+          )}, subs.isDM AS isDM FROM subs INNER JOIN channels ON subs.channelId = channels.channelId WHERE subs.twitterId=?;`
         : `SELECT ${GETINT(
             "channelId"
           )}, flags, isDM FROM subs WHERE twitterId=?`,
@@ -164,7 +184,7 @@ export const getUserInfo = twitterId =>
     )
   );
 
-export const getGuildSubs = async guildId =>
+export const getGuildSubs = guildId =>
   new Promise((resolve, reject) =>
     db.all(
       `SELECT ${GETINT("subs.channelId", "channelId")}, ${GETINT(
@@ -178,7 +198,7 @@ export const getGuildSubs = async guildId =>
     )
   );
 
-export const getTwitterIdFromScreenName = async name =>
+export const getTwitterIdFromScreenName = name =>
   new Promise((resolve, reject) => {
     db.get(
       `SELECT ${GETINT("userId")} FROM twitterUsers WHERE name = ?`,
@@ -195,7 +215,7 @@ export const hasUser = async twitterId => {
   return !!row;
 };
 
-export const hasSubscription = async (twitterId, channelId) =>
+export const hasSubscription = (twitterId, channelId) =>
   new Promise((resolve, reject) =>
     db.get(
       `SELECT 1 FROM subs WHERE twitterId=? AND channelId=?`,
@@ -212,7 +232,7 @@ export const hasSubscription = async (twitterId, channelId) =>
 // 1: Subscription updated
 export const addSubscription = async (channelId, twitterId, flags, isDM) => {
   const subExists = await hasSubscription(twitterId, channelId);
-  return new Promise((resolve, reject) => {
+  return await new Promise((resolve, reject) => {
     if (subExists) {
       db.run(
         "UPDATE subs SET flags = ? WHERE channelId = ? AND twitterId = ?",
@@ -235,7 +255,7 @@ export const addSubscription = async (channelId, twitterId, flags, isDM) => {
   });
 };
 
-export const addUser = async (twitterId, name) =>
+export const addUser = (twitterId, name) =>
   new Promise((resolve, reject) =>
     db.run(
       `INSERT INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
@@ -247,7 +267,7 @@ export const addUser = async (twitterId, name) =>
     )
   );
 
-export const rmUser = async twitterId =>
+export const rmUser = twitterId =>
   new Promise((resolve, reject) =>
     db.run(`DELETE FROM twitterUsers WHERE twitterId = ?`, [twitterId], err => {
       if (err) reject(err);
@@ -256,7 +276,7 @@ export const rmUser = async twitterId =>
   );
 
 // Return value: How many subscriptions were deleted
-export const removeSubscription = async (channelId, twitterId) =>
+export const removeSubscription = (channelId, twitterId) =>
   new Promise((resolve, reject) =>
     db.get(
       `SELECT 1 FROM subs WHERE twitterId=? AND channelId=?`,

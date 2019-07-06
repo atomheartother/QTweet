@@ -1,6 +1,6 @@
 import log from "./log";
 import { login, getClient } from "./discord";
-import { open as openDb, close as closeDb } from "./sqlite";
+import { init, close } from "./subs";
 import {
   handleMessage,
   handleError,
@@ -15,10 +15,10 @@ process.on("unhandledRejection", function(err) {
   log(err);
 });
 
-process.on("exit", closeDb);
+process.on("exit", close);
 
 const start = async () => {
-  await openDb();
+  await init();
   // Register discord handles
   getClient()
     .on("message", handleMessage)
