@@ -1,7 +1,3 @@
-import * as config from "../config.json";
-import { createStream } from "./twitter";
-import { message as postMessage } from "./post";
-
 import {
   getUserIds as SQL_getUserIds,
   getUserSubs as SQL_getUserSubs,
@@ -9,18 +5,24 @@ import {
   getGuildSubs as SQL_getGuildSubs,
   getChannelSubs as SQL_getChannelSubs,
   rmChannel as SQL_rmChannel,
-  rmGuild as SQL_rmGuild,
+  getSubscription as SQL_getSub,
   getTwitterIdFromScreenName as SQL_getTwitterIdFromScreenName,
   rmUser as SQL_rmUser,
   addSubscription,
   removeSubscription,
   hasUser,
-  addUser
+  addUser,
+  open as openDb,
+  close as closeDb
 } from "./sqlite";
 
-import log from "./log";
+export const init = openDb;
+
+export const close = closeDb;
 
 export const getUserIds = SQL_getUserIds;
+
+export const getSub = SQL_getSub;
 
 export const getUserSubs = SQL_getUserSubs;
 
@@ -36,23 +38,20 @@ export const getChannelSubs = SQL_getChannelSubs;
 
 export const getTwitterIdFromScreenName = SQL_getTwitterIdFromScreenName;
 
-export const addUserIfExists = async (twitterId, name) => {
+export const addUserIfNoExists = async (twitterId, name) => {
   const shouldAddUser = !(await hasUser(twitterId));
   if (shouldAddUser) {
     await addUser(twitterId, name);
-    createStream();
   }
 };
 
 // Add a subscription to this userId or update an existing one
-export const add = async ({ id: channelId, type }, twitterId, name, flags) => {
-  const res = await addSubscription(
-    channelId,
-    twitterId,
-    flags,
-    type === "dm" ? 1 : 0
-  );
-  addUserIfExists(twitterId, name);
+// Return values:
+// 0: Subscription added
+// 1: Subscription updated
+export const add = async (channelId, twitterId, name, flags, isDM) => {
+  const res = await addSubscription(channelId, twitterId, flags, isDM);
+  addUserIfNoExists(twitterId, name);
   return res;
 };
 
@@ -62,7 +61,6 @@ const deleteUserIfEmpty = async twitterId => {
   const subs = await getUserSubs(twitterId);
   if (subs.length === 0) {
     await rmUser(twitterId);
-    createStream();
   }
 };
 
