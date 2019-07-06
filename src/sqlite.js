@@ -6,9 +6,9 @@ let db = null;
 
 const GETINT = (val, alias = val) => `CAST(${val} AS TEXT) AS ${alias}`;
 
-export const open = () =>
+export const open = file =>
   new Promise((resolve, reject) => {
-    db = new sqlite3.Database(config.dbFile, err => {
+    db = new sqlite3.Database(file || config.dbFile, err => {
       if (err) reject(err);
       else {
         db.all(
@@ -17,11 +17,13 @@ export const open = () =>
           async (err, tables) => {
             if (err) reject(err);
             if (tables.length === 3) {
-              log(`Successfully opened database at ${config.dbFile}`);
+              log(`Successfully opened database at ${file || config.dbFile}`);
               resolve();
             } else {
               await initTables();
-              log(`Database at ${config.dbFile} successfully initialized`);
+              log(
+                `Database at ${file || config.dbFile} successfully initialized`
+              );
               resolve();
             }
           }
@@ -84,7 +86,7 @@ export const getSubscription = (channelId, twitterId, withName = false) =>
         ? `SELECT ${GETINT("subs.channelId", "channelId")}, ${GETINT(
             "subs.twitterId",
             "twitterId"
-          )}, name, flags, subs.isDM FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId = ? AND subs.twitterId = ?`
+          )}, name, flags, isDM FROM subs INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE subs.channelId = ? AND subs.twitterId = ?`
         : `SELECT ${GETINT("channelId")}, ${GETINT(
             "twitterId"
           )}, flags, isDM FROM subs WHERE channelId = ? AND twitterId = ?`,
