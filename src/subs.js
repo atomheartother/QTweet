@@ -80,7 +80,7 @@ export const rmChannel = async channelId => {
     await rm(channelId, twitterId);
   }
   SQL_rmChannel(channelId);
-  return subs.length();
+  return subs.length;
 };
 
 export const rmGuild = async guildId => {
