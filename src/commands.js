@@ -390,7 +390,7 @@ const channelInfo = async (args, qChannel) => {
   } else {
     qc = QChannel.unserialize({ channelId, isDM: true });
   }
-  if (!qc || !qc.id) {
+  if (!(await qc.obj())) {
     postMessage(
       qChannel,
       `I couldn't build a valid channel object with id: ${channelId}`

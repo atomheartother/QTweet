@@ -215,6 +215,43 @@ export const hasUser = async twitterId => {
   return !!row;
 };
 
+export const getAllSubs = async () =>
+  new Promise((resolve, reject) => {
+    db.all(
+      `SELECT ${GETINT("subs.channelId", "channelId")}, ${GETINT(
+        "twitterId"
+      )}, subs.isDM AS isDM, flags FROM subs`,
+      [],
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
+  });
+
+export const addChannel = async (channelId, guildId, ownerId, isDM) =>
+  new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO channels(channelId, guildId, ownerId, isDM) VALUES(?, ?, ?, ?)`,
+      [channelId, guildId, ownerId, isDM],
+      err => {
+        if (err) reject(err);
+        resolve(1);
+      }
+    );
+  });
+
+export const hasChannel = async channelId =>
+  new Promise((resolve, reject) => {
+    db.get(
+      `SELECT 1 FROM channels WHERE channelId=?`,
+      [channelId],
+      (err, row) => {
+        if (err) reject(err);
+        resolve(row !== undefined);
+      }
+    );
+  });
 export const hasSubscription = (twitterId, channelId) =>
   new Promise((resolve, reject) =>
     db.get(
@@ -254,16 +291,34 @@ export const addSubscription = async (channelId, twitterId, flags, isDM) => {
 };
 
 export const addUser = (twitterId, name) =>
-  new Promise((resolve, reject) =>
-    db.run(
-      `INSERT INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
-      [twitterId, name],
-      err => {
+  new Promise((resolve, reject) => {
+    db.get(
+      `SELECT 1 FROM twitterUsers WHERE twitterId = ?`,
+      [twitterId],
+      (err, row) => {
         if (err) reject(err);
-        resolve(1);
+        if (row) {
+          db.run(
+            "UPDATE twitterUsers SET name = ? WHERE twitterId = ?",
+            [name, twitterId],
+            err => {
+              if (err) reject(err);
+              resolve(0);
+            }
+          );
+        } else {
+          db.run(
+            `INSERT INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
+            [twitterId, name],
+            err => {
+              if (err) reject(err);
+              resolve(1);
+            }
+          );
+        }
       }
-    )
-  );
+    );
+  });
 
 export const rmUser = twitterId =>
   new Promise((resolve, reject) =>

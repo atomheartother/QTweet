@@ -6,7 +6,7 @@ import { fortune } from "fortune-teller";
 
 // Config file
 import * as config from "../config.json";
-import { rmChannel, rmGuild } from "./subs";
+import { rmChannel, rmGuild, sanityCheck } from "./subs";
 import QChannel from "./QChannel";
 
 // logging
@@ -111,18 +111,6 @@ export const handleMessage = message => {
 
   const { author, channel } = message;
   const qc = new QChannel(channel);
-  if (!qc || !qc.id) {
-    channel.send(
-      "**Something really weird just happened**\nWow, it appears I don't support whatever you're using to message me... My creator has been notified"
-    );
-    log("Couldn't create QChannel from channel");
-    log(`ChanID: ${channel.id}`);
-    log(`OwnrID: ${channel.guild.ownerID}`);
-    log(author);
-    log(channel.guild);
-    log(channel);
-    return;
-  }
   handleCommand(command, author, qc, args);
 };
 
@@ -160,8 +148,9 @@ export const handleGuildDelete = async ({ id, name }) => {
   if (users > 0) createStream();
 };
 
-export const handleReady = () => {
+export const handleReady = async () => {
   log("Successfully logged in to Discord");
+  await sanityCheck();
   createStream();
 };
 

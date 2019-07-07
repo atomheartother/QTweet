@@ -3,7 +3,7 @@ import Twitter from "twitter-lite";
 import * as pw from "../pw.json";
 
 import { isSet } from "./flags";
-import { getUserIds, getUserSubs } from "./subs";
+import { getUserIds, getUserSubs, updateUser } from "./subs";
 import Backup from "./backup";
 import log from "./log";
 
@@ -302,6 +302,7 @@ const streamData = async tweet => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
   }
+  updateUser(tweet.user);
 };
 
 const streamEnd = () => {

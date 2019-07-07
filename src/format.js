@@ -2,11 +2,9 @@
 
 import Discord from "discord.js";
 import * as config from "../config.json";
-import { getChannelSubs, getUserSubs, getUserIds } from "./subs";
+import { getChannelSubs, getUserSubs } from "./subs";
 import { embed as postEmbed, message as postMessage } from "./post";
-import { getUser } from "./discord";
 import { isSet } from "./flags";
-import { getUserInfo } from "./sqlite.js";
 import QChannel from "./QChannel.js";
 
 const defaults = {
