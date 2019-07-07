@@ -14,6 +14,7 @@
     "eslint": "^6.0.0",
     "esm": "^3.2.25",
     "fortune-teller": "latest",
-    "twitter-lite": "latest"
+    "twitter-lite": "latest",
+    "sqlite3": "latest"
   }
 }

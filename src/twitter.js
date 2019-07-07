@@ -2,12 +2,14 @@ import Twitter from "twitter-lite";
 
 import * as pw from "../pw.json";
 
-import * as subs from "./subs";
+import { isSet } from "./flags";
+import { getUserIds, getUserSubs, updateUser } from "./subs";
 import Backup from "./backup";
 import log from "./log";
 
 import { embed as postEmbed, message as postMessage } from "./post";
 import Stream from "./twitterStream";
+import QChannel from "./QChannel.js";
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -200,15 +202,6 @@ export const formatTweet = tweet => {
   };
   // For any additional files
   let files = null;
-  if (
-    subs.collection[user.id_str] &&
-    (!subs.collection[user.id_str].name ||
-      subs.collection[user.id_str].name !== user.screen_name)
-  ) {
-    // Add or update the username from that user
-    subs.collection[user.id_str].name = user.screen_name;
-    subs.save();
-  }
   const { text: formattedText, metadata } = formatTweetText(txt, entities);
   txt = formattedText;
   if (!hasMedia(tweet)) {
@@ -257,35 +250,46 @@ export const formatTweet = tweet => {
 
 // Takes a tweet and determines whether or not it should be posted with these flags
 const flagsFilter = (flags, tweet) => {
-  if (flags.notext && !hasMedia(tweet)) {
+  if (isSet(flags, "notext") && !hasMedia(tweet)) {
     return false;
   }
-  if (!flags.retweet && tweet.retweeted_status) {
+  if (!isSet(flags, "retweet") && tweet.retweeted_status) {
     return false;
   }
-  if (flags.noquote && tweet.is_quote_status) return false;
+  if (isSet(flags, "noquote") && tweet.is_quote_status) return false;
   return true;
 };
 
-const streamData = tweet => {
+export const getFilteredSubs = async tweet => {
   // Ignore invalid tweets
-  if (!isValid(tweet)) return;
-  // Reset the last tweet timeout
-  startTimeout();
+  if (!isValid(tweet)) return [];
   // Ignore tweets from people we don't follow, and replies unless they're replies to oneself (threads)
+  const subs = await getUserSubs(tweet.user.id_str);
   if (
-    !subs.collection[tweet.user.id_str] ||
+    !subs ||
+    subs.length === 0 ||
     (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id)
   )
-    return;
+    return [];
 
-  const twitterUserObject = subs.collection[tweet.user.id_str];
+  const targetSubs = [];
+  for (let i = 0; i < subs.length; i++) {
+    const { flags, channelId, isDM } = subs[i];
+    if (flagsFilter(flags, tweet)) {
+      const qChannel = QChannel.unserialize({ channelId, isDM });
+      targetSubs.push({ flags, qChannel });
+    }
+  }
+  return targetSubs;
+};
 
+const streamData = async tweet => {
+  // Reset the last tweet timeout
+  startTimeout();
+  const subs = await getFilteredSubs(tweet);
+  if (subs.length === 0) return;
   const { embed, metadata } = formatTweet(tweet);
-  const targetsubs = twitterUserObject.subs.filter(({ flags }) =>
-    flagsFilter(flags, tweet)
-  );
-  targetsubs.forEach(({ qChannel, flags }) => {
+  subs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && flags.ping) {
       log("Pinging @everyone", qChannel);
       postMessage(qChannel, "@everyone");
@@ -294,10 +298,11 @@ const streamData = tweet => {
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = formatTweet(tweet.quoted_status);
-    targetsubs.forEach(({ qChannel, flags }) => {
+    subs.forEach(({ flags, qChannel }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
   }
+  updateUser(tweet.user);
 };
 
 const streamEnd = () => {
@@ -346,16 +351,11 @@ export const createStream = async () => {
       streamEnd
     );
   }
-  let userIds = [];
   // Get all the user IDs
-  for (let id of Object.keys(subs.collection)) {
-    if (!subs.collection[id]) continue;
-
-    userIds.push(id);
-  }
+  const userIds = await getUserIds();
   // If there are none, we can just leave stream at null
-  if (userIds.length < 1) return;
-  stream.create(userIds);
+  if (!userIds || userIds.length < 1) return;
+  stream.create(userIds.map(({ twitterId }) => twitterId));
 };
 
 export const destroyStream = () => {
