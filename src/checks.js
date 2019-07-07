@@ -49,5 +49,5 @@ export const isDm = (author, qChannel, callback) => {
 };
 
 export const isNotDm = (author, qChannel, callback) => {
-  callback(qChannel.type !== "dm");
+  callback(!qChannel.isDM);
 };
