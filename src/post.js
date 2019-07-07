@@ -55,8 +55,9 @@ const handleDiscordPostError = async (
     retCode = 2;
     // The channel was deleted or we don't have access to it, auto-delete it
     // And notify the user
-    const count = rmChannel(qChannel.id);
-    logMsg = `${errCode}: Auto-deleted ${count} gets, qChannel removed`;
+    const { subs, users } = await rmChannel(qChannel.id);
+    log(error);
+    logMsg = `qChannel wasn't built: Auto-deleted ${subs} subs, ${users} users. qChannel removed`;
     channelToPostIn = "none";
     newType = "404 notification";
   } else if (
