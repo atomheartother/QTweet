@@ -57,7 +57,7 @@ const handleDiscordPostError = async (
     // And notify the user
     const count = rmChannel(qChannel.id);
     logMsg = `${errCode}: Auto-deleted ${count} gets, qChannel removed`;
-    newMsg = `**Inaccessible channel**: I tried to post in ${await qChannel.name()} but Discord says it doesn't exist anymore.\nI took the liberty of stopping all ${count} subscriptions in that channel.\n\nIf this isn't what you wanted, please contact my creator through our support server!`;
+    channelToPostIn = "none";
     newType = "404 notification";
   } else if (
     errCode === 403 ||
