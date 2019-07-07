@@ -284,7 +284,6 @@ export const removeSubscription = (channelId, twitterId) =>
         else if (row === undefined) {
           resolve(0);
         } else {
-          // TODO: delete
           db.run(
             "DELETE FROM subs WHERE channelId = ? AND twitterId = ?",
             [channelId, twitterId],
