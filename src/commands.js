@@ -55,6 +55,7 @@ const argParse = args => {
   }
   return { values, options };
 };
+
 const tweet = (args, qChannel, author) => {
   const { values, options } = argParse(args);
   let force = false;
@@ -278,12 +279,12 @@ const start = async (args, qChannel) => {
   });
 };
 
-const leaveGuild = (args, qChannel) => {
+const leaveGuild = async (args, qChannel) => {
   let guild = null;
-  if (args.length >= 1 && checks.isDm(null, qChannel)) {
+  if (args.length >= 1 && qChannel.isDM) {
     guild = getGuild(args[0]);
-  } else if (!checks.isDm(null, qChannel)) {
-    guild = qChannel.guild();
+  } else if (!qChannel.isDM) {
+    guild = await qChannel.guild();
   } else {
     postMessage(qChannel, "No valid guild ID provided");
     return;
@@ -297,8 +298,7 @@ const leaveGuild = (args, qChannel) => {
     .leave()
     .then(g => {
       log(`Left the guild ${g.name}`);
-      if (checks.isDm(null, qChannel))
-        postMessage(qChannel, `Left the guild ${g}`);
+      if (qChannel.isDM) postMessage(qChannel, `Left the guild ${g}`);
     })
     .catch(err => {
       log("Could not leave guild", qChannel);
@@ -311,8 +311,8 @@ const stop = (args, qChannel) => {
   userLookup({ screen_name: screenName })
     .then(async data => {
       let twitterId = data[0].id_str;
-      const res = await rm(qChannel.id, twitterId);
-      if (res === 0) {
+      const { subs } = await rm(qChannel.id, twitterId);
+      if (subs === 0) {
         postMessage(
           qChannel,
           `**Not subscribed to @${screenName}**\nUse \`${
@@ -465,7 +465,7 @@ const handleTwitterError = (qChannel, code, msg, screenNames) => {
     // Not found
     postMessage(
       qChannel,
-      `**Invalid name:${
+      `**Invalid name: ${
         screenNames[0]
       }**\nMake sure you enter the screen name and not the display name.`
     );
