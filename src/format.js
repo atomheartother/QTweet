@@ -21,7 +21,7 @@ const defaults = {
 
 export const formatQChannel = async qChannel => {
   const obj = await qChannel.obj();
-  let res = `**${qChannel.formattedName}**\n`;
+  let res = `**${await qChannel.formattedName()}**\n`;
   if (qChannel.isDM) {
     res += `**ID:** ${qChannel.id}\n`;
     res += `**CID:** ${obj.id}`;

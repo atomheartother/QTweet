@@ -58,7 +58,7 @@ class QChannel {
   }
 
   // Return a direct channel to the owner of this qChannel
-  async ownerObj() {
+  async owner() {
     if (this.isDM) {
       return getUserDm(this.id);
     }
@@ -71,7 +71,7 @@ class QChannel {
   }
 
   async sendToOwner(content, options = null) {
-    const c = await this.ownerObj();
+    const c = await this.owner();
     return c.send(content, options);
   }
 
