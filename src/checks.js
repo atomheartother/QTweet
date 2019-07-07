@@ -11,7 +11,7 @@ export const isMod = async (author, qChannel, callback) => {
   const guild = await qChannel.guild();
   const isSomeOwner =
     author.id === config.ownerID ||
-    (!!qChannel && author.id === (await qChannel.ownerID()));
+    (!!qChannel && author.id === (await qChannel.ownerId()));
   if (isSomeOwner)
     // The user is either the channel owner or us. We can just accept their command
     callback(true);
