@@ -8,7 +8,7 @@ export const isAdmin = (author, qChannel, callback) => {
 
 // Takes an author. checks that they're able to perform mod-level commands
 export const isMod = async (author, qChannel, callback) => {
-  const guild = qChannel.guild();
+  const guild = await qChannel.guild();
   const isSomeOwner =
     author.id === config.ownerID ||
     (!!qChannel && author.id === (await qChannel.ownerID()));

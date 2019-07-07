@@ -345,11 +345,17 @@ const stop = (args, qChannel) => {
 const stopchannel = async (args, qChannel) => {
   let targetChannel = qChannel.id;
   let channelName = await qChannel.name();
-  if (args.length > 0 && !qChannel.isDm) {
+  if (args.length > 0) {
+    if (qChannel.isDM) {
+      postMessage(
+        qChannel,
+        `**Use this command in the server you want to target**\nIn DMs, this command will affect your DM subscriptions so you don't have to use an argument`
+      );
+      return;
+    }
+    const guild = await qChannel.guild();
     targetChannel = args[0];
-    const channelObj = qChannel
-      .guild()
-      .channels.find(c => c.id === targetChannel);
+    const channelObj = guild.channels.find(c => c.id === targetChannel);
     if (!channelObj) {
       postMessage(
         qChannel,
@@ -357,7 +363,7 @@ const stopchannel = async (args, qChannel) => {
       );
       return;
     }
-    channelName = new QChannel(channelObj).name;
+    channelName = await new QChannel(channelObj).name();
   }
   const { users } = await rmChannel(targetChannel);
   log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
