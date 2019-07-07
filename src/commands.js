@@ -244,8 +244,12 @@ const start = async (args, qChannel) => {
     return;
   }
   const promises = [];
+  const gid = await qChannel.guildId();
+  const oid = await qChannel.ownerId();
   data.forEach(({ id_str: userId, screen_name: name }) => {
-    promises.push(add(qChannel.id, userId, name, flags, qChannel.isDM));
+    promises.push(
+      add(qChannel.id, userId, name, flags, qChannel.isDM, gid, oid)
+    );
   });
   Promise.all(promises).then(results => {
     let addedObjectName = `@${data[0].screen_name}`;

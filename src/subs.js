@@ -94,38 +94,37 @@ export const updateUser = async user => {
   }
 };
 
-export const addChannelIfNoExists = async (channelId, isDM) => {
+export const addChannelIfNoExists = async (
+  channelId,
+  guildId,
+  ownerId,
+  isDM
+) => {
   const shouldCreateChannel = !(await hasChannel(channelId));
   if (shouldCreateChannel) {
-    const qc = QChannel.unserialize({ channelId, isDM });
-    const obj = await qc.obj();
-    if (!obj) {
-      log(
-        `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`
-      );
-      return 0;
-    }
-    if (qc.isDM) {
-      await addChannel(channelId, channelId, channelId, qc.isDM);
-    } else {
-      await addChannel(
-        channelId,
-        await qc.guildId(),
-        await qc.ownerId(),
-        qc.isDM
-      );
-    }
+    await addChannel(channelId, guildId, ownerId, isDM);
     return 1;
   }
   return 0;
 };
 
 // Add a subscription to this userId or update an existing one
-export const add = async (channelId, twitterId, name, flags, isDM) => {
+export const add = async (
+  channelId,
+  twitterId,
+  name,
+  flags,
+  isDM,
+  guildId = channelId,
+  ownerId = channelId
+) => {
   const subs = await addSubscription(channelId, twitterId, flags, isDM);
   // If we didn't update any subs we don't have to check for new users
   const users = subs === 0 ? 0 : await addUserIfNoExists(twitterId, name);
-  const channels = subs === 0 ? 0 : await addChannelIfNoExists(channelId, isDM);
+  const channels =
+    subs === 0
+      ? 0
+      : await addChannelIfNoExists(channelId, guildId, ownerId, isDM);
   return { subs, users, channels };
 };
 
