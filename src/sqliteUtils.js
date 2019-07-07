@@ -42,70 +42,71 @@ getClient().on("ready", () => {
           }
         );
       const channels = {};
+      const usersStmt = db.prepare(
+        `INSERT INTO twitterUsers(twitterId, name) VALUES(?, ?)`
+      );
       Object.keys(collection).forEach(twitterId => {
-        const { name, subs } = collection[twitterId];
-        db.run(
-          `INSERT INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
-          [twitterId, name],
-          err => {
-            if (err) {
-              console.log(
-                `Error adding twitter user to twitterUsers: ${twitterId} ${name}`
-              );
-              console.error(err);
-            }
-          }
-        );
+        const { name } = collection[twitterId];
+        usersStmt.run([twitterId, name]);
+      });
+      usersStmt.finalize(err => {
+        if (err) {
+          console.log(`Error adding twitter users to twitterUsers`);
+          console.error(err);
+          return;
+        }
         const stmt = db.prepare(
           `INSERT INTO subs(twitterId, channelId, isDM, flags) VALUES (?, ?, ?, ?)`
         );
-        subs.forEach(({ qChannel, flags }) => {
-          if (!channels[qChannel.id]) {
-            channels[qChannel.id] = {
-              id: qChannel.id,
-              oid: qChannel.oid,
-              gid: qChannel.gid,
-              isDM: qChannel.isDM ? 1 : 0
-            };
-          }
-          stmt.run([
-            twitterId,
-            qChannel.id,
-            qChannel.isDM ? 1 : 0,
-            serialize(flags)
-          ]);
+        Object.keys(collection).forEach(twitterId => {
+          const { subs } = collection[twitterId];
+          subs.forEach(({ qChannel, flags }) => {
+            if (!channels[qChannel.id]) {
+              channels[qChannel.id] = {
+                id: qChannel.id,
+                oid: qChannel.oid,
+                gid: qChannel.gid,
+                isDM: qChannel.isDM ? 1 : 0
+              };
+            }
+            stmt.run([
+              twitterId,
+              qChannel.id,
+              qChannel.isDM ? 1 : 0,
+              serialize(flags)
+            ]);
+          });
         });
         stmt.finalize(err => {
           if (err) {
             console.error(err);
             return;
           }
+          const stmt = db.prepare(
+            "INSERT INTO channels(channelId, ownerId, guildId, isDM) VALUES(?,?,?,?)"
+          );
+          console.log(`Saving ${Object.keys(channels).length} channels`);
+          Object.keys(channels).forEach(channelId => {
+            const { id, oid, gid, isDM } = channels[channelId];
+            stmt.run([id, oid, gid, isDM]);
+          });
+          stmt
+            .finalize(err => {
+              if (err) {
+                console.log(`Error saving channels`);
+                console.log(err);
+              }
+            })
+            .close(err => {
+              if (err) {
+                console.log("Error closing db");
+                console.log(err);
+                return;
+              }
+              console.log("Database closed successfully");
+            });
         });
-        console.log(`Inserted subs for user ${twitterId}`);
       });
-      const stmt = db.prepare(
-        "INSERT INTO channels(channelId, ownerId, guildId, isDM) VALUES(?,?,?,?)"
-      );
-      console.log(`Saving ${Object.keys(channels).length} channels`);
-      Object.keys(channels).forEach(channelId => {
-        const { id, oid, gid, isDM } = channels[channelId];
-        stmt.run([id, oid, gid, isDM]);
-      });
-      stmt
-        .finalize(err => {
-          if (err) {
-            console.log(`Error saving channels`);
-            console.log(err);
-          }
-        })
-        .close(err => {
-          if (err) {
-            console.log("Error closing db");
-            console.log(err);
-            return;
-          }
-          console.log("Database closed successfully");
-        });
     });
   });
 });
