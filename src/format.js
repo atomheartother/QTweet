@@ -29,7 +29,7 @@ export const formatQChannel = async qChannel => {
     const owner = await qChannel.owner();
     const guild = await qChannel.guild();
     res += `**ID:** ${qChannel.id}\n`;
-    res += `**Own:** ${owner.tag} (${owner.id})\n`;
+    res += `**Own:** ${owner.recipient.tag} (${owner.recipient.id})\n`;
     res += `**Gld:** ${guild.name} (${guild.id}), ${guild.memberCount} members`;
   }
   return res;
