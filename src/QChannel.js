@@ -124,7 +124,7 @@ class QChannel {
   serialize() {
     return {
       id: this.id,
-      isDM: this.type === "dm"
+      isDM: this.isDM
     };
   }
 

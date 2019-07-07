@@ -345,7 +345,7 @@ const stop = (args, qChannel) => {
 const stopchannel = async (args, qChannel) => {
   let targetChannel = qChannel.id;
   let channelName = await qChannel.name();
-  if (args.length > 0 && qChannel.type !== "dm") {
+  if (args.length > 0 && !qChannel.isDm) {
     targetChannel = args[0];
     const channelObj = qChannel
       .guild()
