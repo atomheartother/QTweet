@@ -8,9 +8,10 @@ export const isAdmin = (author, qChannel, callback) => {
 
 // Takes an author. checks that they're able to perform mod-level commands
 export const isMod = async (author, qChannel, callback) => {
-  const guild = qChannel.guild();
+  const guild = await qChannel.guild();
   const isSomeOwner =
-    author.id === config.ownerID || (!!qChannel && author.id === qChannel.oid);
+    author.id === config.ownerID ||
+    (!!qChannel && author.id === (await qChannel.ownerId()));
   if (isSomeOwner)
     // The user is either the channel owner or us. We can just accept their command
     callback(true);
@@ -44,9 +45,9 @@ export const isMod = async (author, qChannel, callback) => {
 };
 
 export const isDm = (author, qChannel, callback) => {
-  callback(qChannel.type === "dm");
+  callback(qChannel.isDM);
 };
 
 export const isNotDm = (author, qChannel, callback) => {
-  callback(qChannel.type !== "dm");
+  callback(!qChannel.isDM);
 };

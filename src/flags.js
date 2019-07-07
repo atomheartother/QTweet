@@ -7,14 +7,7 @@ const FlagsEnum = Object.freeze({
   ping: 8
 });
 
-export const defaultFlags = (keys => {
-  let x = {};
-  keys.forEach(k => {
-    x[k] = false;
-  });
-  return x;
-})(Object.keys(FlagsEnum));
-
+// OBSOLETE
 // Returns a serialized int from flags
 export const serialize = flags => {
   let f = 0;
@@ -26,7 +19,8 @@ export const serialize = flags => {
   return f;
 };
 
-// Returns flags from a serialized int
+// OBSOLETE
+// Returns flags object from a serialized int
 export const unserialize = f => {
   const flags = {};
   Object.keys(FlagsEnum).forEach(k => {
@@ -35,13 +29,37 @@ export const unserialize = f => {
   return flags;
 };
 
-// Return flags from a bunch of strings
+// Return a serialized flag from a bunch of strings
 export const compute = options => {
-  const flags = { ...defaultFlags };
+  const flags = new Flags();
   options.forEach(opt => {
     if (FlagsEnum[opt]) {
-      flags[opt] = true;
+      flags.set(opt);
     }
   });
-  return flags;
+  return flags.serialize();
 };
+
+export const isSet = (val, flag) => val & FlagsEnum[flag];
+
+export class Flags {
+  constructor() {
+    this.val = 0;
+  }
+
+  set(flag) {
+    if (!(this.val & FlagsEnum[flag])) this.val += FlagsEnum[flag];
+  }
+
+  unset(flag) {
+    this.val -= this.val & FlagsEnum[flag];
+  }
+
+  isSet(flag) {
+    return this.val && FlagsEnum[flag];
+  }
+
+  serialize() {
+    return this.val;
+  }
+}

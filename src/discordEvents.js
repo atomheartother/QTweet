@@ -6,7 +6,7 @@ import { fortune } from "fortune-teller";
 
 // Config file
 import * as config from "../config.json";
-import * as subs from "./subs";
+import { rmChannel, rmGuild, sanityCheck } from "./subs";
 import QChannel from "./QChannel";
 
 // logging
@@ -111,18 +111,6 @@ export const handleMessage = message => {
 
   const { author, channel } = message;
   const qc = new QChannel(channel);
-  if (!qc || !qc.id) {
-    channel.send(
-      "**Something really weird just happened**\nWow, it appears I don't support whatever you're using to message me... My creator has been notified"
-    );
-    log("Couldn't create QChannel from channel");
-    log(`ChanID: ${channel.id}`);
-    log(`OwnrID: ${channel.guild.ownerID}`);
-    log(author);
-    log(channel.guild);
-    log(channel);
-    return;
-  }
   handleCommand(command, author, qc, args);
 };
 
@@ -137,7 +125,7 @@ export const handleError = ({ message, error }) => {
 export const handleGuildCreate = async guild => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
-  const qc = await QChannel.unserialize({ id: guild.ownerID, isDM: true });
+  const qc = QChannel.unserialize({ channelId: guild.ownerID, isDM: true });
   if (qc && qc.id)
     dm(
       qc,
@@ -154,28 +142,22 @@ export const handleGuildCreate = async guild => {
   }
 };
 
-export const handleGuildDelete = ({ id, name }) => {
+export const handleGuildDelete = async ({ id, name }) => {
   log(`Left guild ${name}`);
-  subs.rmGuild(id);
+  const { users } = await rmGuild(id);
+  if (users > 0) createStream();
 };
 
-export const handleReady = () => {
+export const handleReady = async () => {
   log("Successfully logged in to Discord");
-  subs.load(() => {
-    // All users have been registered, we can request the stream from Twitter
-    createStream();
-    // ... And save any changes we made
-    subs.save();
-  });
+  await sanityCheck();
+  createStream();
 };
 
-export const handleChannelDelete = channel => {
-  const count = subs.rmChannel(channel.id);
-  if (count > 0) {
-    log(
-      `Channel #${channel.name} (${
-        channel.id
-      }) deleted. Removed ${count} subscriptions.`
-    );
+export const handleChannelDelete = async ({ id, name }) => {
+  const { subs, users } = await rmChannel(id);
+  if (subs > 0) {
+    log(`Channel #${name} (${id}) deleted. Removed ${subs} subscriptions.`);
+    if (users > 0) createStream();
   }
 };

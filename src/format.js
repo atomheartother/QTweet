@@ -2,9 +2,10 @@
 
 import Discord from "discord.js";
 import * as config from "../config.json";
-import * as users from "./subs";
+import { getChannelSubs, getUserSubs } from "./subs";
 import { embed as postEmbed, message as postMessage } from "./post";
-import { getUser } from "./discord";
+import { isSet } from "./flags";
+import QChannel from "./QChannel.js";
 
 const defaults = {
   data: [],
@@ -18,18 +19,16 @@ const defaults = {
 
 export const formatQChannel = async qChannel => {
   const obj = await qChannel.obj();
-  let res = `**${qChannel.formattedName}**\n`;
-  if (qChannel.type === "dm") {
+  let res = `**${await qChannel.formattedName()}**\n`;
+  if (qChannel.isDM) {
     res += `**ID:** ${qChannel.id}\n`;
     res += `**CID:** ${obj.id}`;
   } else {
-    const owner = getUser(qChannel.oid);
-    const guild = qChannel.guild();
+    const owner = await qChannel.owner();
+    const guild = await qChannel.guild();
     res += `**ID:** ${qChannel.id}\n`;
-    res += `**Own:** ${owner.tag} (${qChannel.oid})\n`;
-    res += `**Gld:** ${guild.name} (${qChannel.gid}), ${
-      guild.memberCount
-    } members`;
+    res += `**Own:** ${owner.recipient.tag} (${owner.recipient.id})\n`;
+    res += `**Gld:** ${guild.name} (${guild.id}), ${guild.memberCount} members`;
   }
   return res;
 };
@@ -61,7 +60,10 @@ export const formatGenericList = async (
   let counter = 0;
   for (let i = 0; i < data.length; i++) {
     const elem = data[i];
-    embed.addField(formatTitle(elem, params), formatField(elem, params));
+    embed.addField(
+      await formatTitle(elem, params),
+      await formatField(elem, params)
+    );
     counter++;
     if (counter > 20) {
       page++;
@@ -78,32 +80,34 @@ export const formatGenericList = async (
   }
 };
 
-export const formatTwitterUserShort = userId => {
-  const twitterUser = users.collection[userId];
-  return twitterUser.name
-    ? `@${twitterUser.name} (https://twitter.com/${twitterUser.name})`
-    : userId;
-};
+export const formatTwitterUserShort = name =>
+  `@${name} (https://twitter.com/${name})`;
 
 export const formatFlags = flags =>
-  `With ${flags.notext ? "no text posts" : "text posts"}, ${
-    flags.retweet ? "retweets" : "no retweets"
-  }, ${flags.noquote ? "no quotes" : "quotes"}, pings ${
-    flags.ping ? "on" : "off"
+  `With ${isSet(flags, "notext") ? "no text posts" : "text posts"}, ${
+    isSet(flags, "retweet") ? "retweets" : "no retweets"
+  }, ${isSet(flags, "noquote") ? "no quotes" : "quotes"}, pings ${
+    isSet(flags, "ping") ? "on" : "off"
   }`;
 
-export const formatTwitterUser = (qChannel, id) => {
-  const tUser = users.collection[id];
+export const formatTwitterUser = async (qChannel, id) => {
+  const subs = await getUserSubs(id);
+  const subsWithQchannels = [];
+  for (let i = 0; i < subs.length; i++) {
+    const { channelId, flags, isDM } = subs[i];
+    subsWithQchannels.push({
+      flags,
+      qChannel: QChannel.unserialize({ channelId, isDM })
+    });
+  }
   formatGenericList(qChannel, {
-    data: tUser.subs,
-    formatTitle: ({ qChannel }) => qChannel.name,
-    formatField: ({ qChannel, flags }) =>
-      `**ID:** ${qChannel.id}\n**Type:** ${
-        qChannel.type === "dm" ? "dm" : "serv"
-      }\n${
-        qChannel.type === "dm"
+    data: subsWithQchannels,
+    formatTitle: async ({ qChannel }) => await qChannel.name(),
+    formatField: async ({ flags, qChannel }) =>
+      `**ID:** ${qChannel.id}\n**Type:** ${qChannel.isDM ? "dm" : "serv"}\n${
+        qChannel.isDM
           ? ""
-          : `**Gld:** ${qChannel.gid}\n**Own:** ${qChannel.oid}\n`
+          : `**Gld:** ${await qChannel.guildId()}\n**Own:** ${await qChannel.ownerId()}\n`
       }${formatFlags(flags)}`,
     noElements: `**This user has no subs**\nThis shouldn't happen`,
     objectName: "subscriptions"
@@ -111,11 +115,12 @@ export const formatTwitterUser = (qChannel, id) => {
 };
 
 export const formatChannelList = async (qChannel, targetChannel) => {
+  const subs = await getChannelSubs(targetChannel.id, true);
   formatGenericList(qChannel, {
-    data: users.getChannelGets(targetChannel.id),
-    formatTitle: ({ userId }) => formatTwitterUserShort(userId),
-    formatField: ({ userId, flags }) =>
-      `**ID:** ${userId}\n${formatFlags(flags)}`,
+    data: subs,
+    formatTitle: ({ name }) => formatTwitterUserShort(name),
+    formatField: ({ twitterId, flags }) =>
+      `**ID:** ${twitterId}\n${formatFlags(flags)}`,
     noElements: `**You're not subscribed to anyone**\nUse \`${
       config.prefix
     }start <screen_name>\` to get started!`,

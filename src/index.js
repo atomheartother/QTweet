@@ -1,5 +1,6 @@
 import log from "./log";
 import { login, getClient } from "./discord";
+import { init, close } from "./subs";
 import {
   handleMessage,
   handleError,
@@ -14,12 +15,20 @@ process.on("unhandledRejection", function(err) {
   log(err);
 });
 
-getClient()
-  .on("message", handleMessage)
-  .on("error", handleError)
-  .on("guildCreate", handleGuildCreate)
-  .on("guildDelete", handleGuildDelete)
-  .on("ready", handleReady)
-  .on("channelDelete", handleChannelDelete);
+process.on("exit", close);
 
-login();
+const start = async () => {
+  await init();
+  // Register discord handles
+  getClient()
+    .on("message", handleMessage)
+    .on("error", handleError)
+    .on("guildCreate", handleGuildCreate)
+    .on("guildDelete", handleGuildDelete)
+    .on("ready", handleReady)
+    .on("channelDelete", handleChannelDelete);
+  // Login
+  login();
+};
+
+start();

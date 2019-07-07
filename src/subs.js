@@ -1,311 +1,186 @@
-import fs from "fs";
-import * as config from "../config.json";
-import QChannel from "./QChannel";
-import { userLookup, createStream } from "./twitter";
-import { message as postMessage } from "./post";
 import {
-  serialize as serializeFlags,
-  unserialize as unserializeFlags,
-  defaultFlags
-} from "./flags";
-
+  getUserIds as SQL_getUserIds,
+  getUserSubs as SQL_getUserSubs,
+  getUniqueChannels as SQL_getUniqueChannels,
+  getGuildSubs as SQL_getGuildSubs,
+  getChannelSubs as SQL_getChannelSubs,
+  rmChannel as SQL_rmChannel,
+  getSubscription as SQL_getSub,
+  getUserFromScreenName as SQL_getUserFromScreenName,
+  rmUser as SQL_rmUser,
+  addSubscription,
+  removeSubscription,
+  hasUser,
+  getUserInfo as SQL_getUserInfo,
+  hasChannel,
+  addChannel,
+  getAllSubs,
+  addUser as SQL_addUser,
+  open as openDb,
+  close as closeDb,
+  getGuildChannels
+} from "./sqlite";
 import log from "./log";
+import QChannel from "./QChannel";
 
-// collection:
-// Dict of TwitterUser, using userId as key
-//  TwitterUser:
-//   name: screen name
-//   subs: Array of Subs
-//   Sub:
-//    qChannel: QChannel object, see QChannel.js
-//    flags: Flags object
-//    Flags:
-//      notext: Boolean, if true we don't post text posts to this channel
-//      retweet: Boolean, if true we post retweets to this channel
-export const collection = {};
+export const init = openDb;
+
+export const close = closeDb;
+
+export const getUserIds = SQL_getUserIds;
+
+export const getSub = SQL_getSub;
+
+export const getUserSubs = SQL_getUserSubs;
 
 // Returns a list of channel objects, each in an unique guild
-// DMs are also returned
-export const getUniqueChannels = async () => {
-  const qChannels = [];
-  const keysArray = Object.keys(collection);
-  for (let i = 0; i < keysArray.length; i++) {
-    const user = collection[keysArray[i]];
-    for (let j = 0; j < user.subs.length; j++) {
-      const getQChannel = user.subs[j].qChannel;
-      const { gid: getId } = getQChannel;
-      let unique = true;
-      for (let qcIdx = 0; qcIdx < qChannels.length; qcIdx++) {
-        const { gid: qcGOID } = await qChannels[qcIdx];
-        if (qcGOID === getId) {
-          unique = false;
-          break;
-        }
-      }
-      if (unique) qChannels.push(user.subs[j].qChannel);
-    }
+// DMs are also returned, as DMs are considered one-channel guilds
+export const getUniqueChannels = SQL_getUniqueChannels;
+
+// Returns a list of subscriptions matching this guild
+export const getGuildSubs = SQL_getGuildSubs;
+
+// Returns a list of subscriptions matching this channel
+export const getChannelSubs = SQL_getChannelSubs;
+
+export const getUserFromScreenName = SQL_getUserFromScreenName;
+
+export const addUser = SQL_addUser;
+
+export const addUserIfNoExists = async (twitterId, name) => {
+  const shouldAddUser = !(await hasUser(twitterId));
+  if (shouldAddUser) {
+    const users = await addUser(twitterId, name);
+    return users;
   }
-  return qChannels;
+  return 0;
 };
 
-// Returns a list of get objects matching this guild, with added userId of the get
-export const getGuildGets = async guildId => {
-  const gets = [];
-  const keysArray = Object.keys(collection);
-  for (let i = 0; i < keysArray.length; i++) {
-    const userId = keysArray[i];
-    const { subs } = collection[userId];
-    for (let j = 0; j < subs.length; j++) {
-      const get = subs[j];
-      if (get.qChannel.type === "dm") continue;
-      const { gid } = get.qChannel;
-      if (gid === guildId) {
-        gets.push({ ...get, userId });
-      }
+// Makes sure everything is consistent
+export const sanityCheck = async () => {
+  const allSubscriptions = await getAllSubs();
+  log(`Starting sanity check on ${allSubscriptions.length} subscriptions`);
+  for (let i = 0; i < allSubscriptions.length; i++) {
+    const sub = allSubscriptions[i];
+    const qc = QChannel.unserialize(sub);
+    const obj = await qc.obj();
+    if (!obj) {
+      const { subs, users } = await rmChannel(qc.id);
+      log(
+        `Found invalid qChannel: ${qc.id} (${
+          qc.isDM
+        }). Deleted ${subs} subs, ${users} users.`
+      );
+      continue;
+    }
+    const c = await addChannelIfNoExists(sub.channelId, sub.isDM);
+    if (c > 0) {
+      log(`Channel wasn't in channels table: ${sub.channelId}`);
+    }
+    const u = await addUserIfNoExists(sub.twitterId, "temp");
+    if (u > 0) {
+      log(`User ${sub.twitterId} wasn't in users table.`);
     }
   }
-  return gets;
+  log(`Sanity check completed.`);
 };
 
-// Returns a list of get objects matching this channel, with added userid of the get
-export const getChannelGets = channelId =>
-  Object.keys(collection).reduce(
-    (acc, userId) =>
-      acc.concat(
-        collection[userId].subs
-          .filter(get => get.qChannel.id === channelId)
-          .map(get => ({
-            ...get,
-            userId
-          }))
-      ),
-    []
-  );
+export const getUserInfo = SQL_getUserInfo;
 
-export const getTwitterIdFromScreenName = screenName => {
-  const array = Object.keys(collection);
-  for (let i = 0; i < array.length; i++) {
-    const userId = array[i];
-    if (collection[userId].name.toLowerCase() === screenName.toLowerCase())
-      return userId;
+export const updateUser = async user => {
+  const usrInfo = await getUserInfo(user.id_str);
+  if (!usrInfo || usrInfo.name !== user.screen_name) {
+    addUser(user.id_str, user.screen_name);
   }
-  return null;
 };
 
-export const save = () => {
-  // We save users as:
-  // {
-  //    "userId" : {name: "screen_name", subs: [{id: qChannel.id, f: Int (bitfields)}]}
-  // }
-
-  let usersCopy = {};
-  const idArray = Object.keys(collection);
-  for (let i = 0; i < idArray.length; i++) {
-    const userId = idArray[i];
-    // Iterate over twitter users
-    if (!collection[userId]) continue;
-    usersCopy[userId] = { subs: [] };
-    if (collection[userId].name) {
-      usersCopy[userId].name = collection[userId].name;
+export const addChannelIfNoExists = async (channelId, isDM) => {
+  const shouldCreateChannel = !(await hasChannel(channelId));
+  if (shouldCreateChannel) {
+    const qc = QChannel.unserialize({ channelId, isDM });
+    const obj = await qc.obj();
+    if (!obj) {
+      log(
+        `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`
+      );
+      return 0;
     }
-    for (const { qChannel, flags } of collection[userId].subs) {
-      usersCopy[userId].subs.push({
-        qc: qChannel.serialize(),
-        f: serializeFlags(flags)
-      });
+    if (qc.isDM) {
+      await addChannel(channelId, channelId, channelId, qc.isDM);
+    } else {
+      await addChannel(
+        channelId,
+        await qc.guildId(),
+        await qc.ownerId(),
+        qc.isDM
+      );
     }
+    return 1;
   }
-  let json = JSON.stringify(usersCopy);
-  fs.writeFile(config.getFile, json, "utf8", function(err) {
-    if (err !== null) {
-      log("Error saving users object:");
-      log(err);
-    }
-  });
-};
-
-export const load = callback => {
-  fs.stat(config.getFile, err => {
-    if (err) {
-      log(err);
-      return;
-    }
-    fs.readFile(config.getFile, "utf8", async (err, data) => {
-      if (err) {
-        log("There was a problem reading the config file");
-        return;
-      }
-      // Restore the channels object from saved file
-      let usersCopy = JSON.parse(data);
-      const idArray = Object.keys(usersCopy);
-      for (let i = 0; i < idArray.length; i++) {
-        const userId = idArray[i];
-
-        let name = usersCopy[userId].name ? usersCopy[userId].name : null;
-        // Support the old format where subs were named channels
-        const subList = usersCopy[userId].subs || usersCopy[userId].channels;
-        // Iterate over every subscription
-        for (const sub of subList) {
-          let qChannel = null;
-          if (sub.qc) {
-            // New format, we can unserialize
-            qChannel = await QChannel.unserialize(sub.qc);
-          } else if (sub.id) {
-            // Old format, no DMs
-            qChannel = new QChannel({ id: sub.id });
-          }
-          if (!qChannel || qChannel.id === null) {
-            log(
-              `Tried to load invalid qChannel for userId ${userId} (${name})`
-            );
-            log(sub);
-            continue;
-          }
-          let flags = null;
-          if (sub.f !== undefined) {
-            // New format, we unserialize flags
-            flags = unserializeFlags(sub.f);
-          } else if (sub.text === false) {
-            // Olf format, build flags and support the old text boolean
-            flags = {
-              ...defaultFlags,
-              notext: true
-            };
-          } else {
-            flags = defaultFlags;
-          }
-          add(qChannel, userId, name, flags);
-        }
-      }
-      callback();
-    });
-  });
+  return 0;
 };
 
 // Add a subscription to this userId or update an existing one
-export const add = (qChannel, userId, name, flags) => {
-  if (!collection[userId]) {
-    // Create the user object
-    collection[userId] = { subs: [] };
-  }
-  if (name !== null && !collection[userId].name !== name) {
-    collection[userId].name = name;
-  }
-
-  const idx = collection[userId].subs.findIndex(
-    get => get.qChannel.id == qChannel.id
-  );
-  if (idx > -1) {
-    // We already have a get from this channel for this user. Update it
-    collection[userId].subs[idx].flags = flags;
-  } else {
-    collection[userId].subs.push({
-      qChannel,
-      flags
-    });
-  }
+export const add = async (channelId, twitterId, name, flags, isDM) => {
+  const subs = await addSubscription(channelId, twitterId, flags, isDM);
+  // If we didn't update any subs we don't have to check for new users
+  const users = subs === 0 ? 0 : await addUserIfNoExists(twitterId, name);
+  const channels = subs === 0 ? 0 : await addChannelIfNoExists(channelId, isDM);
+  return { subs, users, channels };
 };
 
-// Remove a get from the user list
-// This function doesn't save to fs automatically
-export const rm = (qChannel, screenName) => {
-  userLookup({ screen_name: screenName })
-    .then(function(data) {
-      let userId = data[0].id_str;
-      if (!collection[userId]) {
-        postMessage(
-          qChannel,
-          "**You're not  subscribed to this user.**\nUse `" +
-            config.prefix +
-            "start " +
-            screenName +
-            "` to get started!"
-        );
-        return;
-      }
-      const idx = collection[userId].subs.findIndex(
-        ({ qChannel: { id } }) => qChannel.id == id
-      );
-      if (idx == -1) {
-        postMessage(
-          qChannel,
-          "**You're not subscribed to this user.**\nUse `" +
-            config.prefix +
-            "start " +
-            screenName +
-            "` to get started!"
-        );
-        return;
-      }
-      // Remove element from channels
-      collection[userId].subs.splice(idx, 1);
-      if (collection[userId].subs.length < 1) {
-        // If no one needs this user's tweets we can delete the entry
-        delete collection[userId];
-        // ...and re-register the stream, which will now delete the user
-        createStream();
-      }
-      postMessage(
-        qChannel,
-        `**I've unsubscribed you from @${screenName}!**\nYou should now stop getting any messages from them.`
-      );
-      save();
-    })
-    .catch(() => {
-      postMessage(qChannel, "I can't find a user by the name of " + screenName);
-    });
-};
+export const rmUser = SQL_rmUser;
 
-export const rmChannel = channelId => {
-  let count = 0;
-  let usersChanged = false;
-  // Remove all instances of this channel from our gets
-  Object.keys(collection).forEach(userId => {
-    let user = collection[userId];
-    var i = user.subs.length;
-    while (i--) {
-      if (channelId === user.subs[i].qChannel.id) {
-        count++;
-        // We should remove this get
-        user.subs.splice(i, 1);
-      }
-    }
-    if (user.subs.length < 1) {
-      // If no one needs this user's tweets we can delete the enty
-      delete collection[userId];
-      usersChanged = true;
-    }
-  });
-  // Save any changes we did to the users object
-  save();
-  // ...and re-register the stream, which will be properly updated
-  if (usersChanged) createStream();
-  return count;
-};
-
-export const rmGuild = async id => {
-  let usersChanged = false;
-  // Remove all instances of this guild from our gets
-  const keysArray = Object.keys(collection);
-  for (let i = keysArray.length - 1; i >= 0; i--) {
-    const userId = keysArray[i];
-    let user = collection[userId];
-    let x = user.subs.length;
-    while (x--) {
-      const { gid } = user.subs[x].qChannel;
-      if (id === gid) {
-        // We should remove this get
-        user.subs.splice(x, 1);
-      }
-    }
-    if (user.subs.length < 1) {
-      usersChanged = true;
-      // If no one needs this user's tweets we can delete the enty
-      delete collection[userId];
-    }
+const deleteUserIfEmpty = async twitterId => {
+  const subs = await getUserSubs(twitterId);
+  if (subs.length === 0) {
+    await rmUser(twitterId);
+    return 1;
   }
-  // Save any changes we did to the users object
-  save();
-  // ...and re-register the stream, which will be properly updated
-  if (usersChanged) createStream();
+  return 0;
+};
+
+const deleteChannelIfEmpty = async channelId => {
+  const subs = await getChannelSubs(channelId);
+  if (subs.length === 0) {
+    await rmChannel(channelId);
+    return 1;
+  }
+  return 0;
+};
+
+// Remove a subscription
+// If this user doesn't have any more subs, delete it as well
+export const rm = async (channelId, twitterId) => {
+  const subs = await removeSubscription(channelId, twitterId);
+  const users = subs === 0 ? 0 : await deleteUserIfEmpty(twitterId);
+  const channels = subs === 0 ? 0 : await deleteChannelIfEmpty(channelId);
+  return { subs, users, channels };
+};
+
+export const rmChannel = async channelId => {
+  const subArray = await getChannelSubs(channelId);
+  let deletedSubs = 0;
+  let deletedUsrs = 0;
+  for (let i = 0; i < subArray.length; i++) {
+    const { twitterId } = subArray[i];
+    const { subs, users } = await rm(channelId, twitterId);
+    deletedSubs += subs;
+    deletedUsrs += users;
+  }
+  SQL_rmChannel(channelId);
+  return { subs: deletedSubs, users: deletedUsrs };
+};
+
+export const rmGuild = async guildId => {
+  const channels = await getGuildChannels(guildId);
+  let deletedSubs = 0;
+  let deletedUsrs = 0;
+  for (let i = 0; i < channels.length; i++) {
+    const { channelId } = channels[i];
+    const { subs, users } = await rmChannel(channelId);
+    deletedSubs += subs;
+    deletedUsrs += users;
+  }
+  return { subs: deletedSubs, users: deletedUsrs, channels: channels.length };
 };

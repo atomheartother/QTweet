@@ -8,7 +8,13 @@ import {
   embed as postEmbed,
   announcement
 } from "./post";
-import * as subs from "./subs";
+import {
+  rm,
+  add,
+  getUniqueChannels,
+  getUserFromScreenName,
+  rmChannel
+} from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
 import { formatChannelList, formatQChannel, formatTwitterUser } from "./format";
@@ -49,6 +55,7 @@ const argParse = args => {
   }
   return { values, options };
 };
+
 const tweet = (args, qChannel, author) => {
   const { values, options } = argParse(args);
   let force = false;
@@ -236,52 +243,48 @@ const start = async (args, qChannel) => {
     }
     return;
   }
-  let redoStream = false;
-  let addedObjectName = `@${data[0].screen_name}`;
-  if (data.length > 1 && data.length < 10) {
-    addedObjectName = `${data.length} users: ${data.reduce(
-      (acc, { screen_name }, idx) => {
-        if (idx === data.length - 1) {
-          return acc.concat(` and ${screen_name}`);
-        } else if (idx === 0) {
-          return screen_name;
-        }
-        return acc.concat(`, ${screen_name}`);
-      },
-      ""
-    )}`;
-  } else if (data.length >= 10) {
-    addedObjectName = `${data.length} twitter users`;
-  }
+  const promises = [];
   data.forEach(({ id_str: userId, screen_name: name }) => {
-    if (!redoStream && !subs.collection[userId]) {
-      redoStream = true;
-    }
-    subs.add(qChannel, userId, name, flags);
+    promises.push(add(qChannel.id, userId, name, flags, qChannel.isDM));
   });
-  let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
-    config.prefix
-  }stop ${
-    data.length === 1 ? data[0].screen_name : "<screen_name>"
-  }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
-  if (totalScreenNames !== data.length) {
-    channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
-  }
-  postMessage(qChannel, channelMsg);
-  log(`Added ${addedObjectName}`, qChannel);
-  // Re-register the stream if we didn't know the user before
-  if (redoStream) {
-    createStream();
-  }
-  subs.save();
+  Promise.all(promises).then(results => {
+    let addedObjectName = `@${data[0].screen_name}`;
+    if (data.length > 1 && data.length < 10) {
+      addedObjectName = `${data.length} users: ${data.reduce(
+        (acc, { screen_name }, idx) => {
+          if (idx === data.length - 1) {
+            return acc.concat(` and ${screen_name}`);
+          } else if (idx === 0) {
+            return screen_name;
+          }
+          return acc.concat(`, ${screen_name}`);
+        },
+        ""
+      )}`;
+    } else if (data.length >= 10) {
+      addedObjectName = `${data.length} twitter users`;
+    }
+    let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
+      config.prefix
+    }stop ${
+      data.length === 1 ? data[0].screen_name : "<screen_name>"
+    }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
+    if (totalScreenNames !== data.length) {
+      channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
+    }
+    postMessage(qChannel, channelMsg);
+    log(`Added ${addedObjectName}`, qChannel);
+    const redoStream = !!results.find(({ users }) => users !== 0);
+    if (redoStream) createStream();
+  });
 };
 
-const leaveGuild = (args, qChannel) => {
+const leaveGuild = async (args, qChannel) => {
   let guild = null;
-  if (args.length >= 1 && checks.isDm(null, qChannel)) {
+  if (args.length >= 1 && qChannel.isDM) {
     guild = getGuild(args[0]);
-  } else if (!checks.isDm(null, qChannel)) {
-    guild = qChannel.guild();
+  } else if (!qChannel.isDM) {
+    guild = await qChannel.guild();
   } else {
     postMessage(qChannel, "No valid guild ID provided");
     return;
@@ -295,8 +298,7 @@ const leaveGuild = (args, qChannel) => {
     .leave()
     .then(g => {
       log(`Left the guild ${g.name}`);
-      if (checks.isDm(null, qChannel))
-        postMessage(qChannel, `Left the guild ${g}`);
+      if (qChannel.isDM) postMessage(qChannel, `Left the guild ${g}`);
     })
     .catch(err => {
       log("Could not leave guild", qChannel);
@@ -306,18 +308,55 @@ const leaveGuild = (args, qChannel) => {
 
 const stop = (args, qChannel) => {
   const screenName = getScreenName(args[0]);
-  log(`Removed ${screenName}`, qChannel);
-  subs.rm(qChannel, screenName);
+  userLookup({ screen_name: screenName })
+    .then(async data => {
+      let twitterId = data[0].id_str;
+      const { subs, users } = await rm(qChannel.id, twitterId);
+      if (subs === 0) {
+        postMessage(
+          qChannel,
+          `**Not subscribed to @${screenName}**\nUse \`${
+            config.prefix
+          }list\` for a list of subscriptions!`
+        );
+      } else {
+        postMessage(
+          qChannel,
+          `**I've unsubscribed you from @${screenName}**\nYou should stop getting any tweets from them.`
+        );
+        if (users > 0) createStream();
+      }
+    })
+    .catch(function(response) {
+      const { code, msg } = getError(response);
+      if (!code) {
+        log("Exception thrown without error", qChannel);
+        log(response, qChannel);
+        postMessage(
+          qChannel,
+          `**Something went wrong trying to unsubscribe from ${screenName}**\nI'm looking into it, sorry for the trouble!`
+        );
+        return;
+      } else {
+        handleTwitterError(qChannel, code, msg, [screenName]);
+      }
+    });
 };
 
-const stopchannel = (args, qChannel) => {
+const stopchannel = async (args, qChannel) => {
   let targetChannel = qChannel.id;
-  let channelName = qChannel.name;
-  if (args.length > 0 && qChannel.type !== "dm") {
+  let channelName = await qChannel.name();
+  if (args.length > 0) {
+    if (qChannel.isDM) {
+      postMessage(
+        qChannel,
+        `**Use this command in the server you want to target**\nIn DMs, this command will affect your DM subscriptions so you don't have to use an argument`
+      );
+      return;
+    }
+    const guild = await qChannel.guild();
     targetChannel = args[0];
-    const channelObj = qChannel
-      .guild()
-      .channels.find(c => c.id === targetChannel);
+    const channelObj = guild.channels.find(c => c.id === targetChannel);
     if (!channelObj) {
       postMessage(
         qChannel,
@@ -325,13 +364,13 @@ const stopchannel = (args, qChannel) => {
       );
       return;
     }
-    channelName = new QChannel(channelObj).name;
+    channelName = await new QChannel(channelObj).name();
   }
-  const count = subs.rmChannel(targetChannel);
+  const { users } = await rmChannel(targetChannel);
   log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
   postMessage(
     qChannel,
-    `**I've unsubscribed you from ${count} users**\nYou should now stop getting any tweets in ${channelName}.`
+    `**I've unsubscribed you from ${users} users**\nYou should now stop getting any tweets in ${channelName}.`
   );
 };
 
@@ -340,21 +379,21 @@ const list = (args, qChannel) => {
 };
 
 const channelInfo = async (args, qChannel) => {
-  const id = args.shift();
-  if (!id) {
+  const channelId = args.shift();
+  if (!channelId) {
     postMessage(qChannel, "Usage: `!!admin c <id>`");
     return;
   }
   let qc = null;
-  if (getChannel(id)) {
-    qc = await QChannel.unserialize({ id, isDM: false });
+  if (getChannel(channelId)) {
+    qc = QChannel.unserialize({ channelId, isDM: false });
   } else {
-    qc = await QChannel.unserialize({ id, isDM: true });
+    qc = QChannel.unserialize({ channelId, isDM: true });
   }
-  if (!qc || !qc.id) {
+  if (!(await qc.obj())) {
     postMessage(
       qChannel,
-      `I couldn't build a valid channel object with id: ${id}`
+      `I couldn't build a valid channel object with id: ${channelId}`
     );
     return;
   }
@@ -363,18 +402,18 @@ const channelInfo = async (args, qChannel) => {
   formatChannelList(qChannel, qc);
 };
 
-const twitterInfo = (args, qChannel) => {
+const twitterInfo = async (args, qChannel) => {
   const screenName = args.shift();
   if (!screenName) {
     postMessage(qChannel, "Usage: `!!admin t <screenName>`");
     return;
   }
-  const id = subs.getTwitterIdFromScreenName(screenName);
-  if (!id) {
+  const user = await getUserFromScreenName(screenName);
+  if (!user) {
     postMessage(qChannel, `We're not getting any user called @${screenName}`);
     return;
   }
-  formatTwitterUser(qChannel, id);
+  formatTwitterUser(qChannel, user.twitterId);
 };
 
 const admin = (args, qChannel) => {
@@ -397,9 +436,9 @@ const admin = (args, qChannel) => {
 
 const announce = async args => {
   const msg = args.join(" ");
-  const qChannels = await subs.getUniqueChannels();
-  log(`Posting announcement to ${qChannels.length} channels`);
-  announcement(msg, qChannels);
+  const channels = await getUniqueChannels();
+  log(`Posting announcement to ${channels.length} channels`);
+  announcement(msg, channels);
 };
 
 const handleTwitterError = (qChannel, code, msg, screenNames) => {
@@ -427,7 +466,7 @@ const handleTwitterError = (qChannel, code, msg, screenNames) => {
     // Not found
     postMessage(
       qChannel,
-      `**Invalid name:${
+      `**Invalid name: ${
         screenNames[0]
       }**\nMake sure you enter the screen name and not the display name.`
     );
