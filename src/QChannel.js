@@ -25,7 +25,7 @@ class QChannel {
   // Created from a discord channel object
   constructor({ id, type, recipient }) {
     // Check validity of object
-    this.id = type === "dm" ? recipient.id : id;
+    this.id = type === "dm" && recipient ? recipient.id : id;
     this.isDM = type === "dm";
   }
 
