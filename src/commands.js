@@ -311,7 +311,7 @@ const stop = (args, qChannel) => {
   userLookup({ screen_name: screenName })
     .then(async data => {
       let twitterId = data[0].id_str;
-      const { subs } = await rm(qChannel.id, twitterId);
+      const { subs, users } = await rm(qChannel.id, twitterId);
       if (subs === 0) {
         postMessage(
           qChannel,
@@ -324,6 +324,7 @@ const stop = (args, qChannel) => {
           qChannel,
           `**I've unsubscribed you from @${screenName}**\nYou should stop getting any tweets from them.`
         );
+        if (users > 0) createStream();
       }
     })
     .catch(function(response) {

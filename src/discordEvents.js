@@ -154,9 +154,10 @@ export const handleGuildCreate = async guild => {
   }
 };
 
-export const handleGuildDelete = ({ id, name }) => {
+export const handleGuildDelete = async ({ id, name }) => {
   log(`Left guild ${name}`);
-  rmGuild(id);
+  const { users } = await rmGuild(id);
+  if (users > 0) createStream();
 };
 
 export const handleReady = () => {
@@ -165,8 +166,9 @@ export const handleReady = () => {
 };
 
 export const handleChannelDelete = async ({ id, name }) => {
-  const { subs } = await rmChannel(id);
+  const { subs, users } = await rmChannel(id);
   if (subs > 0) {
     log(`Channel #${name} (${id}) deleted. Removed ${subs} subscriptions.`);
+    if (users > 0) createStream();
   }
 };
