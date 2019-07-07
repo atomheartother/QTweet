@@ -6,7 +6,7 @@ import { fortune } from "fortune-teller";
 
 // Config file
 import * as config from "../config.json";
-import * as subs from "./subs";
+import { rmChannel, rmGuild } from "./subs";
 import QChannel from "./QChannel";
 
 // logging
@@ -156,7 +156,7 @@ export const handleGuildCreate = async guild => {
 
 export const handleGuildDelete = ({ id, name }) => {
   log(`Left guild ${name}`);
-  subs.rmGuild(id);
+  rmGuild(id);
 };
 
 export const handleReady = () => {
@@ -164,9 +164,9 @@ export const handleReady = () => {
   createStream();
 };
 
-export const handleChannelDelete = ({ id, name }) => {
-  const { subs: count } = subs.rmChannel(id);
-  if (count > 0) {
-    log(`Channel #${name} (${id}) deleted. Removed ${count} subscriptions.`);
+export const handleChannelDelete = async ({ id, name }) => {
+  const { subs } = await rmChannel(id);
+  if (subs > 0) {
+    log(`Channel #${name} (${id}) deleted. Removed ${subs} subscriptions.`);
   }
 };
