@@ -4,8 +4,8 @@ export default async (message, qChannel = null) => {
     const obj = await qChannel.obj();
     const channelInfo = `[${
       obj
-        ? `${qChannel.id} -- ${await qChannel.formattedName()}}`
-        : `${qChannel.id} - ${qChannel.isDM}`
+        ? await qChannel.formattedName()
+        : `${qChannel.id} -- ${qChannel.isDM}`
     }]`;
     console.log(`${dateString}:${channelInfo}`, message);
   } else {
