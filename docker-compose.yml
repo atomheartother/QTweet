@@ -8,6 +8,7 @@ services:
       - qtweetData:/usr/src/app/data/
     environment:
       - TZ=Europe/Paris
+    container_name: qtweet
 
 volumes:
   qtweetData:
