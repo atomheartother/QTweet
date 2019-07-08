@@ -4,7 +4,7 @@
   "description": "A cute bot who cross-posts twitter posts to Discord",
   "main": "src/index.js",
   "scripts": {
-    "start": "node -r esm src/index.js"
+    "start": "node --max_old_space_size=1024 -r esm src/index.js"
   },
   "author": "Thomas Navennec",
   "license": "AGPL-3.0",
