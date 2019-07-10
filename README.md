@@ -147,10 +147,28 @@ Some stuff is already variable, you can change the configuration variables in `c
 
 QTweet is designed to do one thing and do it well, I don't care much to make it too multifunction like a lot of Discord bots tend to be. However if you think a feature would work with her specific purpose then feel free to drop an issue. Even better, implement it yourself and make a PR!
 
-# Motivation, Philosophy, Legal notice
+# Philosophy, Privacy, Legal Notice
 
-I don't like Twitter but I like a few accounts on it. This is my solution. I value privacy above all, and none of your personal data or messages are being stored anywhere, QTweet only keeps records of what she needs to know (channel ids, twitter usernames, and that's about it), and doesn't record any personal information, nor does she even store a record of which tweets she forwards to your server.
+I don't like Twitter but I like a few accounts on it. This is my solution. I value privacy above all, and none of your personal data or messages are being stored anywhere, QTweet only keeps records of what she needs to know and doesn't record any personal information, nor does she even store a record of which tweets she forwards to your server.
 
-I am able to see which servers she's used in, for the purposes of debugging and contacting server owners. That's about it.
+In an effort of transparency, here's what I believe to be an exhaustive list of what QTweet stores and what I can access.
+
+In the database, which I make regular backups of (I do eventually remove outdated backups, however that is manual and I have no guarantee for how long your data is stored):
+
+- Twitter IDs and screen names of accounts you subscribed to, which are necessary for her to function
+- Channel ID, guild ID and owner ID for every channel she has at least a single subscription in, which I need to link subscriptions to channels and to be able to keep track of per-guild subscriptions.
+
+Some additional info is displayed in my logs, which are lost when I reboot QTweet:
+
+- The channel name, guild name and channel ID for the relevant channel, I like to have the names as they give me an idea of where QTweet is being used and make my logs more pleasant to look at, the channelID lets me look into bugs.
+- When a command runs, I display the author's tag and the full command, to be able to debug when something goes wrong.
+
+Additionally, in real-time, I may ask QTweet for some additional info for debugging purposes, which may be stored indefinitely in my private chat with QTweet since I use Discord to communicate with her:
+
+- Display names and links to the accounts you're subscribed to, to be able to debug eventual problems when you come to me with a report.
+- Channel names, server name, number of server members, which are nice for me to know, again to know how QTweet is being used.
+- Tag of the server owner, to be able to contact them.
+
+QTweet herself may have access to a _lot_ more data, like every bot, including but not limited to every single message that's in channels she can see & the tag of every single user in your server, however **I do not ever access or store that data**.
 
 By using QTweet's commands you agree that you are responsible for the content you have QTweet repost to your respective servers. I can't be held liable for any illegal content or any content breaking Discord's TOS which makes its way onto your servers by way of my bot. By accepting automatic tweets from an account into a channel, you are expressing your trust that this account will post content that respects the channel's rules, and Discord's rules. I do not monitor content posted automatically but if I come upon anything illegal I will remove it and report you to Discord.
