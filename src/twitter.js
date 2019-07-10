@@ -155,7 +155,11 @@ const formatTweetText = (text, entities) => {
         .concat(codePoints.slice(end + offset));
       offset += nt.length - (end - start);
     });
-  let fixedText = codePoints.join("").replace(new RegExp(/&amp;/, "g"), "&");
+  let fixedText = codePoints
+    .join("")
+    .replace(/&amp;/g, "&")
+    .replace(/&gt;/g, ">")
+    .replace(/&lt;/g, "<");
   const linkIdx = fixedText.indexOf("https://t.co/");
   if (linkIdx > -1) {
     fixedText = fixedText.substring(0, linkIdx);
