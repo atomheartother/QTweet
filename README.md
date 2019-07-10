@@ -155,20 +155,20 @@ In an effort of transparency, here's what I believe to be an exhaustive list of 
 
 In the database, which I make regular backups of (I do eventually remove outdated backups, however that is manual and I have no guarantee for how long your data is stored):
 
-- Twitter IDs and screen names of accounts you subscribed to, which are necessary for her to function
-- Channel ID, guild ID and owner ID for every channel she has at least a single subscription in, which I need to link subscriptions to channels and to be able to keep track of per-guild subscriptions.
+- **Twitter IDs** and **screen names** of accounts you subscribed to, which are necessary for her to function
+- **Channel ID**, **Guild ID** and **owner ID** for every channel she has at least a single subscription in, which I need to link subscriptions to channels and to be able to keep track of per-guild subscriptions.
 
 Some additional info is displayed in my logs, which are lost when I reboot QTweet:
 
-- The channel name, guild name and channel ID for the relevant channel, I like to have the names as they give me an idea of where QTweet is being used and make my logs more pleasant to look at, the channelID lets me look into bugs.
-- When a command runs, I display the author's tag and the full command, to be able to debug when something goes wrong.
-- **In some cases of error** I'll display the contents of the message QTweet was trying to send to your channel. This is the only case of me directly accessing tweet data, and it is quite rare.
+- The **channel name**, **guild name** and **channel ID** for the relevant channel, I like to have the names as they give me an idea of where QTweet is being used and make my logs more pleasant to look at, the channelID lets me look into bugs.
+- When a command runs, I display the **author's tag** and the full command, to be able to debug when something goes wrong.
+- In some cases of error I'll display the **contents of the message** QTweet was trying to send to your channel. If it was a tweet, this is the only case of me directly accessing tweet data, and it is quite rare. I do this to be able to debug errors.
 
 Additionally, in real-time, I may ask QTweet for some additional info for debugging purposes, which may be stored indefinitely in my private chat with QTweet since I use Discord to communicate with her:
 
-- Display names and links to the accounts you're subscribed to, to be able to debug eventual problems when you come to me with a report.
-- Channel names, server name, number of server members, which are nice for me to know, again to know how QTweet is being used.
-- Tag of the server owner, to be able to contact them.
+- **Display names and links** to the accounts you're subscribed to, to be able to debug eventual problems when you come to me with a report.
+- **Channel names**, **server name**, **number of server members**, which are nice for me to know, again to know how QTweet is being used.
+- **Server Owner's tag**, to be able to contact them.
 
 QTweet herself may have access to a _lot_ more data, like every bot, including but not limited to every single message that's in channels she can see & the tag of every single user in your server, however **I do not ever access or store that data**.
 
