@@ -210,11 +210,6 @@ export const getUserFromScreenName = name =>
     );
   });
 
-export const hasUser = async twitterId => {
-  const row = await getUserInfo(twitterId);
-  return !!row;
-};
-
 export const getAllSubs = async () =>
   new Promise((resolve, reject) => {
     db.all(
@@ -232,90 +227,47 @@ export const getAllSubs = async () =>
 export const addChannel = async (channelId, guildId, ownerId, isDM) =>
   new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO channels(channelId, guildId, ownerId, isDM) VALUES(?, ?, ?, ?)`,
+      `INSERT OR IGNORE INTO channels(channelId, guildId, ownerId, isDM) VALUES(?, ?, ?, ?)`,
       [channelId, guildId, ownerId, isDM],
-      err => {
+      function(err) {
         if (err) reject(err);
-        resolve(1);
+        resolve(this.changes !== 0 ? 1 : 0);
       }
     );
   });
-
-export const hasChannel = async channelId =>
-  new Promise((resolve, reject) => {
-    db.get(
-      `SELECT 1 FROM channels WHERE channelId=?`,
-      [channelId],
-      (err, row) => {
-        if (err) reject(err);
-        resolve(row !== undefined);
-      }
-    );
-  });
-export const hasSubscription = (twitterId, channelId) =>
-  new Promise((resolve, reject) =>
-    db.get(
-      `SELECT 1 FROM subs WHERE twitterId=? AND channelId=?`,
-      [twitterId, channelId],
-      (err, row) => {
-        if (err) reject(err);
-        resolve(row !== undefined);
-      }
-    )
-  );
 
 // Return value: how many subs were created. If 0, sub was updated.
-export const addSubscription = async (channelId, twitterId, flags, isDM) => {
-  const subExists = await hasSubscription(twitterId, channelId);
-  return await new Promise((resolve, reject) => {
-    if (subExists) {
-      db.run(
-        "UPDATE subs SET flags = ? WHERE channelId = ? AND twitterId = ?",
-        [flags, channelId, twitterId],
-        err => {
-          if (err) reject(err);
-          resolve(0);
-        }
-      );
-    } else {
-      db.run(
-        "INSERT INTO subs(channelId, twitterId, flags, isDM) VALUES(?, ?, ?, ?)",
-        [channelId, twitterId, flags, isDM],
-        err => {
-          if (err) reject(err);
-          resolve(1);
-        }
-      );
-    }
-  });
-};
-
-export const addUser = (twitterId, name) =>
+export const addSubscription = async (channelId, twitterId, flags, isDM) =>
   new Promise((resolve, reject) => {
-    db.get(
-      `SELECT 1 FROM twitterUsers WHERE twitterId = ?`,
-      [twitterId],
-      (err, row) => {
+    db.run(
+      "INSERT OR IGNORE INTO subs(channelId, twitterId, flags, isDM) VALUES(?, ?, ?, ?)",
+      [channelId, twitterId, flags, isDM],
+      function(err) {
         if (err) reject(err);
-        if (row) {
+        if (this.changes !== 0) {
+          resolve(1);
+        } else {
           db.run(
-            "UPDATE twitterUsers SET name = ? WHERE twitterId = ?",
-            [name, twitterId],
+            "UPDATE subs SET flags=? WHERE channelId = ? AND twitterId = ?",
+            [flags, channelId, twitterId],
             err => {
               if (err) reject(err);
               resolve(0);
             }
           );
-        } else {
-          db.run(
-            `INSERT INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
-            [twitterId, name],
-            err => {
-              if (err) reject(err);
-              resolve(1);
-            }
-          );
         }
+      }
+    );
+  });
+
+export const addUser = (twitterId, name) =>
+  new Promise((resolve, reject) => {
+    db.run(
+      `INSERT OR IGNORE INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
+      [twitterId, name],
+      function(err) {
+        if (err) reject(err);
+        resolve(this.changes !== 0 ? 1 : 0);
       }
     );
   });
