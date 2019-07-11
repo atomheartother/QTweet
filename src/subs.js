@@ -10,9 +10,7 @@ import {
   rmUser as SQL_rmUser,
   addSubscription,
   removeSubscription,
-  hasUser,
   getUserInfo as SQL_getUserInfo,
-  hasChannel,
   addChannel,
   getAllSubs,
   addUser as SQL_addUser,
@@ -48,12 +46,7 @@ export const getUserFromScreenName = SQL_getUserFromScreenName;
 export const addUser = SQL_addUser;
 
 export const addUserIfNoExists = async (twitterId, name) => {
-  const shouldAddUser = !(await hasUser(twitterId));
-  if (shouldAddUser) {
-    const users = await addUser(twitterId, name);
-    return users;
-  }
-  return 0;
+  return addUser(twitterId, name);
 };
 
 // Makes sure everything is consistent
@@ -90,34 +83,30 @@ export const getUserInfo = SQL_getUserInfo;
 export const updateUser = async user => {
   const usrInfo = await getUserInfo(user.id_str);
   if (!usrInfo || usrInfo.name !== user.screen_name) {
-    addUser(user.id_str, user.screen_name);
+    return addUser(user.id_str, user.screen_name);
   }
+  return 0;
 };
 
 export const addChannelIfNoExists = async (channelId, isDM) => {
-  const shouldCreateChannel = !(await hasChannel(channelId));
-  if (shouldCreateChannel) {
-    const qc = QChannel.unserialize({ channelId, isDM });
-    const obj = await qc.obj();
-    if (!obj) {
-      log(
-        `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`
-      );
-      return 0;
-    }
-    if (qc.isDM) {
-      await addChannel(channelId, channelId, channelId, qc.isDM);
-    } else {
-      await addChannel(
-        channelId,
-        await qc.guildId(),
-        await qc.ownerId(),
-        qc.isDM
-      );
-    }
-    return 1;
+  const qc = QChannel.unserialize({ channelId, isDM });
+  const obj = await qc.obj();
+  if (!obj) {
+    log(
+      `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`
+    );
+    return 0;
   }
-  return 0;
+  if (qc.isDM) {
+    return await addChannel(channelId, channelId, channelId, qc.isDM);
+  } else {
+    return await addChannel(
+      channelId,
+      await qc.guildId(),
+      await qc.ownerId(),
+      qc.isDM
+    );
+  }
 };
 
 // Add a subscription to this userId or update an existing one
