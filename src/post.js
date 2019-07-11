@@ -101,6 +101,7 @@ const handleDiscordPostError = async (
     }`;
     channelToPostIn = "none";
   }
+  log(qChannel);
   log(`${logMsg} (attempt #${errorCount})`, qChannel);
   if (channelToPostIn !== "none") {
     const targetChannel =
