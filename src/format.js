@@ -2,7 +2,7 @@
 
 import Discord from "discord.js";
 import * as config from "../config.json";
-import { getChannelSubs, getUserSubs } from "./subs";
+import { getUserSubs } from "./subs";
 import { embed as postEmbed, message as postMessage } from "./post";
 import { isSet } from "./flags";
 import QChannel from "./QChannel.js";
