@@ -114,8 +114,7 @@ export const formatTwitterUser = async (qChannel, id) => {
   });
 };
 
-export const formatChannelList = async (qChannel, targetChannel) => {
-  const subs = await getChannelSubs(targetChannel.id, true);
+export const formatSubsList = async (qChannel, subs) => {
   formatGenericList(qChannel, {
     data: subs,
     formatTitle: ({ name }) => formatTwitterUserShort(name),

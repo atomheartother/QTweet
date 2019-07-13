@@ -13,11 +13,13 @@ import {
   add,
   getUniqueChannels,
   getUserFromScreenName,
-  rmChannel
+  rmChannel,
+  getChannelSubs,
+  getGuildSubs
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
-import { formatChannelList, formatQChannel, formatTwitterUser } from "./format";
+import { formatSubsList, formatQChannel, formatTwitterUser } from "./format";
 import {
   formatTweet,
   createStream,
@@ -374,8 +376,9 @@ const stopchannel = async (args, qChannel) => {
   );
 };
 
-const list = (args, qChannel) => {
-  formatChannelList(qChannel, qChannel);
+const list = async (args, qChannel) => {
+  const subs = await getChannelSubs(qChannel.id, true);
+  formatSubsList(qChannel, subs);
 };
 
 const channelInfo = async (args, qChannel) => {
@@ -390,7 +393,7 @@ const channelInfo = async (args, qChannel) => {
   } else {
     qc = QChannel.unserialize({ channelId, isDM: true });
   }
-  if (!(await qc.obj())) {
+  if (!qc || !(await qc.obj())) {
     postMessage(
       qChannel,
       `I couldn't build a valid channel object with id: ${channelId}`
@@ -399,7 +402,8 @@ const channelInfo = async (args, qChannel) => {
   }
   let info = await formatQChannel(qc);
   postMessage(qChannel, info);
-  formatChannelList(qChannel, qc);
+  const subs = await getChannelSubs(qc.id, true);
+  formatSubsList(qChannel, subs);
 };
 
 const twitterInfo = async (args, qChannel) => {
@@ -416,6 +420,16 @@ const twitterInfo = async (args, qChannel) => {
   formatTwitterUser(qChannel, user.twitterId);
 };
 
+const guildInfo = async (args, qChannel) => {
+  const gid = args.shift();
+  if (!gid) {
+    postMessage(qChannel, "Usage: `!!admin g <guildId>`");
+    return;
+  }
+  const subs = await getGuildSubs(gid);
+  formatSubsList(qChannel, subs);
+};
+
 const admin = (args, qChannel) => {
   const verb = args.shift();
   switch (verb[0]) {
@@ -424,6 +438,9 @@ const admin = (args, qChannel) => {
       return;
     case "t":
       twitterInfo(args, qChannel);
+      return;
+    case "g":
+      guildInfo(args, qChannel);
       return;
     default: {
       postMessage(
