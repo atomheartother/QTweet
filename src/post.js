@@ -91,11 +91,15 @@ const handleDiscordPostError = async (
     delay = errorCount * 1500;
     // retry posting in the same channel
     channelToPostIn = "same";
+  } else if (errCode === 50006) {
+    log(msg, qChannel);
+    logMsg = `${errCode}: Message was empty.`;
+    channelToPostIn = "none";
   } else if (errCode === 50007) {
     logMsg = `This user won't accept DMs from us`;
     channelToPostIn = "none";
+    retCode = 4;
   } else {
-    retCode = 1;
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
     }`;
@@ -103,31 +107,29 @@ const handleDiscordPostError = async (
   }
   log(qChannel);
   log(`${logMsg} (attempt #${errorCount})`, qChannel);
-  if (channelToPostIn !== "none") {
-    const targetChannel =
-      channelToPostIn === "same"
-        ? qChannel
-        : await qChannel.bestChannel(newType);
-    if (!targetChannel || !targetChannel.id) {
-      log("Couldn't find a way to send error notification", qChannel);
-      return 4;
-    }
-    return asyncTimeout(async () => {
-      try {
-        await targetChannel.send(newMsg);
-      } catch (err) {
-        return handleDiscordPostError(
-          err,
-          targetChannel,
-          newType,
-          newMsg,
-          errorCount + 1
-        );
-      }
-      return retCode;
-    }, delay);
+  if (channelToPostIn === "none") {
+    return 1;
   }
-  return 1;
+  const targetChannel =
+    channelToPostIn === "same" ? qChannel : await qChannel.bestChannel(newType);
+  if (!targetChannel || !targetChannel.id) {
+    log("Couldn't find a way to send error notification", qChannel);
+    return 4;
+  }
+  return asyncTimeout(async () => {
+    try {
+      await targetChannel.send(newMsg);
+    } catch (err) {
+      return handleDiscordPostError(
+        err,
+        targetChannel,
+        newType,
+        newMsg,
+        errorCount + 1
+      );
+    }
+    return retCode;
+  }, delay);
 };
 
 export const embed = async (qChannel, embed) => {
