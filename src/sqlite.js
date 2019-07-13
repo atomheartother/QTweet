@@ -188,8 +188,9 @@ export const getGuildSubs = guildId =>
   new Promise((resolve, reject) =>
     db.all(
       `SELECT ${GETINT("subs.channelId", "channelId")}, ${GETINT(
+        "subs.twitterId",
         "twitterId"
-      )}, subs.isDM AS isDM, flags FROM subs INNER JOIN channels ON channels.channelId = subs.channelId WHERE guildId = ?`,
+      )}, name, subs.isDM AS isDM, flags FROM subs INNER JOIN channels ON channels.channelId = subs.channelId INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE guildId = ?`,
       [guildId],
       (err, rows) => {
         if (err) reject(err);
