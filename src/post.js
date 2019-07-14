@@ -1,5 +1,5 @@
 import * as config from "../config.json";
-import { rmChannel } from "./subs";
+import { rmChannel, getLang } from "./subs";
 import log from "./log";
 import QChannel from "./QChannel";
 import i18n from "./i18n";
@@ -171,6 +171,8 @@ export const dm = async (qChannel, content) => {
 };
 
 export const translated = async (qChannel, key, options = {}) => {
-  const lang = "en";
-  return message(qChannel, i18n(lang, key, options));
+  return message(
+    qChannel,
+    i18n(await getLang(qChannel.guildId()), key, options)
+  );
 };
