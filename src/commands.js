@@ -14,11 +14,17 @@ import {
   getUserFromScreenName,
   rmChannel,
   getChannelSubs,
-  getGuildSubs
+  getGuildSubs,
+  setLang
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
-import { formatSubsList, formatQChannel, formatTwitterUser } from "./format";
+import {
+  formatSubsList,
+  formatQChannel,
+  formatTwitterUser,
+  formatLanguages
+} from "./format";
 import {
   formatTweet,
   createStream,
@@ -358,6 +364,28 @@ const twitterInfo = async (args, qChannel) => {
   formatTwitterUser(qChannel, user.twitterId);
 };
 
+const lang = async (args, qChannel) => {
+  const verb = args.shift();
+  const languages = ["en", "fr"];
+  switch (verb[0]) {
+    case "l":
+      formatLanguages(qChannel, languages);
+      break;
+    case "s": {
+      const language = args.shift();
+      if (languages.indexOf(language) === -1) {
+        postTranslated(qChannel, "noSuchLang", { language });
+        return;
+      }
+      await setLang(qChannel.guildId(), language);
+      postTranslated(qChannel, "langSuccess");
+      break;
+    }
+    default:
+      postTranslated(qChannel, "invalidVerb", { verb });
+  }
+};
+
 const guildInfo = async (args, qChannel) => {
   const gid = args.shift();
   if (!gid) {
@@ -381,7 +409,7 @@ const admin = (args, qChannel) => {
       guildInfo(args, qChannel);
       return;
     default: {
-      postTranslated(qChannel, "adminInvalidVerb", { verb });
+      postTranslated(qChannel, "invalidVerb", { verb });
     }
   }
 };
@@ -417,6 +445,16 @@ export default {
       {
         f: checks.isMod,
         badB: "startForMods"
+      }
+    ],
+    minArgs: 1
+  },
+  lang: {
+    function: lang,
+    checks: [
+      {
+        f: checks.isMod,
+        badB: "langForMods"
       }
     ],
     minArgs: 1

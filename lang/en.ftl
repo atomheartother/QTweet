@@ -38,6 +38,8 @@ usage-admin-channel = {-usage}: `{-pr}admin c <id>`
 usage-admin-twitter = {-usage}: `{-pr}admin t <screen_name>`
 usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
 
+usage-lang = {-usage}: `{-pr}lang <list|set <language> >`
+
 ## Command feedback
 ### !!tweet
 countIsNaN =
@@ -135,14 +137,24 @@ stopChannelSuccess =
   {-b}I've unsubscribed you from {$users} users{-b}
   You should now stop getting any tweets in {$channelName}.
 
+## !!lang
+noSuchLang =
+  {-b}I don't support this language{-b}
+  You can run `{-pr}lang list` to see a list of supported languages
+
+langSuccess =
+  {-b}Language changed successfully{-b}
+  Welcome to the magical world of english!
+
 ## !!admin
 adminInvalidId = I couldn't build a valid channel object with id: {$channelId}
 
 adminInvalidTwitter =
   I'm not getting any user called `@{$screenName}`
 
-adminInvalidVerb = 
-  {-b}admin command failed{-b}
+## General
+invalidVerb = 
+  {-b}Command failed{-b}
   Invalid verb: {$verb}
 
 ## General twitter errors
@@ -168,7 +180,7 @@ noSuchTwitterId =
   Twitter says there's no tweet with this id!
 
 twitterUnknwnError =
-  {-b}Something went very wrong interacting with twitter!{-b}
+  {-b}Something went wrong interacting with twitter!{-b}
   Sorry, I've never seen this error before. I'll do my best to fix it soon!
 
 ## DM sent to server owner.
@@ -204,10 +216,15 @@ stopForMods =
 startForMods = 
   {-b}{-notAuthorized}{-b}
   To subscribe to a twitter account you need to be a moderator or have the proper role!
+langForMods =
+  {-b}{-notAuthorized}{-b}
+  Only moderators can change perform language commands!
 
 ## Lists and formatting
 genericObjects = objects
 subscriptions = subscriptions
+languages = languages
+
 id = ID
 type = Type
 dm = dm
@@ -236,3 +253,5 @@ formatFlags = With {$notext ->
     *[0] off
     [1] on
   }
+
+languageCredit = English, made by `Tom'#4242`
