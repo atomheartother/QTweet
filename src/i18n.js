@@ -9,10 +9,14 @@ fs.readdir(langDir, (err, files) => {
     console.error(err);
     return;
   }
+  const globalConf = fs
+    .readFileSync(`${langDir}/global.ftl`, "utf8")
+    .toString("utf8");
   files.forEach(file => {
-    if (file.endsWith(".ftl")) {
+    if (file.endsWith(".ftl") && file !== "global.ftl") {
       const lang = file.substr(0, file.length - 4);
       const b = new FluentBundle(lang);
+      b.addMessages(globalConf);
       const errors = b.addMessages(
         fs.readFileSync(`${langDir}/${file}`, "utf8").toString("utf8")
       );
