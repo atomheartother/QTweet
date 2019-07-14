@@ -1,5 +1,10 @@
 # Global variables
 ## Prefix: This is the prefix that goes in front of commands
+-bot-name = QTweet
+-profile-url = {"https://discordbots.org/bot/433615162394804224"}
+-docs-url = {"https://github.com/atomheartother/QTweet"}
+-invite-url = {"https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=51264"}
+-support-server = {"https://discord.gg/bF7yCdd"}
 -pr = {"!!"}
 
 # Formatting
@@ -8,10 +13,10 @@
 
 ## Help message
 helpIntro =
-  Hello, I'm { $botName }, I'm a very simple bot who cross-posts twitter posts to Discord!
-  {-b}You should read my [complete documentation]({ $docsURL }){-b}
-  {-b}Want to invite me to your server?{-b} [Click here]({ $inviteLink })!
-  {-b}Problems, questions?{-b} [We have a support server!]({ $supportServ })
+  Hello, I'm { -bot-name }, I'm a very simple bot who cross-posts twitter posts to Discord!
+  {-b}You should read my [complete documentation]({ -docs-url }){-b}
+  {-b}Want to invite me to your server?{-b} [Click here]({ -invite-url })!
+  {-b}Problems, questions?{-b} [We have a support server!]({ -support-server })
   Here's a short list of commands to get you started:
 
 ## Command usage
@@ -33,6 +38,14 @@ usage-stopchannel =
   {-b}Usage{-b}: `{-pr}stopchannel [channel ID]`
 
 usage-list = Print a list of the twitter users you're currently subscribed to.
+
+## DM sent to server owner. This will always be in english.
+welcomeMessage = 
+      Hello, I'm {-bot-name}, thanks for inviting me to your server!
+      {-b}To get started:{-b} `{-pr}help` for commands and useful links!
+      {-b}If I'm useful to your server{-b}, please consider upvoting me at {-profile-url}
+      
+      By using any of my commands, you agree that {-b}any content posted to your server or DMs through me is your own responsibility{-b}, check out my documentation for more information.
 
 ## Command permissions error msg
 -botOwnerCmd = Bot Owner command

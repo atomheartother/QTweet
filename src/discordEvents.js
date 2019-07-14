@@ -95,14 +95,7 @@ export const handleMessage = message => {
       .setColor(0x0e7675)
       .setTitle(`${config.botName} is here to help!`)
       .setURL(config.profileURL)
-      .setDescription(
-        i18n("en", "helpIntro", {
-          botName: config.botName,
-          docsURL: config.docsURL,
-          inviteLink: config.inviteLink,
-          supportServ: config.supportServ
-        })
-      )
+      .setDescription(i18n("en", "helpIntro"))
       .addField(`${config.prefix}tweet`, i18n("en", "usage-tweet"))
       .addField(`${config.prefix}start`, i18n("en", "usage-start"))
       .addField(`${config.prefix}stop`, i18n("en", "usage-stop"))
@@ -129,17 +122,7 @@ export const handleGuildCreate = async guild => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
   const qc = QChannel.unserialize({ channelId: guild.ownerID, isDM: true });
-  if (qc && qc.id)
-    dm(
-      qc,
-      `Hello, I'm ${
-        config.botName
-      }, thanks for inviting me to your server!\n**To get started:** \`${
-        config.prefix
-      }help\` for commands and useful links!\n**If I'm useful to your server**, please consider upvoting me at ${
-        config.profileURL
-      }\n\nBy using any of my commands, you agree that **any content posted to your server through me is your own responsibility**, check out my documentation for more information.`
-    );
+  if (qc && qc.id) dm(qc, i18n("en", "welcomeMessage"));
   else {
     log(`Could not send welcome message for ${guild.name}`);
   }
