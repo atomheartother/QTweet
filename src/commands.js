@@ -507,9 +507,7 @@ export default {
     checks: [
       {
         f: checks.isMod,
-        badB: `**Not authorized**\nTo subscribe to a twitter account you need to be a moderator or to have the ${
-          config.modRole
-        } role!`
+        badB: "startForMods"
       }
     ],
     minArgs: 1
@@ -519,8 +517,7 @@ export default {
     checks: [
       {
         f: checks.isMod,
-        badB:
-          "**Not authorized**\nOnly moderators can unsubscribe from a twitter account!"
+        badB: "stopForMods"
       }
     ],
     minArgs: 1
@@ -535,12 +532,11 @@ export default {
     checks: [
       {
         f: checks.isAdmin,
-        badB:
-          "**Bot Owner command**\nThis command accesses other servers' data so only my owner can use it!"
+        badB: "adminForAdmin"
       },
       {
         f: checks.isDm,
-        badB: "For user privacy reasons, this command is only allowed in DMs."
+        badB: "cmdInDms"
       }
     ],
     minArgs: 1
@@ -560,8 +556,7 @@ export default {
     checks: [
       {
         f: checks.isMod,
-        badB:
-          "**Not authorized**\nOnly moderators can unsubscribe from a twitter account!"
+        badB: "stopForMods"
       }
     ]
   },
@@ -570,8 +565,7 @@ export default {
     checks: [
       {
         f: checks.isAdmin,
-        badB:
-          "**Bot Owner command**\nSorry, only my owner can force me off a server"
+        badB: "leaveForAdmin"
       }
     ],
     minArgs: 0
@@ -581,8 +575,7 @@ export default {
     checks: [
       {
         f: checks.isAdmin,
-        badB:
-          "**Bot Owner command**\nSorry, only my owner can do announcements!"
+        badB: "announceForAdmin"
       }
     ]
   }
