@@ -172,11 +172,24 @@ export const getUniqueChannels = () =>
       }
     )
   );
+
 export const getUserInfo = twitterId =>
   new Promise((resolve, reject) =>
     db.get(
       `SELECT name FROM twitterUsers WHERE twitterId = ?`,
       [twitterId],
+      (err, row) => {
+        if (err) reject(err);
+        resolve(row);
+      }
+    )
+  );
+
+export const getLang = channelId =>
+  new Promise((resolve, reject) =>
+    db.get(
+      `SELECT lang FROM channels WHERE channelId = ?`,
+      [channelId],
       (err, row) => {
         if (err) reject(err);
         resolve(row);

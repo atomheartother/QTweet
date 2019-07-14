@@ -6,7 +6,7 @@ import { fortune } from "fortune-teller";
 
 // Config file
 import * as config from "../config.json";
-import { rmChannel, rmGuild, sanityCheck } from "./subs";
+import { rmChannel, rmGuild, sanityCheck, getLang } from "./subs";
 import QChannel from "./QChannel";
 
 // logging
@@ -28,7 +28,7 @@ const handleCommand = (commandName, author, qChannel, args) => {
   if (command) {
     // Check that there's the right number of args
     if (args.length < command.minArgs) {
-      postMessage(qChannel, usage[commandName]);
+      postTranslatedMessage(qChannel, `usage-${commandName}`);
       return;
     }
     log(
@@ -62,7 +62,7 @@ const handleCommand = (commandName, author, qChannel, args) => {
   }
 };
 
-export const handleMessage = message => {
+export const handleMessage = async message => {
   // Ignore bots
   if (message.author.bot) return;
 
@@ -74,14 +74,7 @@ export const handleMessage = message => {
     ) {
       message.reply(fortune());
     } else if (message.channel.type == "dm")
-      postMessage(
-        message.channel,
-        "Hello, I'm " +
-          config.botName +
-          "! Type " +
-          config.prefix +
-          "help to see a list of my commands! ❤"
-      );
+      postMessage(message.channel, i18n("en", "genericDmResponse"));
     return;
   }
   let args = message.content

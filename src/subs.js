@@ -14,10 +14,12 @@ import {
   addChannel,
   getAllSubs,
   addUser as SQL_addUser,
+  getLang as SQL_getLang,
   open as openDb,
   close as closeDb,
   getGuildChannels
 } from "./sqlite";
+import * as config from "../config.json";
 import log from "./log";
 import QChannel from "./QChannel";
 
@@ -119,6 +121,10 @@ export const add = async (channelId, twitterId, name, flags, isDM) => {
 };
 
 export const rmUser = SQL_rmUser;
+
+export const getLang = async channelId => {
+  return (await SQL_getLang(channelId)) || config.defaultLang;
+};
 
 const deleteUserIfEmpty = async twitterId => {
   const subs = await getUserSubs(twitterId);

@@ -1,4 +1,4 @@
-## Help message
+## Help messages
 helpHeader = {-bot-name} is here to help!
 
 helpIntro =
@@ -8,8 +8,11 @@ helpIntro =
   {-b}Problems, questions?{-b} [We have a support server!]({ -support-server })
   Here's a short list of commands to get you started:
 
-## Command usage
+genericDmResponse =
+  Hello, I'm {-bot-name}!
+  Type {-pr}help to see a list of my commands! ❤"
 
+## Command usage
 -usage = Usage
 -screen-name-variable = twitter_screen_name
 usage-tweet = 
@@ -178,7 +181,7 @@ welcomeMessage =
 
 ## Command permissions error msg
 -botOwnerCmd = Bot Owner command
--notAuthorized = Not Authorized
+-notAuthorized = Not authorized
 
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
@@ -201,3 +204,35 @@ stopForMods =
 startForMods = 
   {-b}{-notAuthorized}{-b}
   To subscribe to a twitter account you need to be a moderator or have the proper role!
+
+## Lists and formatting
+genericObjects = objects
+subscriptions = subscriptions
+id = ID
+type = Type
+dm = dm
+serv = server
+
+genericEmptyList = List is empty, nothing to display.
+
+noUserSubscriptions = 
+  {-b}This user has no subscriptions{-b}
+  This shouldn't happen :c
+
+noSubscriptions = 
+  {-b}You're not subscribed to anyone{-b}
+  Use `{-pr}start <screen_name>` to get started!
+
+formatFlags = With {$notext -> 
+    *[0] text posts
+    [1] no text posts
+  }, {$retweet ->
+    *[0] no retweets
+    [1] retweets
+  }, {$noquote ->
+    *[0] quotes
+    [1] no quotes
+  }, pings {$ping -> 
+    *[0] off
+    [1] on
+  }
