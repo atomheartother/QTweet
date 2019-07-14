@@ -93,7 +93,7 @@ export const handleMessage = message => {
   if (command === "help" || command === "?") {
     const embed = new Discord.RichEmbed()
       .setColor(0x0e7675)
-      .setTitle(`${config.botName} is here to help!`)
+      .setTitle(i18n("en", "helpHeader"))
       .setURL(config.profileURL)
       .setDescription(i18n("en", "helpIntro"))
       .addField(`${config.prefix}tweet`, i18n("en", "usage-tweet"))

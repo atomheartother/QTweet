@@ -15,7 +15,7 @@ fs.readdir(langDir, (err, files) => {
   files.forEach(file => {
     if (file.endsWith(".ftl") && file !== "global.ftl") {
       const lang = file.substr(0, file.length - 4);
-      const b = new FluentBundle(lang);
+      const b = new FluentBundle(lang, { useIsolating: false });
       b.addMessages(globalConf);
       const errors = b.addMessages(
         fs.readFileSync(`${langDir}/${file}`, "utf8").toString("utf8")
@@ -41,11 +41,14 @@ const i18n = (lang, key, options) => {
   const msg = bundle.getMessage(key);
   if (!msg) {
     if (lang !== "en") return i18n("en", key, options);
+    console.log(`Could not resolve key: ${key}`);
     return `{$${key}}`;
   }
   const errors = [];
   const res = bundle.format(msg, options, errors);
   if (errors.length) {
+    console.log(`Errors with ${key}`);
+    console.log(options);
     console.log(errors);
   }
   console.log(res);
