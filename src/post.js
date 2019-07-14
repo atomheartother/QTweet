@@ -2,6 +2,8 @@ import * as config from "../config.json";
 import { rmChannel } from "./subs";
 import log from "./log";
 import QChannel from "./QChannel";
+import i18n from "./i18n";
+
 // Return values for post functions:
 // 0: Success
 // 1: Unknown error / exception thrown, user wasn't warned
@@ -166,4 +168,9 @@ export const dm = async (qChannel, content) => {
     return handleDiscordPostError(err, qChannel, "dm", content);
   }
   return 0;
+};
+
+export const translated = async (qChannel, key, options = {}) => {
+  const lang = "en";
+  return message(qChannel, i18n(lang, key, options));
 };
