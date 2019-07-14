@@ -47,7 +47,7 @@ export const formatGenericList = async (
     params = {}
   } = {}
 ) => {
-  const lang = getLang(qChannel.id);
+  const lang = await getLang(qChannel.guildId());
   if (data.length === 0) {
     postTranslated(qChannel, noElements);
   }
@@ -95,7 +95,7 @@ export const formatFlags = (lang, flags) =>
 
 export const formatTwitterUser = async (qChannel, id) => {
   const subs = await getUserSubs(id);
-  const lang = await getLang(qChannel.id);
+  const lang = await getLang(qChannel.guildId());
   const subsWithQchannels = [];
   for (let i = 0; i < subs.length; i++) {
     const { channelId, flags, isDM } = subs[i];
@@ -114,7 +114,7 @@ export const formatTwitterUser = async (qChannel, id) => {
       )}:** ${i18n(lang, qChannel.isDM ? "dm" : "serv")}\n${
         qChannel.isDM
           ? ""
-          : `**Gld:** ${await qChannel.guildId()}\n**Own:** ${await qChannel.ownerId()}\n`
+          : `**Gld:** ${qChannel.guildId()}\n**Own:** ${qChannel.ownerId()}\n`
       }${formatFlags(lang, flags)}`,
     noElements: "noUserSubscriptions",
     objectName: "subscriptions"
@@ -122,7 +122,7 @@ export const formatTwitterUser = async (qChannel, id) => {
 };
 
 export const formatSubsList = async (qChannel, subs) => {
-  const lang = await getLang(qChannel.id);
+  const lang = await getLang(qChannel.guildId());
   formatGenericList(qChannel, {
     data: subs,
     formatTitle: ({ name }) => formatTwitterUserShort(name),
@@ -130,5 +130,15 @@ export const formatSubsList = async (qChannel, subs) => {
       `**${i18n(lang, "id")}:** ${twitterId}\n${formatFlags(lang, flags)}`,
     noElements: "noSubscriptions",
     objectName: "subscriptions"
+  });
+};
+
+export const formatLanguages = async (qChannel, languagesList) => {
+  const lang = await getLang(qChannel.id);
+  formatGenericList(qChannel, {
+    data: languagesList,
+    formatTitle: k => (k === lang ? `[${k}]` : k),
+    formatField: k => i18n(k, "languageCredit"),
+    objectName: "languages"
   });
 };

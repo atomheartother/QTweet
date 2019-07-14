@@ -1,4 +1,3 @@
-import usage from "./usage";
 import Discord from "discord.js";
 
 // A module registering discord events and reacting to them
@@ -6,7 +5,7 @@ import { fortune } from "fortune-teller";
 
 // Config file
 import * as config from "../config.json";
-import { rmChannel, rmGuild, sanityCheck, getLang } from "./subs";
+import { rmChannel, rmGuild, sanityCheck } from "./subs";
 import QChannel from "./QChannel";
 
 // logging

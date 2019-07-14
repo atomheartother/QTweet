@@ -32,7 +32,6 @@ fs.readdir(langDir, (err, files) => {
 });
 
 const i18n = (lang, key, options) => {
-  console.log(options);
   const bundle = langs[lang];
   if (!bundle) {
     if (lang !== "en") return i18n("en", key, options);
@@ -51,7 +50,6 @@ const i18n = (lang, key, options) => {
     console.log(options);
     console.log(errors);
   }
-  console.log(res);
   return res;
 };
 

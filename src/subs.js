@@ -14,10 +14,11 @@ import {
   addChannel,
   getAllSubs,
   addUser as SQL_addUser,
-  getLang as SQL_getLang,
   open as openDb,
   close as closeDb,
-  getGuildChannels
+  getGuildChannels,
+  setLang as SQL_setLang,
+  getLang as SQL_getLang
 } from "./sqlite";
 import * as config from "../config.json";
 import log from "./log";
@@ -90,6 +91,8 @@ export const updateUser = async user => {
   return 0;
 };
 
+export const setLang = SQL_setLang;
+
 export const addChannelIfNoExists = async (channelId, isDM) => {
   const qc = QChannel.unserialize({ channelId, isDM });
   const obj = await qc.obj();
@@ -102,12 +105,7 @@ export const addChannelIfNoExists = async (channelId, isDM) => {
   if (qc.isDM) {
     return await addChannel(channelId, channelId, channelId, qc.isDM);
   } else {
-    return await addChannel(
-      channelId,
-      await qc.guildId(),
-      await qc.ownerId(),
-      qc.isDM
-    );
+    return await addChannel(channelId, qc.guildId(), qc.ownerId(), qc.isDM);
   }
 };
 
@@ -122,8 +120,9 @@ export const add = async (channelId, twitterId, name, flags, isDM) => {
 
 export const rmUser = SQL_rmUser;
 
-export const getLang = async channelId => {
-  return (await SQL_getLang(channelId)) || config.defaultLang;
+export const getLang = async guildId => {
+  const guild = await SQL_getLang(guildId);
+  return guild ? guild.lang : config.defaultLang;
 };
 
 const deleteUserIfEmpty = async twitterId => {
@@ -177,5 +176,9 @@ export const rmGuild = async guildId => {
     deletedSubs += subs;
     deletedUsrs += users;
   }
-  return { subs: deletedSubs, users: deletedUsrs, channels: channels.length };
+  return {
+    subs: deletedSubs,
+    users: deletedUsrs,
+    channels: channels.length
+  };
 };

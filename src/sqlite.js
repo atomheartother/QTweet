@@ -16,7 +16,7 @@ export const open = file =>
           [],
           async (err, tables) => {
             if (err) reject(err);
-            if (tables.length === 3) {
+            if (tables.length === 4) {
               log(`Successfully opened database at ${file || config.dbFile}`);
               resolve();
             } else {
@@ -49,6 +49,17 @@ const initTables = () =>
           err => {
             if (err) {
               log("Error creating subs table");
+              reject(err);
+            }
+          }
+        )
+        .run(
+          `CREATE TABLE IF NOT EXISTS guilds(guildId INTEGER PRIMARY KEY, lang TEXT NOT NULL DEFAULT '${
+            config.defaultLang
+          }')`,
+          err => {
+            if (err) {
+              log("Error creating guilds table");
               reject(err);
             }
           }
@@ -185,11 +196,43 @@ export const getUserInfo = twitterId =>
     )
   );
 
-export const getLang = channelId =>
+export const createGuild = guildId =>
+  new Promise((resolve, reject) =>
+    db.run(
+      `INSERT OR IGNORE INTO guilds(guildId) VALUES(?)`,
+      [guildId],
+      err => {
+        if (err) reject(err);
+        resolve(1);
+      }
+    )
+  );
+
+export const rmGuild = guildId =>
+  new Promise((resolve, reject) =>
+    db.run(`DELETE FROM guilds WHERE guildId = ?`, [guildId], err => {
+      if (err) reject(err);
+      resolve(1);
+    })
+  );
+
+export const setLang = (guildId, lang) =>
+  new Promise((resolve, reject) =>
+    db.run(
+      `INSERT OR REPLACE INTO guilds(guildId, lang) VALUES (?, ?)`,
+      [guildId, lang],
+      err => {
+        if (err) reject(err);
+        resolve(0);
+      }
+    )
+  );
+
+export const getLang = guildId =>
   new Promise((resolve, reject) =>
     db.get(
-      `SELECT lang FROM channels WHERE channelId = ?`,
-      [channelId],
+      `SELECT lang FROM guilds WHERE guildId = ?`,
+      [guildId],
       (err, row) => {
         if (err) reject(err);
         resolve(row);
