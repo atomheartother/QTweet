@@ -129,6 +129,12 @@ QTweet understands 3 formats for twitter screen names, therefore these 3 command
 - `!!start @HamsterFragment`
 - `!!start https://twitter.com/HamsterFragment`
 
+# Translation
+
+QTweet is available for translation, we currently support English and French. If you'd like to help translate QTweet in your language, you can read the [translation guide](https://github.com/atomheartother/QTweet/blob/master/TRANSLATION.md).
+
+You'll most likely need to join the [support server](https://discord.gg/bF7yCdd) especially if you have questions.
+
 # Not So FAQ
 
 ## Can I add QTweet to my server?
