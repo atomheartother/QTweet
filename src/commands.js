@@ -236,7 +236,7 @@ const start = async (args, qChannel) => {
       addedObjectName,
       nameCount: screenNamesFinal.length,
       firstName: lastName,
-      missedNames: totalScreenNames !== screenNamesFinal.length ? 1 : 0
+      missedNames: totalScreenNames !== screenNamesFinal.length + 1 ? 1 : 0
     });
     log(`Added ${addedObjectName}`, qChannel);
     const redoStream = !!results.find(({ users }) => users !== 0);
