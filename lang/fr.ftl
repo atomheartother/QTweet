@@ -5,7 +5,7 @@ dm = mp
 serv = serveur
 
 ## Help messages
-helpHeader = {-bot-name} is here!
+helpHeader = {-bot-name} est là!
 
 helpIntro =
   Bonjour, je suis { -bot-name }, je suis un robot qui envoie des tweets sur Discord!
