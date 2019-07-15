@@ -61,7 +61,6 @@ const handleDiscordPostError = async (
     log(error);
     logMsg = `qChannel wasn't built: Auto-deleted ${subs} subs, ${users} users. qChannel removed`;
     channelToPostIn = "none";
-    newType = "404 notification";
   } else if (
     errCode === 403 ||
     errCode === 50013 ||
@@ -75,13 +74,10 @@ const handleDiscordPostError = async (
     logMsg = `Tried to post ${type} but lacked permissions: ${errCode} ${
       error.name
     }`;
-    newMsg = `**Missing Permissions:** I couldn't send a ${type} in ${await qChannel.name()}.\nIf a mod could give me the **Send Messages**, **Send Embeds** and **Attach Files** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
-      config.prefix
-    }stopchannel ${
-      qChannel.id
-    }\`.\nIf you think you've done everything right but keep getting this message, join our support server, it's linked in my \`${
-      config.prefix
-    }help\` message.`;
+    newMsg = i18n(await getLang(qChannel.guildId()), "postPermissionError", {
+      name: await qChannel.name(),
+      id: qChannel.id
+    });
     newType = "permission message";
   } else if (
     errCode === "ECONNRESET" ||

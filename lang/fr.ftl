@@ -39,13 +39,13 @@ usage-stop =
   {-b}{-usage}{-b}: `{-pr}stop <{-screen-name-variable}>`
 
 usage-stopchannel =
-  Exactement comme {-pr}stop mais agit sur tout le canal.
-  {-b}{-usage}{-b}: `{-pr}stopchannel [ID canal]`
+  Exactement comme {-pr}stop mais agit sur tout le salon.
+  {-b}{-usage}{-b}: `{-pr}stopchannel [ID salon]`
 
-usage-list = Affiche la liste de vos abonnements pour ce canal.
+usage-list = Affiche la liste de vos abonnements pour ce salon.
 
 usage-admin = {-usage}: `{-pr}admin <channel|twitter|guild>`
-usage-admin-channel = {-usage}: `{-pr}admin c <id_canal>`
+usage-admin-channel = {-usage}: `{-pr}admin c <id_salon>`
 usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
 usage-admin-guild = {-usage}: `{-pr}admin g <id_guilde>`
 
@@ -154,7 +154,7 @@ stopChannelInDm =
   Tu n'as pas besoin de préciser un numéro de chaine dans les MP. Si tu veux arrêter tous tes abonnements DM, utilises `{-pr}stopchannel`.
 
 noSuchChannel =
-  {-b}Je n'ai pas pu trouver le canal {$targetChannel} dans ton seveur.{-b}
+  {-b}Je n'ai pas pu trouver le salon {$targetChannel} dans ton seveur.{-b}
   S'il est déjà supprimé, je l'ai sûrement déjà quitté, ne t'inquiètes pas!
 
 stopChannelSuccess =
@@ -171,7 +171,7 @@ langSuccess =
   Je parlerais désormais dans la langue de Molière!
 
 ## !!admin
-adminInvalidId = Je n'ai pas pu construre un objet canal valide avec ID: {$channelId}
+adminInvalidId = Je n'ai pas pu construre un objet salon valide avec ID: {$channelId}
 
 adminInvalidTwitter = Je ne suis abonné à aucun utilisateur nommé `@{$screenName}`
 
@@ -264,6 +264,13 @@ formatFlags = Avec {$notext ->
     *[0] off
     [1] on
   }
+
+## Posting errors
+postPermissionError =
+  {-b}Permissions Manquantes:{-b} Je n'ai pas pu envoyer un message dans {$name}.
+  Si un·e modérateur·trice pouvait m'y donner ces permissions: {-b}Envoyer des Messages{-b}, {-b}Intégrer des liens{-b} et {-b}Joindre des fichiers{-b} ça serait top.
+  Si vous voulez que j'arrête d'essayer d'envoyer des messages dans {$name}, vous pouvew utiliser `{-pr}stopchannel {$id}`.
+  Si vous pensez avoir tout bien fait mais que je continue de vous envoyer ce message, rejoinez notre serveur de support, il est lié dans `{-pr}help`.
 
 ## Credit
 languageCredit = Français, traduit par `Tom'#4242`
