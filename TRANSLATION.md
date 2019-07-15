@@ -1,5 +1,7 @@
 # Translation guide
 
+First of all if you've decided to help with translating QTweet - thank you! Translating a new language from the ground up should take you a few hours, so it's a solid bit of work!
+
 Our translation system uses the [Fluent syntax](https://projectfluent.org/fluent/guide/). You can find translation files (`.ftl`) in the `lang/` folder. It should be pretty self-explanatory but otherwise you can read up on Fluent syntax or ask me for help.
 
 ## Creating a new translation
@@ -9,6 +11,8 @@ To create a new translation:
 - Create a file called `[lang].ftl`, where [lang] is a short code for your language (`en` for english)
 - Copy the contents of `en.ftl` in your new file
 - Translate everything! Some of the variable descriptions are in `global.ftl`, but you can mostly just use them the way I use them in English. You really should use the variables though, they're here for a reason!
+
+You can also edit an existing translation by simply copying the file over and editing it.
 
 Once you're done:
 
@@ -23,3 +27,4 @@ Writing messages for QTweet comes with a certain degree of creative freedom. How
 - Nevertheless, she **stays professional & family-friendly**, so no edginess, no mature language and obviously nothing that could be interpreted as hate speech.
 - Feel free to be friendly and playful in some responses, but keep it light, as it's annoying to some users. I have a few emotes like `:c` in a few responses, it's totally fine to use more or less if you feel like it fits more with what you're going for - just don't overdo it!
 - Try to be to-the-point, especially for error messages, information must be conveyed clearly.
+- Keep in mind that as much as I respect your agency over your work, as the maintaner I will always have the final word on what ends up in production.
