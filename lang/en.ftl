@@ -1,8 +1,4 @@
 ## Small words
-genericObjects = objects
-subscriptions = subscriptions
-languages = languages
-
 id = ID
 type = Type
 dm = dm
@@ -261,6 +257,21 @@ formatFlags = With {$notext ->
   }, pings {$ping -> 
     *[0] off
     [1] on
+  }
+
+genericObjects = {$count} {$count -> 
+    [one] object
+    *[other] objects
+  }
+
+subscriptions = {$count} {$count -> 
+    [one] subscription
+    *[other] subscriptions
+  }
+
+languages = {$count} {$count -> 
+    [one] language
+    *[other] languages
   }
 
 ## Posting errors

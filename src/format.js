@@ -54,7 +54,7 @@ export const formatGenericList = async (
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(color)
-    .setTitle(`${data.length} ${i18n(lang, objectName)}:`)
+    .setTitle(`${i18n(lang, objectName, { count: data.length })}:`)
     .setURL(config.profileURL);
   if (description) {
     embed.setDescription(description);
@@ -72,7 +72,9 @@ export const formatGenericList = async (
       postEmbed(qChannel, { embed });
       embed = new Discord.RichEmbed()
         .setColor(color)
-        .setTitle(`${data.length} ${i18n(lang, objectName)} (p.${page}):`)
+        .setTitle(
+          `${i18n(lang, objectName, { count: data.length })} (${page}):`
+        )
         .setURL(config.profileURL);
       counter = 0;
     }

@@ -1,8 +1,4 @@
 # Small words
-genericObjects = objets
-subscriptions = abonnements
-languages = langages
-
 id = ID
 type = Type
 dm = mp
@@ -263,6 +259,21 @@ formatFlags = Avec {$notext ->
   }, les pings {$ping -> 
     *[0] off
     [1] on
+  }
+
+genericObjects = {$count} {$count -> 
+    [one] objet
+    *[other] objets
+  }
+
+subscriptions = {$count} {$count -> 
+    [one] abonnement
+    *[other] abonnements
+  }
+
+languages = {$count} {$count -> 
+    [one] langage
+    *[other] langages
   }
 
 ## Posting errors
