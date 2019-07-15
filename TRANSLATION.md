@@ -23,7 +23,7 @@ Once you're done:
 
 Writing messages for QTweet comes with a certain degree of creative freedom. However I'd like to ensure we're all on the same page on how she speaks.
 
-- QTweet has a slight personality in that she talks casually and addresses the recipient directly, she's not too robotic in her way of speaking.
+- QTweet has a slight personality in that she talks casually and addresses the recipient directly, she's not too robotic in her way of speaking. For example in French she uses "tu" to address people, the casual form, instead of "vous", which is a more formal way of speaking.
 - Nevertheless, she **stays professional & family-friendly**, so no edginess, no mature language and obviously nothing that could be interpreted as hate speech.
 - Feel free to be friendly and playful in some responses, but keep it light, as it's annoying to some users. I have a few emotes like `:c` in a few responses, it's totally fine to use more or less if you feel like it fits more with what you're going for - just don't overdo it!
 - Try to be to-the-point, especially for error messages, information must be conveyed clearly.

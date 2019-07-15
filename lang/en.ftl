@@ -263,5 +263,12 @@ formatFlags = With {$notext ->
     [1] on
   }
 
+## Posting errors
+postPermissionError =
+  {-b}Missing Permissions:{-b} I couldn't send a message in {$name}.
+  If a mod could give me the {-b}Send Messages{-b}, {-b}Send Embeds{-b} and {-b}Attach Files{-b} permissions there that would be nice.
+  If you'd like me to stop trying to send messages there, moderators can use `{-pr}stopchannel {$id}`.
+  If you think you've done everything right but keep getting this message, join our support server, it's linked in my `{-pr}help` message.
+
 ## Credit
 languageCredit = English, made by `Tom'#4242`
