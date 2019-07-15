@@ -1,7 +1,7 @@
 # Small words
 genericObjects = objets
 subscriptions = abonnements
-languages = langues
+languages = langages
 
 id = ID
 type = Type
@@ -49,7 +49,7 @@ usage-admin-channel = {-usage}: `{-pr}admin c <id_salon>`
 usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
 usage-admin-guild = {-usage}: `{-pr}admin g <id_guilde>`
 
-usage-lang = {-usage}: `{-pr}lang <list|set <langue> >`
+usage-lang = {-usage}: `{-pr}lang <list|set <langage> >`
 
 ## Command feedback
 -error-apology = Je suis sur le coup, désolé du désagrément!
@@ -163,11 +163,11 @@ stopChannelSuccess =
 
 ## !!lang
 noSuchLang =
-  {-b}Je ne supporte pas cette langue{-b}
-  Entre `{-pr}lang list` pour voir une liste des langues que tu peux utiliser!
+  {-b}Je ne supporte pas ce langage{-b}
+  Entre `{-pr}lang list` pour voir une liste des langage que tu peux utiliser!
 
 langSuccess =
-  {-b}Langue modifiée{-b}
+  {-b}Langage modifié{-b}
   Je parlerais désormais dans la langue de Molière!
 
 ## !!admin
@@ -237,7 +237,7 @@ startForMods =
   Pour t'abonner à un compte Twitter tu dois être un·e modérateur·trice ou avoir le bon rôle.
 langForMods =
   {-b}{-notAuthorized}{-b}
-  Seuls·es les modérateurs·trices peuvent lancer les commandes de langues!
+  Seuls·es les modérateurs·trices peuvent lancer les commandes de langage!
 
 ## Lists and formatting
 
