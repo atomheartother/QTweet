@@ -15,7 +15,8 @@ import {
   rmChannel,
   getChannelSubs,
   getGuildSubs,
-  setLang
+  setLang,
+  getLang
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
@@ -34,6 +35,7 @@ import {
   getError
 } from "./twitter";
 import { getGuild, getChannel } from "./discord";
+import i18n from "./i18n";
 
 const getScreenName = word => {
   if (word.startsWith("@")) {
@@ -218,28 +220,23 @@ const start = async (args, qChannel) => {
   data.forEach(({ id_str: userId, screen_name: name }) => {
     promises.push(add(qChannel.id, userId, name, flags, qChannel.isDM));
   });
-  Promise.all(promises).then(results => {
-    let addedObjectName = `@${data[0].screen_name}`;
-    if (data.length > 1 && data.length < 10) {
-      addedObjectName = `${data.length} users: ${data.reduce(
-        (acc, { screen_name }, idx) => {
-          if (idx === data.length - 1) {
-            return acc.concat(` and ${screen_name}`);
-          } else if (idx === 0) {
-            return screen_name;
-          }
-          return acc.concat(`, ${screen_name}`);
-        },
-        ""
-      )}`;
-    } else if (data.length >= 10) {
-      addedObjectName = `${data.length} twitter users`;
-    }
+  Promise.all(promises).then(async results => {
+    const screenNamesFinal = data.map(user => `@${user.screen_name}`);
+    const lastName = screenNamesFinal.pop();
+    const addedObjectName = i18n(
+      await getLang(qChannel.guildId()),
+      "formatUserNames",
+      {
+        count: data.length + 1,
+        names: screenNamesFinal.toString(),
+        lastName
+      }
+    );
     postTranslated(qChannel, "startSuccess", {
       addedObjectName,
-      nameCount: data.length,
-      firstName: data[0].screen_name,
-      missedNames: totalScreenNames !== data.length ? 1 : 0
+      nameCount: screenNamesFinal.length,
+      firstName: lastName,
+      missedNames: totalScreenNames !== screenNamesFinal.length ? 1 : 0
     });
     log(`Added ${addedObjectName}`, qChannel);
     const redoStream = !!results.find(({ users }) => users !== 0);
@@ -318,9 +315,12 @@ const stopchannel = async (args, qChannel) => {
     }
     channelName = await new QChannel(channelObj).name();
   }
-  const { users } = await rmChannel(targetChannel);
-  log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
-  postTranslated(qChannel, "stopChannelSuccess", { users, channelName });
+  const { subs } = await rmChannel(targetChannel);
+  log(
+    `Removed all gets from channel ID:${targetChannel}. ${subs} subs removed.`,
+    qChannel
+  );
+  postTranslated(qChannel, "stopChannelSuccess", { subs, channelName });
 };
 
 const list = async (args, qChannel) => {

@@ -1,5 +1,15 @@
+## Small words
+genericObjects = objects
+subscriptions = subscriptions
+languages = languages
+
+id = ID
+type = Type
+dm = dm
+serv = server
+
 ## Help messages
-helpHeader = {-bot-name} is here to help!
+helpHeader = {-bot-name} is here!
 
 helpIntro =
   Hello, I'm { -bot-name }, I'm a very simple bot who cross-posts twitter posts to Discord!
@@ -10,7 +20,7 @@ helpIntro =
 
 genericDmResponse =
   Hello, I'm {-bot-name}!
-  Type {-pr}help to see a list of my commands! ❤"
+  Type `{-pr}help` to see a list of my commands! ❤"
 
 ## Command usage
 -usage = Usage
@@ -32,10 +42,11 @@ usage-stopchannel =
   Exactly like {-pr}stop but acts on the whole channel.
   {-b}{-usage}{-b}: `{-pr}stopchannel [channel ID]`
 
-usage-list = Print a list of the twitter users you're currently subscribed to.
+usage-list = Print a list of this channel's subscriptions.
 
-usage-admin-channel = {-usage}: `{-pr}admin c <id>`
-usage-admin-twitter = {-usage}: `{-pr}admin t <screen_name>`
+usage-admin = {-usage}: `{-pr}admin <channel|twitter|guild>`
+usage-admin-channel = {-usage}: `{-pr}admin c <channel_id>`
+usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
 usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
 
 usage-lang = {-usage}: `{-pr}lang <list|set <language> >`
@@ -44,7 +55,7 @@ usage-lang = {-usage}: `{-pr}lang <list|set <language> >`
 ### !!tweet
 countIsNaN =
   {-b}I need a number of tweets to get!{-b}
-  Wait a minute, {$count} isn't a number! >:c
+  Hey, {$count} isn't a number! >:c
 
 tweetCountLimited = 
   {-b}Limited to {$maxCount} tweets{-b}
@@ -55,7 +66,8 @@ tweetCountUnderOne =
   Nice try~
 
 tweetCountHighConfirm =
-  {-b}You're asking for a lot of tweets{-b}\nAre you sure you want me to post {$count} tweets? Once I start, you won't be able to stop me!
+  {-b}You're asking for a lot of tweets{-b}
+  Are you sure you want me to post {$count} tweets? Once I start, you won't be able to stop me!
   If you're sure you want me to do it, run:
   `{-pr}tweet {$screenName} {$count} --force`
 
@@ -68,7 +80,7 @@ tweetUnknwnError =
   I can't get their timeline... Twitter had this to say:
   {$error}
 
-noTweets = "It doesn't look like " + screenName + " has any tweets... "
+noTweets = It doesn't look like {$screenName} has any tweets...
 
 noValidTweets =
   {-b}This user doesn't seem to have any valid tweets{-b}
@@ -76,25 +88,25 @@ noValidTweets =
 
 tweetGeneralError = 
   {-b}Something went wrong getting tweets from {$screenName}{-b}
-  I'm looking into it, sorry for the trouble!
+  {-error-apology}
 
 ## !!tweetId
 tweetIdGeneralError =
   {-b}Something went wrong getting tweet {$id}{-b}
-  I'm looking into it, sorry for the trouble!
+  {-error-apology}
 
 ## !!start
 startGeneralError =
   {-b}Something went wrong getting the info for {$namesCount ->
   [one] this account
   *[other] these accounts
-  }{-b}
-  The problem appears to be on my end, sorry for the trouble!
+  }.{-b}
+  {-error-apology}
 
 startSuccess =
   {-b}You're now subscribed to {$addedObjectName}!{-b}
   Remember you can stop me at any time with `{-pr}stop {$nameCount ->
-    [one] $firstName
+    [one] {$firstName}
     *[other] <screen_name>
   }`.
   It can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!
@@ -103,6 +115,17 @@ startSuccess =
     [0] {""}
     *[other] It also appears I was unable to find some of the users you specified, make sure you used their screen name!
   }
+
+formatUserNames = {$count ->
+    [one] @{$lastName}
+    [two] @{$names} and @{$lastName}
+    *[few] {$names} and {$lastName}
+    [many] {$count} accounts
+  }
+
+startUpdateSuccess = 
+  {-b}{$addedObjectName} updated!{-b}
+  Your new flags have been registered. The changes should be instant.
 
 ## !!leaveguild
 noValidGid = No valid guild ID provided
@@ -121,8 +144,8 @@ stopSuccess =
   You should stop getting any tweets from them.
 
 stopGeneralError =
-  {-b}Something went wrong trying to unsubscribe from {$screenName}{-b}
-  I'm looking into it, sorry for the trouble!
+  {-b}Something went wrong trying to unsubscribe from `@{$screenName}`{-b}
+  {-error-apology}
 
 ## !!stopchannel
 stopChannelInDm =
@@ -134,7 +157,7 @@ noSuchChannel =
   If you deleted it, I've probably already left it, don't worry!
 
 stopChannelSuccess =
-  {-b}I've unsubscribed you from {$users} users{-b}
+  {-b}I've unsubscribed you from {$subs} users{-b}
   You should now stop getting any tweets in {$channelName}.
 
 ## !!lang
@@ -149,8 +172,7 @@ langSuccess =
 ## !!admin
 adminInvalidId = I couldn't build a valid channel object with id: {$channelId}
 
-adminInvalidTwitter =
-  I'm not getting any user called `@{$screenName}`
+adminInvalidTwitter = I'm not subscribed to any user called `@{$screenName}`
 
 ## General
 invalidVerb = 
@@ -160,8 +182,8 @@ invalidVerb =
 ## General twitter errors
 noSuchTwitterUser =
   {-b}I can't find {$count ->
-    [1] a Twitter user by the name of $name
-    *[other] any of those users: $name
+    [1] a Twitter user by the name of {$name}
+    *[other] any of those users: {$name}
   }
   You most likely tried using their display {$count ->
     [1] name
@@ -181,7 +203,7 @@ noSuchTwitterId =
 
 twitterUnknwnError =
   {-b}Something went wrong interacting with twitter!{-b}
-  Sorry, I've never seen this error before. I'll do my best to fix it soon!
+  {-error-apology}
 
 ## DM sent to server owner.
 welcomeMessage = 
@@ -200,13 +222,10 @@ announceForAdmin =
   Sorry, only my owner can do announcements!
 leaveForAdmin =
   {-b}{-botOwnerCmd}{-b}
-  Sorry, only my owner can force me off a server
-stopForMods = 
-  {-b}{-notAuthorized}{-b}
-  Only moderators can unsubscribe from a twitter account!
+  Sorry, only my owner can force me off a server.
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
-  For user privacy reasons, this command is only allowed in DMs.
+  This command is only allowed in DMs.
 adminForAdmin = 
   {-b}{-botOwnerCmd}{-b}
   This command accesses other servers' data so only my owner can use it!
@@ -218,17 +237,7 @@ startForMods =
   To subscribe to a twitter account you need to be a moderator or have the proper role!
 langForMods =
   {-b}{-notAuthorized}{-b}
-  Only moderators can change perform language commands!
-
-## Lists and formatting
-genericObjects = objects
-subscriptions = subscriptions
-languages = languages
-
-id = ID
-type = Type
-dm = dm
-serv = server
+  Only moderators can perform language commands!
 
 genericEmptyList = List is empty, nothing to display.
 
@@ -238,7 +247,7 @@ noUserSubscriptions =
 
 noSubscriptions = 
   {-b}You're not subscribed to anyone{-b}
-  Use `{-pr}start <screen_name>` to get started!
+  Use `{-pr}start <{-screen-name-variable}>` to get started!
 
 formatFlags = With {$notext -> 
     *[0] text posts
