@@ -14,9 +14,14 @@ helpIntro =
   {-b}Problems, questions?{-b} [We have a support server!]({ -support-server })
   Here's a short list of commands to get you started:
 
-genericDmResponse =
-  Hello, I'm {-bot-name}!
-  Type `{-pr}help` to see a list of my commands! ❤"
+helpFooter = Profile picture art by {$artist}
+
+welcomeMessage = 
+      Hello, I'm {-bot-name}, thanks for inviting me to your server!
+      {-b}To get started:{-b} `{-pr}help` for commands and useful links!
+      {-b}If I'm useful to your server{-b}, please consider upvoting me at {-profile-url}
+      
+      By using any of my commands, you agree that {-b}any content posted to your server or DMs through me is your own responsibility{-b}, check out my documentation for more information.
 
 ## Command usage
 -usage = Usage
@@ -200,14 +205,6 @@ noSuchTwitterId =
 twitterUnknwnError =
   {-b}Something went wrong interacting with twitter!{-b}
   {-error-apology}
-
-## DM sent to server owner.
-welcomeMessage = 
-      Hello, I'm {-bot-name}, thanks for inviting me to your server!
-      {-b}To get started:{-b} `{-pr}help` for commands and useful links!
-      {-b}If I'm useful to your server{-b}, please consider upvoting me at {-profile-url}
-      
-      By using any of my commands, you agree that {-b}any content posted to your server or DMs through me is your own responsibility{-b}, check out my documentation for more information.
 
 ## Command permissions error msg
 -botOwnerCmd = Bot Owner command

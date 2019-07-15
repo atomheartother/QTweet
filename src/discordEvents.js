@@ -5,7 +5,7 @@ import { fortune } from "fortune-teller";
 
 // Config file
 import * as config from "../config.json";
-import { rmChannel, rmGuild, sanityCheck } from "./subs";
+import { rmChannel, rmGuild, sanityCheck, getLang } from "./subs";
 import QChannel from "./QChannel";
 
 // logging
@@ -64,6 +64,7 @@ const handleCommand = (commandName, author, qChannel, args) => {
 export const handleMessage = async message => {
   // Ignore bots
   if (message.author.bot) return;
+  const { author, channel } = message;
 
   if (message.content.indexOf(config.prefix) !== 0) {
     if (
@@ -72,33 +73,37 @@ export const handleMessage = async message => {
       message.mentions.members.find(item => item.user.id === user().id)
     ) {
       message.reply(fortune());
-    } else if (message.channel.type == "dm")
-      postMessage(message.channel, i18n("en", "genericDmResponse"));
+    } else if (message.channel.type == "dm") {
+      const qc = new QChannel(channel);
+      const lang = await getLang(qc.guildId());
+      postMessage(message.channel, i18n(lang, "welcomeMessage"));
+    }
     return;
   }
   let args = message.content
     .slice(config.prefix.length)
     .trim()
     .split(/ +/g);
+
   let command = args.shift().toLowerCase();
+  const qc = new QChannel(channel);
+  const lang = await getLang(qc.guildId());
 
   if (command === "help" || command === "?") {
     const embed = new Discord.RichEmbed()
       .setColor(0x0e7675)
-      .setTitle(i18n("en", "helpHeader"))
+      .setTitle(i18n(lang, "helpHeader"))
       .setURL(config.profileURL)
-      .setDescription(i18n("en", "helpIntro"))
-      .addField(`${config.prefix}tweet`, i18n("en", "usage-tweet"))
-      .addField(`${config.prefix}start`, i18n("en", "usage-start"))
-      .addField(`${config.prefix}stop`, i18n("en", "usage-stop"))
-      .addField(`${config.prefix}list`, i18n("en", "usage-list"))
-      .setFooter(`Profile picture art by ryusukehamamoto`);
+      .setDescription(i18n(lang, "helpIntro"))
+      .addField(`${config.prefix}tweet`, i18n(lang, "usage-tweet"))
+      .addField(`${config.prefix}start`, i18n(lang, "usage-start"))
+      .addField(`${config.prefix}stop`, i18n(lang, "usage-stop"))
+      .addField(`${config.prefix}list`, i18n(lang, "usage-list"))
+      .setFooter(i18n(lang, "helpFooter", { artist: "ryusukehamamoto" }));
     postEmbed(message.channel, { embed });
     return;
   }
 
-  const { author, channel } = message;
-  const qc = new QChannel(channel);
   handleCommand(command, author, qc, args);
 };
 
