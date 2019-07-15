@@ -4,5 +4,6 @@
   "dbFile": "data/qtweetData.db",
   "profileURL": "https://discordbots.org/bot/433615162394804224",
   "modRole": "qtweet-mod",
-  "defaultLang": "en"
+  "defaultLang": "en",
+  "supportedLangs": ["en", "fr"]
 }

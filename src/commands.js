@@ -20,6 +20,8 @@ import {
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
+import { supportedLangs } from "../config.json";
+
 import {
   formatSubsList,
   formatQChannel,
@@ -366,14 +368,13 @@ const twitterInfo = async (args, qChannel) => {
 
 const lang = async (args, qChannel) => {
   const verb = args.shift();
-  const languages = ["en", "fr"];
   switch (verb[0]) {
     case "l":
-      formatLanguages(qChannel, languages);
+      formatLanguages(qChannel, supportedLangs);
       break;
     case "s": {
       const language = args.shift();
-      if (languages.indexOf(language) === -1) {
+      if (supportedLangs.indexOf(language) === -1) {
         postTranslated(qChannel, "noSuchLang", { language });
         return;
       }
