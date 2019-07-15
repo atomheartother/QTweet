@@ -49,7 +49,8 @@ usage-admin-channel = {-usage}: `{-pr}admin c <id_salon>`
 usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
 usage-admin-guild = {-usage}: `{-pr}admin g <id_guilde>`
 
-usage-lang = {-usage}: `{-pr}lang <list|set <langage> >`
+usage-lang = {-usage}: `{-pr}lang [list|set <langage>]`
+usage-lang-set = {-usage}: `{-pr}lang set <langage>`
 
 ## Command feedback
 -error-apology = Je suis sur le coup, désolé du désagrément!

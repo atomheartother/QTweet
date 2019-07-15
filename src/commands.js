@@ -374,6 +374,9 @@ const lang = async (args, qChannel) => {
       break;
     case "s": {
       const language = args.shift();
+      if (!language) {
+        postTranslated(qChannel, "usage-lang-set");
+      }
       if (supportedLangs.indexOf(language) === -1) {
         postTranslated(qChannel, "noSuchLang", { language });
         return;
