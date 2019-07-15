@@ -380,6 +380,7 @@ const lang = async (args, qChannel) => {
       }
       await setLang(qChannel.guildId(), language);
       postTranslated(qChannel, "langSuccess");
+      log(`Changed language to ${language}`, qChannel);
       break;
     }
     default:
