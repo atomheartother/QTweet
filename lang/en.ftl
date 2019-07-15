@@ -1,12 +1,14 @@
-## Small words
+### Small words
 id = ID
 type = Type
 dm = dm
 serv = server
 
-## Help messages
+### Help messages
+# This is in the help message header
 helpHeader = {-bot-name} is here!
 
+# The main help message body, followed by usage
 helpIntro =
   Hello, I'm { -bot-name }, I'm a very simple bot who cross-posts twitter posts to Discord!
   {-b}You should read my [complete documentation]({ -docs-url }){-b}
@@ -14,8 +16,10 @@ helpIntro =
   {-b}Problems, questions?{-b} [We have a support server!]({ -support-server })
   Here's a short list of commands to get you started:
 
+# Footer giving credit to the artist
 helpFooter = Profile picture art by {$artist}
 
+# The welcome msg sent to server owners & her generic response when DM'd
 welcomeMessage = 
       Hello, I'm {-bot-name}, thanks for inviting me to your server!
       {-b}To get started:{-b} `{-pr}help` for commands and useful links!
@@ -23,9 +27,14 @@ welcomeMessage =
       
       By using any of my commands, you agree that {-b}any content posted to your server or DMs through me is your own responsibility{-b}, check out my documentation for more information.
 
-## Command usage
+### Command usage
+
+# The word "usage"
 -usage = Usage
+# The word used to describe a twitter screen name, in a variable
 -screen-name-variable = twitter_screen_name
+
+## Usage for every command
 usage-tweet = 
   Post the latest tweet(s) from the given user.
   {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [count]`
@@ -52,8 +61,8 @@ usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
 
 usage-lang = {-usage}: `{-pr}lang <list|set <language> >`
 
-## Command feedback
-### !!tweet
+### Command feedback
+## !!tweet
 countIsNaN =
   {-b}I need a number of tweets to get!{-b}
   Hey, {$count} isn't a number! >:c
@@ -180,7 +189,7 @@ invalidVerb =
   {-b}Command failed{-b}
   Invalid verb: {$verb}
 
-## General twitter errors
+### General twitter errors
 noSuchTwitterUser =
   {-b}I can't find {$count ->
     [1] a Twitter user by the name of {$name}
@@ -206,8 +215,10 @@ twitterUnknwnError =
   {-b}Something went wrong interacting with twitter!{-b}
   {-error-apology}
 
-## Command permissions error msg
+### Command permissions error msg
+# Short error indicator showing this command is for bot owners
 -botOwnerCmd = Bot Owner command
+# Generic error indicator
 -notAuthorized = Not authorized
 
 announceForAdmin =
@@ -232,6 +243,7 @@ langForMods =
   {-b}{-notAuthorized}{-b}
   Only moderators can perform language commands!
 
+### Lists
 genericEmptyList = List is empty, nothing to display.
 
 noUserSubscriptions = 
@@ -242,6 +254,7 @@ noSubscriptions =
   {-b}You're not subscribed to anyone{-b}
   Use `{-pr}start <{-screen-name-variable}>` to get started!
 
+# Flag formatting is on one line, in plain text
 formatFlags = With {$notext -> 
     *[0] text posts
     [1] no text posts
@@ -271,12 +284,12 @@ languages = {$count} {$count ->
     *[other] languages
   }
 
-## Posting errors
+### Posting errors
 postPermissionError =
   {-b}Missing Permissions:{-b} I couldn't send a message in {$name}.
   If a mod could give me the {-b}Send Messages{-b}, {-b}Send Embeds{-b} and {-b}Attach Files{-b} permissions there that would be nice.
   If you'd like me to stop trying to send messages there, moderators can use `{-pr}stopchannel {$id}`.
   If you think you've done everything right but keep getting this message, join our support server, it's linked in my `{-pr}help` message.
 
-## Credit
+### Credit
 languageCredit = English, made by `Tom'#4242`
