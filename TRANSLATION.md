@@ -2,7 +2,7 @@
 
 First of all if you've decided to help with translating QTweet - thank you! Writing the translation for a new language from the ground up should take you a few hours, so it's a solid bit of work!
 
-Our translation system uses the [Fluent syntax](https://projectfluent.org/fluent/guide/). You can find translation files (`.ftl`) in the `lang/` folder. It should be pretty self-explanatory but otherwise you can read up on Fluent syntax or ask me for help.
+Our translation system uses the [Fluent syntax](https://projectfluent.org/fluent/guide/). You can find translation files (`.ftl`) in the `lang/` folder, [here is the english file](https://github.com/atomheartother/QTweet/blob/feature/lang/lang/en.ftl). It should be pretty self-explanatory but otherwise you can read up on Fluent syntax or ask me for help.
 
 ## Creating a new translation
 
