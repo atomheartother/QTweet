@@ -14,9 +14,13 @@ helpIntro =
   {-b}Un problème, une question?{-b} [On a un serveur de support!]({ -support-server })
   Voilà une liste de quelques unes de mes commandes:
 
-genericDmResponse =
-  Bonjour, je suis {-bot-name}!
-  Entrez `{-pr}help` pour voir une liste de mes commandes! ❤"
+helpFooter = Image de profil faite par {$artist}
+
+welcomeMessage = 
+      Bonjour, je suis {-bot-name}, merci de m'avoir invité dans votre serveur!
+      {-b}Pour commencer:{-b} `{-pr}help` pour des commandes & liens utiles!
+      {-b}Si je suis utile à votre serveur{-b}, votez pour moi à {-profile-url}
+      En utilisant mes commandes, vous agréez du fait que {-b}tout contenu envoyé sur votre serveur ou vos MPs à travers moi est votre responsabilité{-b}, lisez ma documentation pour plus d'information.
 
 ## Command usage
 -usage = Utilisation
@@ -201,13 +205,6 @@ noSuchTwitterId =
 twitterUnknwnError =
   {-b}J'ai rencontré une erreur en intéragissant avec twitter{-b}
   {-error-apology}
-
-## DM sent to server owner.
-welcomeMessage = 
-      Bonjour, je suis {-bot-name}, merci de m'avoir invité dans votre serveur!
-      {-b}Pour commencer:{-b} `{-pr}help` pour des commandes & liens utiles!
-      {-b}Si je suis utile à votre serveur{-b}, votez pour moi à {-profile-url}
-      En utilisant mes commandes, vous agréez du fait que {-b}tout contenu envoyé sur votre serveur ou vos MPs à travers moi est votre responsabilité{-b}, lisez ma documentation pour plus d'information.
 
 ## Command permissions error msg
 -botOwnerCmd = Commande réservée au propriétaire du bot
