@@ -101,13 +101,19 @@ Examples:
 
 `!!stopchannel 464858170259406850`: Will stop posting any tweets in the channel with ID #464858170259406850. This command must be ran **in the server this channel is in**, it cannot be run in DMs!
 
+### lang
+
+Usage: `!!lang [list | set <language>]`
+
+List supported languages and change the current server language.
+
+Examples:
+
+`!!lang set fr`: Change to the French language! Parlez-vous français?
+
 ## Bot Owner
 
 This is only for me at the moment, it could be for you if you run **your own instance of QTweet**. QTweet knows who her owner is from the owner ID in `config.json`.
-
-### adminlist
-
-`!!adminlist` has been deprecated, `!!admin` is in the process of being built.
 
 ### leaveguild
 
