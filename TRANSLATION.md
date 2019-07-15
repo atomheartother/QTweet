@@ -26,5 +26,5 @@ Writing messages for QTweet comes with a certain degree of creative freedom. How
 - QTweet has a slight personality in that she talks casually and addresses the recipient directly, she's not too robotic in her way of speaking. For example in French she uses "tu" to address people, the casual form, instead of "vous", which is a more formal way of speaking.
 - Nevertheless, she **stays professional & family-friendly**, so no edginess, no mature language and obviously nothing that could be interpreted as hate speech.
 - Feel free to be friendly and playful in some responses, but keep it light, as it's annoying to some users. I have a few emotes like `:c` in a few responses, it's totally fine to use more or less if you feel like it fits more with what you're going for - just don't overdo it!
-- Try to be to-the-point, especially for error messages, information must be conveyed clearly.
-- Keep in mind that as much as I respect your agency over your work, as the maintaner I will always have the final word on what ends up in production.
+- Try to be clear and concise, especially with errors, information must be conveyed clearly.
+- Keep in mind that as much as I respect your creative freedom, as the maintaner I will always have the final word on what ends up in production.
