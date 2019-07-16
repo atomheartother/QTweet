@@ -129,8 +129,7 @@ startSuccess =
 
 formatUserNames = {$count ->
     [one] {$lastName}
-    *[few] {$names} și {$lastName}
-    [many] {$count} conturi
+    *[other] {$names} și {$lastName}
   }
 
 startUpdateSuccess = 
