@@ -167,9 +167,9 @@ noSuchChannel =
   If you deleted it, I've probably already left it, don't worry!
 
 stopChannelSuccess =
-  {-b}I've unsubscribed you from {$subs} {$subs ->
-    [one] user
-    *[other] users
+  {-b}I've unsubscribed you from {$subs ->
+    [one] one user
+    *[other] {$subs} users
   }.{-b}
   You should now stop getting any tweets in {$channelName}.
 

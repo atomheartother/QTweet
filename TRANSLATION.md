@@ -28,3 +28,43 @@ Writing messages for QTweet comes with a certain degree of creative freedom. How
 - Feel free to be friendly and playful in some responses, but keep it light, as it's annoying to some users. I have a few emotes like `:c` in a few responses, it's totally fine to use more or less if you feel like it fits more with what you're going for - just don't overdo it!
 - Try to be clear and concise, especially with errors, information must be conveyed clearly.
 - Keep in mind that as much as I respect your creative freedom, as the maintaner I will always have the final word on what ends up in production.
+
+## Tips
+
+For your language code, try to use an official code, `eng` won't work for English.
+
+Keep in mind your language may have different _plural rules_ than English, so you might have to adapt the selectors. You can find your language's plural rules [here](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html) and you can learn about Fluent selectors [here](https://projectfluent.org/fluent/guide/selectors.html).
+
+Here's a good example of a problem with plurals and how to fix them, take this stopChannel rule:
+
+```
+stopChannelSuccess =
+  I've unsubscribed you from {$subs ->
+    [one] one user
+    *[other] {$subs} users
+  }.
+```
+
+Here, in English, 1 is singular and everything else is plural, including 0. So if you unsubscribe from 0 people it'll say "I've unsubscribed you from 0 users". Ok, now let's look at the French literal translation:
+
+```
+stopChannelSuccess =
+  {-b}Je t'ai désabonné {$subs ->
+    [one] d'un utilisateur
+    *[other] de {$subs} utilisateurs
+  }.{-b}
+```
+
+Seems fine, except if you look at [the entry for French](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html#fr) in the plural rules table you'll see French actually considers 0 to be singular and not plural, so if you unsubscribe from 0 users you'll get "Unsubscribed from one user" in French.
+
+The fix for this is to use the actual value and not the plural rule selector to override the language's default, basically adding a special rule:
+
+```
+  {-b}Je {$subs ->
+    [0] ne t'ai désabonné de personne
+    [one] t'ai désabonné d'un utilisateur
+    *[other] t'ai désabonné de {$subs} utilisateurs
+  }.{-b}
+```
+
+Now unsubscribing from 0 users will print out "I've unsubscribed you from nobody", which is much better.

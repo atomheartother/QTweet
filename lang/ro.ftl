@@ -167,7 +167,10 @@ noSuchChannel =
   Dacă l-ai șters, nu-ți face griji, probabil că l-am părăsit cu mult înainte!
 
 stopChannelSuccess =
-  {-b}Te-am dezabonat de la {$subs} utilizatori{-b}
+  {-b}Te-am dezabonat de la {$subs} {$subs ->
+    [one] utilizator
+    *[other] utilizatori
+  }.{-b}
   Acum ar trebui să nu mai primești vreun tweet în canalul {$channelName}.
 
 ## !!lang
