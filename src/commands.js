@@ -224,21 +224,22 @@ const start = async (args, qChannel) => {
   });
   Promise.all(promises).then(async results => {
     const screenNamesFinal = data.map(user => `@${user.screen_name}`);
+    const nameCount = screenNamesFinal.length;
     const lastName = screenNamesFinal.pop();
     const addedObjectName = i18n(
       await getLang(qChannel.guildId()),
       "formatUserNames",
       {
-        count: data.length + 1,
+        count: nameCount,
         names: screenNamesFinal.toString(),
         lastName
       }
     );
     postTranslated(qChannel, "startSuccess", {
       addedObjectName,
-      nameCount: screenNamesFinal.length + 1,
+      nameCount,
       firstName: lastName,
-      missedNames: totalScreenNames !== screenNamesFinal.length + 1 ? 1 : 0
+      missedNames: totalScreenNames !== nameCount ? 1 : 0
     });
     log(`Added ${addedObjectName}`, qChannel);
     const redoStream = !!results.find(({ users }) => users !== 0);
