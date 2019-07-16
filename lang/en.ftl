@@ -167,7 +167,10 @@ noSuchChannel =
   If you deleted it, I've probably already left it, don't worry!
 
 stopChannelSuccess =
-  {-b}I've unsubscribed you from {$subs} users{-b}
+  {-b}I've unsubscribed you from {$subs} {$subs ->
+    [one] user
+    *[other] users
+  }.{-b}
   You should now stop getting any tweets in {$channelName}.
 
 ## !!lang
@@ -192,9 +195,9 @@ invalidVerb =
 ### General twitter errors
 noSuchTwitterUser =
   {-b}I can't find {$count ->
-    [1] a Twitter user by the name of {$name}
-    *[other] any of those users: {$name}
-  }
+    [1] a Twitter user by the name of
+    *[other] any of those users:
+  } {$name}.{-b}
   You most likely tried using their display {$count ->
     [1] name
     *[other] names
