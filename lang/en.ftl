@@ -128,8 +128,7 @@ startSuccess =
   }
 
 formatUserNames = {$count ->
-    [one] @{$lastName}
-    [two] @{$names} and @{$lastName}
+    [one] {$lastName}
     *[few] {$names} and {$lastName}
     [many] {$count} accounts
   }
