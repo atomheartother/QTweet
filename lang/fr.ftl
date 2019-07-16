@@ -172,7 +172,7 @@ noSuchLang =
 
 langSuccess =
   {-b}Langage modifié{-b}
-  Je parleré désormé dans la langue de Mauliaire!
+  Je parlerai désormais dans la langue de Molière!
 
 ## !!admin
 adminInvalidId = Je n'ai pas pu construre un objet salon valide avec ID: {$channelId}
