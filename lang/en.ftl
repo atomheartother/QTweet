@@ -129,8 +129,7 @@ startSuccess =
 
 formatUserNames = {$count ->
     [one] {$lastName}
-    *[few] {$names} and {$lastName}
-    [many] {$count} accounts
+    *[other] {$names} and {$lastName}
   }
 
 startUpdateSuccess = 
