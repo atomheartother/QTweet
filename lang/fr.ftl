@@ -172,7 +172,7 @@ noSuchLang =
 
 langSuccess =
   {-b}Langage modifié{-b}
-  Je parlerais désormais dans la langue de Molière!
+  Je parlerai désormais dans la langue de Molière!
 
 ## !!admin
 adminInvalidId = Je n'ai pas pu construre un objet salon valide avec ID: {$channelId}
@@ -281,7 +281,7 @@ languages = {$count} {$count ->
 postPermissionError =
   {-b}Permissions Manquantes:{-b} Je n'ai pas pu envoyer un message dans {$name}.
   Si un·e modérateur·trice pouvait m'y donner ces permissions: {-b}Envoyer des Messages{-b}, {-b}Intégrer des liens{-b} et {-b}Joindre des fichiers{-b} ça serait top.
-  Si vous voulez que j'arrête d'essayer d'envoyer des messages dans {$name}, vous pouver utiliser `{-pr}stopchannel {$id}`.
+  Si vous voulez que j'arrête d'essayer d'envoyer des messages dans {$name}, vous pouvez utiliser `{-pr}stopchannel {$id}`.
   Si vous pensez avoir tout bien fait mais que je continue de vous envoyer ce message, rejoinez notre serveur de support, il est lié dans `{-pr}help`.
 
 ## Credit
