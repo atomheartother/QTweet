@@ -192,9 +192,9 @@ invalidVerb =
 ### General twitter errors
 noSuchTwitterUser =
   {-b}Nu pot găsi {$count ->
-    [1] un utilizator Twitter cu numele {$name}
-    *[other] oricare din utilizatorii: {$name}
-  }
+    [1] un utilizator Twitter cu numele
+    *[other] oricare din utilizatorii:
+  } {$name}.{-b}
   Cel mai probabil ai încercat să le folosești {$count ->
     [1] numele
     *[other] numele

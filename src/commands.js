@@ -236,7 +236,7 @@ const start = async (args, qChannel) => {
     );
     postTranslated(qChannel, "startSuccess", {
       addedObjectName,
-      nameCount: screenNamesFinal.length,
+      nameCount: screenNamesFinal.length + 1,
       firstName: lastName,
       missedNames: totalScreenNames !== screenNamesFinal.length + 1 ? 1 : 0
     });

@@ -158,7 +158,10 @@ noSuchChannel =
   S'il est déjà supprimé, je l'ai sûrement déjà quitté, ne t'inquiètes pas!
 
 stopChannelSuccess =
-  {-b}Je t'ai désabonné de {$subs} utilisateurs{-b}
+  {-b}Je t'ai désabonné {$subs ->
+    [one] d'un utilisateur
+    *[other] de plusieurs utilisateurs
+  }.{-b}
   Tu devrais ne plus recevoir de tweets dans {$channelName}.
 
 ## !!lang
@@ -183,14 +186,14 @@ invalidVerb =
 ## General twitter errors
 noSuchTwitterUser =
   {-b}Je ne peux {$count ->
-    [1] pas trouver un compte Twitter nommé {$name}
-    *[other] : trouver aucun de ces comptes: {$name}
-  }
+    [one] pas trouver un compte Twitter nommé
+    *[other] trouver aucun de ces comptes:
+  } {$name}.{-b}
   Tu as certainement utilisé {$count ->
-    [1] leur nom affiché
+    [one] leur nom affiché
     *[other] leurs noms affichés
   } et pas {$count -> 
-    [1] leur nom d'utilisateur
+    [one] leur nom d'utilisateur
     *[other] leurs noms d'utilisateur
   }.
 
