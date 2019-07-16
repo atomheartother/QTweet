@@ -31,7 +31,13 @@ Writing messages for QTweet comes with a certain degree of creative freedom. How
 
 ## Tips
 
+### Language code
+
 For your language code, try to use an official code, `eng` won't work for English.
+
+### Plural Rules
+
+Fluent is smart, and uses plural rules to stay consistent with a language's internal logic. For example some languages will consider 2 objects to be singular.
 
 Keep in mind your language may have different _plural rules_ than English, so you might have to adapt the selectors. You can find your language's plural rules [here](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html) and you can learn about Fluent selectors [here](https://projectfluent.org/fluent/guide/selectors.html).
 
@@ -45,7 +51,7 @@ stopChannelSuccess =
   }.
 ```
 
-Here, in English, 1 is singular and everything else is plural, including 0. So if you unsubscribe from 0 people it'll say "I've unsubscribed you from 0 users". Ok, now let's look at the French literal translation:
+In English, 1 is singular and everything else is plural, including 0. So if you unsubscribe from 0 people, here it will say "I've unsubscribed you from 0 users". Ok, now let's look at the French literal translation:
 
 ```
 stopChannelSuccess =
