@@ -76,7 +76,7 @@ export const handleMessage = async message => {
     } else if (message.channel.type == "dm") {
       const qc = new QChannel(channel);
       const lang = await getLang(qc.guildId());
-      postMessage(message.channel, i18n(lang, "welcomeMessage"));
+      postMessage(qc, i18n(lang, "welcomeMessage"));
     }
     return;
   }
@@ -100,7 +100,7 @@ export const handleMessage = async message => {
       .addField(`${config.prefix}stop`, i18n(lang, "usage-stop"))
       .addField(`${config.prefix}list`, i18n(lang, "usage-list"))
       .setFooter(i18n(lang, "helpFooter", { artist: "ryusukehamamoto" }));
-    postEmbed(message.channel, { embed });
+    postEmbed(qc, { embed });
     return;
   }
 
