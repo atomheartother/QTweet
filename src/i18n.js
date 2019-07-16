@@ -1,36 +1,28 @@
 import fs from "fs";
 import { FluentBundle } from "fluent";
-
+import { supportedLangs } from "../config.json";
 const langDir = "./lang";
 const langs = {};
-
-fs.readdir(langDir, (err, files) => {
-  if (err) {
-    console.error(err);
-    return;
-  }
+{
   const globalConf = fs
     .readFileSync(`${langDir}/global.ftl`, "utf8")
     .toString("utf8");
-  files.forEach(file => {
-    if (file.endsWith(".ftl") && file !== "global.ftl") {
-      const lang = file.substr(0, file.length - 4);
-      const b = new FluentBundle(lang, { useIsolating: false });
-      b.addMessages(globalConf);
-      const errors = b.addMessages(
-        fs.readFileSync(`${langDir}/${file}`, "utf8").toString("utf8")
-      );
-      if (errors.length) {
-        console.log(`Errors parsing language file: ${file}`);
-        console.log(errors);
-        return;
-      }
-      langs[lang] = b;
-      console.log(`Processed language file: ${file}`);
-    }
-  });
-});
 
+  supportedLangs.forEach(lang => {
+    const b = new FluentBundle(lang, { useIsolating: false });
+    b.addMessages(globalConf);
+    const errors = b.addMessages(
+      fs.readFileSync(`${langDir}/${lang}.ftl`, "utf8").toString("utf8")
+    );
+    if (errors.length) {
+      console.log(`Errors parsing language: ${lang}`);
+      console.log(errors);
+      return;
+    }
+    langs[lang] = b;
+    console.log(`Added language: ${lang}`);
+  });
+}
 const i18n = (lang, key, options) => {
   const bundle = langs[lang];
   if (!bundle) {
