@@ -35,7 +35,6 @@ const i18n = (lang, key, options) => {
     console.log(`Could not resolve key: ${key}`);
     return `{$${key}}`;
   }
-  console.log(options);
   const errors = [];
   const res = bundle.format(msg, options, errors);
   if (errors.length) {
