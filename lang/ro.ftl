@@ -118,7 +118,7 @@ startSuccess =
   {-b}Acum ești abonat la {$addedObjectName}!{-b}
   Amintește-ți că poți opri abonamentul folosind comanda: `{-pr}stop {$nameCount ->
     [one] {$firstName}
-    *[other] <nume_afișat>
+    *[other] <{-screen-name-variable}>
   }`.
   Poate să dureze până la 20 de minute pentru a începe postarea tweet-urilor lor recente, dar odată ce voi începe treaba, le voi posta în timp real!
 

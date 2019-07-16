@@ -109,7 +109,7 @@ startSuccess =
   {-b}Tu es maintenan abonné·e à {$addedObjectName}!{-b}
   Tu peux toujours m'arrêter avec `{-pr}stop {$nameCount ->
     [one] {$firstName}
-    *[other] <screen_name>
+    *[other] <{-screen-name-variable}>
   }`.
   Obtenir le premier tweet peut me prendre jusqu'à 20min, mais après ça tout sera en temps réel!
 

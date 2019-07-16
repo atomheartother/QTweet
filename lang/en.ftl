@@ -118,7 +118,7 @@ startSuccess =
   {-b}You're now subscribed to {$addedObjectName}!{-b}
   Remember you can stop me at any time with `{-pr}stop {$nameCount ->
     [one] {$firstName}
-    *[other] <screen_name>
+    *[other] <{-screen-name-variable}>
   }`.
   It can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!
 
