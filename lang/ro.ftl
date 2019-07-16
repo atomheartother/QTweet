@@ -108,7 +108,7 @@ tweetIdGeneralError =
 
 ## !!start
 startGeneralError =
-  {-b}Ceva nu a mers bine obținând informatii de la {$namesCount ->
+  {-b}Ceva nu a mers bine obținând informații de la {$namesCount ->
   [one] acest cont
   *[other] aceste conturi
   }.{-b}
@@ -208,7 +208,7 @@ noSuchTwitterUser =
 
 tooManyUsersRequested =
   {-b}Prea mulți utilizatori au fost ceruți!{-b}
-  Se pare că am cerut prea mulți utilizatori de la Twitter. Acest lucru nu ar trebui să se întâmple, dar între timp încearcă sa ceri mai puțini utilizatori!
+  Se pare că am cerut prea mulți utilizatori de la Twitter. Acest lucru nu ar trebui să se întâmple, dar între timp încearcă să ceri mai puțini utilizatori!
 
 noSuchTwitterId =
   {-b}Nu un astfel de ID{-b}
@@ -292,7 +292,7 @@ postPermissionError =
   {-b}Permisiuni lipsă:{-b} Nu am putut trimite un mesaj în {$name}.
   Dacă un moderator ar putea să-mi dea permisiunile {-b}Send Messages{-b}, {-b}Send Embeds{-b} și {-b}Attach Files{-b} în canalul dorit, ar fi drăguț.
   Dacă dorești să mă opresc din a trimite mesaje într-un loc respectiv, moderatorii pot folosi comanda `{-pr}stopchannel {$id}`.
-  Dacă tu crezi că ai făcut totul corect, însa primești acest mesaj în locul rezultatului dorit, intă pe server-ul nostru suport, ai link-ul în mesajul comenzii `{-pr}help` .
+  Dacă tu crezi că ai făcut totul corect, însa primești acest mesaj în locul rezultatului dorit, intră pe server-ul nostru suport, ai link-ul în mesajul comenzii `{-pr}help` .
 
 ### Credit
-languageCredit = Română, traducator `Blind#0784`
+languageCredit = Română, traducător `Blind#0784`
