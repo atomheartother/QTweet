@@ -158,9 +158,10 @@ noSuchChannel =
   S'il est déjà supprimé, je l'ai sûrement déjà quitté, ne t'inquiètes pas!
 
 stopChannelSuccess =
-  {-b}Je t'ai désabonné {$subs ->
-    [one] d'un utilisateur
-    *[other] de plusieurs utilisateurs
+  {-b}Je {$subs ->
+    [0] ne t'ai désabonné de personne
+    [one] t'ai désabonné d'un utilisateur
+    *[other] t'ai désabonné de {$subs} utilisateurs
   }.{-b}
   Tu devrais ne plus recevoir de tweets dans {$channelName}.
 
