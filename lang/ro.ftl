@@ -177,7 +177,7 @@ noSuchLang =
 
 langSuccess =
   {-b}Limba a fost schimbată cu succes!{-b}
-  Bine ai venit în minunata lume a limbii române! XD
+  Bine ai venit în minunata lume a limbii române!
 
 ## !!admin
 adminInvalidId = Nu am putut construi un obiect al canalului valid cu id-ul: {$channelId}
