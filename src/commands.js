@@ -235,12 +235,17 @@ const start = async (args, qChannel) => {
         lastName
       }
     );
-    postTranslated(qChannel, "startSuccess", {
-      addedObjectName,
-      nameCount,
-      firstName: lastName,
-      missedNames: totalScreenNames !== nameCount ? 1 : 0
-    });
+    if (results.find(({ subs }) => subs !== 0))
+      postTranslated(qChannel, "startSuccess", {
+        addedObjectName,
+        nameCount,
+        firstName: lastName,
+        missedNames: totalScreenNames !== nameCount ? 1 : 0
+      });
+    else
+      postTranslated(qChannel, "startUpdateSuccess", {
+        addedObjectName
+      });
     log(`Added ${addedObjectName}`, qChannel);
     const redoStream = !!results.find(({ users }) => users !== 0);
     if (redoStream) createStream();
