@@ -63,6 +63,7 @@ usage-lang = {-usage}: `{-pr}lang [list|set <limba>]`
 usage-lang-set = {-usage}: `{-pr}lang set <limba>`
 
 ### Command feedback
+-error-apology = O voi rezolva curând!
 ## !!tweet
 countIsNaN =
   {-b}Am nevoie de un număr de tweet-uri pentru a le obține!{-b}
