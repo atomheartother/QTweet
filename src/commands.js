@@ -55,32 +55,36 @@ const getScreenName = word => {
 };
 
 const argParse = args => {
-  let values = [];
-  let options = [];
+  const values = [];
+  const flags = [];
+  const options = [];
   for (let arg of args) {
     if (arg.substring(0, 2) == "--") {
-      options.push(arg.substring(2));
+      const optStr = arg.substring(2);
+      const equalIdx = optStr.indexOf("=");
+      if (equalIdx === -1) flags.push(arg.substring(2));
+      // flag
+      else {
+        options.push({
+          [optStr.substring(0, equalIdx)]: optStr.substring(equalIdx + 1)
+        });
+      }
     } else {
       values.push(arg);
     }
   }
-  return { values, options };
+  return { values, flags, options };
 };
 
 const tweet = (args, qChannel, author) => {
-  const { values, options } = argParse(args);
+  const { values, flags } = argParse(args);
   let force = false;
   if (values.length < 1 || values.length > 2) {
     postTranslated(qChannel, "usage-tweet");
     return;
   }
   const screenName = getScreenName(values[0]);
-  options.forEach(option => {
-    if (option === "force") {
-      force = true;
-    }
-  });
-
+  if (flags.indexOf("force") !== -1) force = true;
   let count = 1;
   if (values.length > 1) {
     count = Number(values[1]);
@@ -187,8 +191,8 @@ const tweetId = (args, qChannel) => {
 };
 
 const start = async (args, qChannel) => {
-  let { values, options } = argParse(args);
-  const flags = computeFlags(options);
+  let { values, flags: strFlags } = argParse(args);
+  const flags = computeFlags(strFlags);
   let screenNames = values.map(getScreenName);
   if (screenNames.length < 1) {
     postTranslated(qChannel, "usage-start");
