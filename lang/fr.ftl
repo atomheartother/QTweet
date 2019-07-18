@@ -53,7 +53,7 @@ usage-lang = {-usage}: `{-pr}lang [list|set <langage>]`
 usage-lang-set = {-usage}: `{-pr}lang set <langage>`
 
 ## Command feedback
--error-apology = Je suis sur le coup, désolé du désagrément!
+-error-apology = Je suis sur le coup, désolée du désagrément!
 ### !!tweet
 countIsNaN =
   {-b}J'ai besoin d'un nombre de tweets{-b}
