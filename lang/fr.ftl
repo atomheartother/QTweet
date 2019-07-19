@@ -30,12 +30,12 @@ usage-tweet =
   {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [nombre]`
 
 usage-start =
-  S'abonner à un utilisateur Twitter et envoyer ses tweets en temps réel.
+  S'abonne à un utilisateur Twitter et envoye ses tweets en temps réel.
   {-b}{-usage}{-b}: `{-pr}start <{-screen-name-variable}> [options]`
   Supporte plusieurs utilisateurs, les retweets, le filtrage des tweets texte et plus! Cf. la documentation
 
 usage-stop = 
-  Se désabonner d'un utilisateur.
+  Se désabonne d'un utilisateur.
   {-b}{-usage}{-b}: `{-pr}stop <{-screen-name-variable}>`
 
 usage-stopchannel =

@@ -1,4 +1,5 @@
 import log from "./log";
+import { RichEmbed } from "discord.js";
 
 import * as checks from "./checks";
 import {
@@ -20,7 +21,7 @@ import {
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
-import { supportedLangs } from "../config.json";
+import { supportedLangs, prefix, profileURL } from "../config.json";
 
 import {
   formatSubsList,
@@ -454,6 +455,21 @@ const handleTwitterError = (qChannel, code, msg, screenNames) => {
   }
 };
 
+const help = async (args, qChannel) => {
+  const lang = await getLang(qChannel.guildId());
+  const embed = new RichEmbed()
+    .setColor(0x0e7675)
+    .setTitle(i18n(lang, "helpHeader"))
+    .setURL(profileURL)
+    .setDescription(i18n(lang, "helpIntro"))
+    .addField(`${prefix}tweet`, i18n(lang, "usage-tweet"))
+    .addField(`${prefix}start`, i18n(lang, "usage-start"))
+    .addField(`${prefix}stop`, i18n(lang, "usage-stop"))
+    .addField(`${prefix}list`, i18n(lang, "usage-list"))
+    .setFooter(i18n(lang, "helpFooter", { artist: "ryusukehamamoto" }));
+  postEmbed(qChannel, { embed });
+};
+
 export default {
   start: {
     function: start,
@@ -522,6 +538,11 @@ export default {
         badB: "stopForMods"
       }
     ]
+  },
+  help: {
+    function: help,
+    checks: [],
+    minArgs: 0
   },
   leaveguild: {
     function: leaveGuild,
