@@ -4,3 +4,4 @@ node_modules/
 gets.json
 logs/
 .vscode/
+.git/
