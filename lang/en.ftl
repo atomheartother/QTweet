@@ -81,7 +81,7 @@ tweetCountHighConfirm =
   {-b}You're asking for a lot of tweets{-b}
   Are you sure you want me to post {$count} tweets? Once I start, you won't be able to stop me!
   If you're sure you want me to do it, run:
-  `{-pr}tweet {$screenName} {$count} --force`
+  `{-pr}tweet {$screenName} --count={$count} --force`
 
 tweetNotAuthorized =
   {-b}I tried getting a tweet from {$screenName} but Twitter tells me that's unauthorized.{-b}

@@ -81,7 +81,7 @@ tweetCountHighConfirm =
   {-b}Îmi ceri să postez foarte multe tweet-uri!{-b}
   Ești sigur că vrei să postez {$count} tweet-uri? Odată ce încep, nu mă vei putea opri până nu termin!
   Dacă ești sigur ca vrei sa postez atâtea tweet-uri, rulează comanda:
-  `{-pr}tweet {$screenName} {$count} --force`
+  `{-pr}tweet {$screenName} --count={$count} --force`
 
 tweetNotAuthorized =
   {-b}Am încercat să iau un tweet de la {$screenName} , dar Twitter îmi refuză această acțiune.{-b}
