@@ -27,7 +27,7 @@ welcomeMessage =
 -screen-name-variable = nom_utilisateur_twitter
 usage-tweet = 
   Envoie le dernier tweet d'un utilisateur
-  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [nombre]`
+  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=nombre]`
 
 usage-start =
   S'abonne à un utilisateur Twitter et envoye ses tweets en temps réel.
