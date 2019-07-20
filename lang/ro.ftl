@@ -37,7 +37,7 @@ welcomeMessage =
 ## Usage for every command
 usage-tweet = 
   Postează cele mai recente tweet-uri de la un utilizator specificat.
-  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [cardinalul]`
+  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=cardinalul]`
 
 usage-start =
   Abonează-te la un utilizator de twitter și voi posta toate tweet-urile lui în timp real.

@@ -37,7 +37,7 @@ welcomeMessage =
 ## Usage for every command
 usage-tweet = 
   Post the latest tweet(s) from the given user.
-  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [count]`
+  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=count]`
 
 usage-start =
   Subscribe to a twitter user and post their tweets in real time.
