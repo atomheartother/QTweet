@@ -155,7 +155,11 @@ const formatTweetText = (text, entities) => {
         .concat(codePoints.slice(end + offset));
       offset += nt.length - (end - start);
     });
-  let fixedText = codePoints.join("").replace(new RegExp(/&amp;/, "g"), "&");
+  let fixedText = codePoints
+    .join("")
+    .replace(/&amp;/g, "&")
+    .replace(/&gt;/g, ">")
+    .replace(/&lt;/g, "<");
   const linkIdx = fixedText.indexOf("https://t.co/");
   if (linkIdx > -1) {
     fixedText = fixedText.substring(0, linkIdx);
@@ -184,14 +188,18 @@ export const formatTweet = tweet => {
     ({ extended_entities, entities } = extended_tweet);
     txt = extended_tweet.full_text || extended_tweet.text;
   }
+  let targetScreenName = user.screen_name;
   if (retweeted_status) {
     // Copy over media from retweets
     extended_entities = extended_entities || retweeted_status.extended_entities;
+    // Use the id_str if there's one
+    id_str = retweeted_status.id_str || id_str;
+    targetScreenName = retweeted_status.user.screen_name || targetScreenName;
   }
   let embed = {
     author: {
       name: `${user.name} (@${user.screen_name})`,
-      url: `https://twitter.com/${user.screen_name}/status/${id_str}`
+      url: `https://twitter.com/${targetScreenName}/status/${id_str}`
     },
     thumbnail: {
       url: user.profile_image_url_https

@@ -10,16 +10,17 @@ import {
   rmUser as SQL_rmUser,
   addSubscription,
   removeSubscription,
-  hasUser,
   getUserInfo as SQL_getUserInfo,
-  hasChannel,
   addChannel,
   getAllSubs,
   addUser as SQL_addUser,
   open as openDb,
   close as closeDb,
-  getGuildChannels
+  getGuildChannels,
+  setLang as SQL_setLang,
+  getLang as SQL_getLang
 } from "./sqlite";
+import * as config from "../config.json";
 import log from "./log";
 import QChannel from "./QChannel";
 
@@ -48,12 +49,7 @@ export const getUserFromScreenName = SQL_getUserFromScreenName;
 export const addUser = SQL_addUser;
 
 export const addUserIfNoExists = async (twitterId, name) => {
-  const shouldAddUser = !(await hasUser(twitterId));
-  if (shouldAddUser) {
-    const users = await addUser(twitterId, name);
-    return users;
-  }
-  return 0;
+  return addUser(twitterId, name);
 };
 
 // Makes sure everything is consistent
@@ -90,22 +86,27 @@ export const getUserInfo = SQL_getUserInfo;
 export const updateUser = async user => {
   const usrInfo = await getUserInfo(user.id_str);
   if (!usrInfo || usrInfo.name !== user.screen_name) {
-    addUser(user.id_str, user.screen_name);
-  }
-};
-
-export const addChannelIfNoExists = async (
-  channelId,
-  guildId,
-  ownerId,
-  isDM
-) => {
-  const shouldCreateChannel = !(await hasChannel(channelId));
-  if (shouldCreateChannel) {
-    await addChannel(channelId, guildId, ownerId, isDM);
-    return 1;
+    return addUser(user.id_str, user.screen_name);
   }
   return 0;
+};
+
+export const setLang = SQL_setLang;
+
+export const addChannelIfNoExists = async (channelId, isDM) => {
+  const qc = QChannel.unserialize({ channelId, isDM });
+  const obj = await qc.obj();
+  if (!obj) {
+    log(
+      `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`
+    );
+    return 0;
+  }
+  if (qc.isDM) {
+    return await addChannel(channelId, channelId, channelId, qc.isDM);
+  } else {
+    return await addChannel(channelId, qc.guildId(), qc.ownerId(), qc.isDM);
+  }
 };
 
 // Add a subscription to this userId or update an existing one
@@ -129,6 +130,11 @@ export const add = async (
 };
 
 export const rmUser = SQL_rmUser;
+
+export const getLang = async guildId => {
+  const guild = await SQL_getLang(guildId);
+  return guild ? guild.lang : config.defaultLang;
+};
 
 const deleteUserIfEmpty = async twitterId => {
   const subs = await getUserSubs(twitterId);
@@ -181,5 +187,9 @@ export const rmGuild = async guildId => {
     deletedSubs += subs;
     deletedUsrs += users;
   }
-  return { subs: deletedSubs, users: deletedUsrs, channels: channels.length };
+  return {
+    subs: deletedSubs,
+    users: deletedUsrs,
+    channels: channels.length
+  };
 };

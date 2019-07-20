@@ -1,23 +1,34 @@
-import * as config from "../config.json";
-import usage from "./usage";
 import log from "./log";
+import { RichEmbed } from "discord.js";
 
 import * as checks from "./checks";
 import {
   message as postMessage,
   embed as postEmbed,
-  announcement
+  announcement,
+  translated as postTranslated
 } from "./post";
 import {
   rm,
   add,
   getUniqueChannels,
   getUserFromScreenName,
-  rmChannel
+  rmChannel,
+  getChannelSubs,
+  getGuildSubs,
+  setLang,
+  getLang
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
-import { formatChannelList, formatQChannel, formatTwitterUser } from "./format";
+import { supportedLangs, prefix, profileURL } from "../config.json";
+
+import {
+  formatSubsList,
+  formatQChannel,
+  formatTwitterUser,
+  formatLanguages
+} from "./format";
 import {
   formatTweet,
   createStream,
@@ -27,6 +38,7 @@ import {
   getError
 } from "./twitter";
 import { getGuild, getChannel } from "./discord";
+import i18n from "./i18n";
 
 const getScreenName = word => {
   if (word.startsWith("@")) {
@@ -44,105 +56,82 @@ const getScreenName = word => {
 };
 
 const argParse = args => {
-  let values = [];
-  let options = [];
+  const values = [];
+  const flags = [];
+  const options = [];
   for (let arg of args) {
     if (arg.substring(0, 2) == "--") {
-      options.push(arg.substring(2));
+      const optStr = arg.substring(2);
+      const equalIdx = optStr.indexOf("=");
+      if (equalIdx === -1) flags.push(arg.substring(2));
+      // flag
+      else {
+        options.push({
+          [optStr.substring(0, equalIdx)]: optStr.substring(equalIdx + 1)
+        });
+      }
     } else {
       values.push(arg);
     }
   }
-  return { values, options };
+  return { values, flags, options };
 };
 
 const tweet = (args, qChannel, author) => {
-  const { values, options } = argParse(args);
+  const { values, flags } = argParse(args);
   let force = false;
   if (values.length < 1 || values.length > 2) {
-    postMessage(qChannel, usage[tweet]);
+    postTranslated(qChannel, "usage-tweet");
     return;
   }
   const screenName = getScreenName(values[0]);
-  options.forEach(option => {
-    if (option === "force") {
-      force = true;
-    }
-  });
-
+  if (flags.indexOf("force") !== -1) force = true;
   let count = 1;
   if (values.length > 1) {
     count = Number(values[1]);
   }
   if (isNaN(count)) {
-    postMessage(
-      qChannel,
-      `**I need a number of tweets to get!**\nWait a minute, ${
-        args[1]
-      } isn't a number! >:c`
-    );
+    postTranslated(qChannel, "countIsNaN", { count });
     return;
   }
   const maxCount = 5;
   const aLot = 15;
   checks.isMod(author, qChannel, isMod => {
     if (!isMod && count > maxCount) {
-      postMessage(
-        qChannel,
-        `**Limited to ${maxCount} tweets**\nYou're not a mod so I have to limit you - here's the latest ${maxCount} tweets!`
-      );
+      postTranslated(qChannel, "tweetCountLimited", { maxCount });
       count = maxCount;
     }
     if (count < 1) {
-      postMessage(
-        qChannel,
-        `**You asked me to post ${count} tweets, so I won't post any**\nNice try~`
-      );
+      postTranslated(qChannel, "tweetCountUnderOne", { count });
       return;
     }
     if (count >= aLot && !force) {
       log("Asked user to confirm", qChannel);
-      postMessage(
-        qChannel,
-        `**You're asking for a lot of tweets**\nAre you sure you want me to post ${count} tweets? Once I start, you won't be able to stop me!\n If you're sure you want me to do it, run:\n\`${
-          config.prefix
-        }tweet ${screenName} ${count} --force\``
-      );
+      postTranslated(qChannel, "tweetCountHighConfirm", { screenName, count });
       return;
     }
     userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
       .then(async tweets => {
         if (tweets.error) {
           if (tweets.error === "Not authorized.") {
-            postMessage(
-              qChannel,
-              `**I tried getting a tweet from ${screenName} but Twitter tells me that's unauthorized.**\nThis is usually caused by a blocked account.`
-            );
+            postTranslated(qChannel, "tweetNotAuthorized", { screenName });
           } else {
-            postMessage(
-              qChannel,
-              `**${screenName} does exist but something seems wrong with their profile**\nI can't get their timeline... Twitter had this to say:\n${
-                tweets.error
-              }`
-            );
+            postTranslated(qChannel, "tweetUnknwnError", {
+              error: tweets.error,
+              screenName
+            });
             log("Unknown error on twitter timeline", qChannel);
             log(tweets.error, qChannel);
           }
           return;
         }
         if (tweets.length < 1) {
-          postMessage(
-            qChannel,
-            "It doesn't look like " + screenName + " has any tweets... "
-          );
+          postTranslated(qChannel, "noTweets", { screenName });
           return;
         }
         let validTweets = tweets.filter(t => t && t.user);
         if (validTweets.length == 0) {
-          postMessage(
-            qChannel,
-            "**This user doesn't seem to have any valid tweets**\nYou might want to try again, maybe Twitter messed up?"
-          );
+          postTranslated(qChannel, "noValidTweets");
           log("Invalid tweets from timeline", qChannel);
           log(tweets, qChannel);
           return;
@@ -162,10 +151,7 @@ const tweet = (args, qChannel, author) => {
         if (!code) {
           log("Exception thrown without error", qChannel);
           log(response, qChannel);
-          postMessage(
-            qChannel,
-            `**Something went wrong getting tweets from ${screenName}**\nI'm looking into it, sorry for the trouble!`
-          );
+          postTranslated(qChannel, "tweetGeneralError", { screenName });
           return;
         } else {
           handleTwitterError(qChannel, code, msg, [screenName]);
@@ -197,10 +183,7 @@ const tweetId = (args, qChannel) => {
       if (!code) {
         log("Exception thrown without error", qChannel);
         log(response, qChannel);
-        postMessage(
-          qChannel,
-          `**Something went wrong getting tweet #${id}**\nI'm looking into it, sorry for the trouble!`
-        );
+        postTranslated(qChannel, "tweetIdGeneralError", { id });
         return;
       } else {
         handleTwitterError(qChannel, code, msg, [id]);
@@ -209,11 +192,11 @@ const tweetId = (args, qChannel) => {
 };
 
 const start = async (args, qChannel) => {
-  let { values, options } = argParse(args);
-  const flags = computeFlags(options);
+  let { values, flags: strFlags } = argParse(args);
+  const flags = computeFlags(strFlags);
   let screenNames = values.map(getScreenName);
   if (screenNames.length < 1) {
-    postMessage(qChannel, usage["start"]);
+    postTranslated(qChannel, "usage-start");
     return;
   }
   const slices = 100;
@@ -232,12 +215,9 @@ const start = async (args, qChannel) => {
     if (!code) {
       log("Exception thrown without error", qChannel);
       log(res, qChannel);
-      postMessage(
-        qChannel,
-        `**Something went wrong getting the info for ${
-          screenNames.length === 1 ? "this account" : "these accounts"
-        }**\nThe problem appears to be on my end, sorry for the trouble!`
-      );
+      postTranslated(qChannel, "startGeneralError", {
+        namesCount: screenNames.length
+      });
     } else {
       handleTwitterError(qChannel, code, msg, screenNames);
     }
@@ -251,32 +231,30 @@ const start = async (args, qChannel) => {
       add(qChannel.id, userId, name, flags, qChannel.isDM, gid, oid)
     );
   });
-  Promise.all(promises).then(results => {
-    let addedObjectName = `@${data[0].screen_name}`;
-    if (data.length > 1 && data.length < 10) {
-      addedObjectName = `${data.length} users: ${data.reduce(
-        (acc, { screen_name }, idx) => {
-          if (idx === data.length - 1) {
-            return acc.concat(` and ${screen_name}`);
-          } else if (idx === 0) {
-            return screen_name;
-          }
-          return acc.concat(`, ${screen_name}`);
-        },
-        ""
-      )}`;
-    } else if (data.length >= 10) {
-      addedObjectName = `${data.length} twitter users`;
-    }
-    let channelMsg = `**You're now subscribed to ${addedObjectName}!**\nRemember you can stop me at any time with \`${
-      config.prefix
-    }stop ${
-      data.length === 1 ? data[0].screen_name : "<screen_name>"
-    }\`.\nIt can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!`;
-    if (totalScreenNames !== data.length) {
-      channelMsg += `\n\nIt also appears I was unable to find some of the users you specified, make sure you used their screen name!`;
-    }
-    postMessage(qChannel, channelMsg);
+  Promise.all(promises).then(async results => {
+    const screenNamesFinal = data.map(user => `@${user.screen_name}`);
+    const nameCount = screenNamesFinal.length;
+    const lastName = screenNamesFinal.pop();
+    const addedObjectName = i18n(
+      await getLang(qChannel.guildId()),
+      "formatUserNames",
+      {
+        count: nameCount,
+        names: screenNamesFinal.toString(),
+        lastName
+      }
+    );
+    if (results.find(({ subs }) => subs !== 0))
+      postTranslated(qChannel, "startSuccess", {
+        addedObjectName,
+        nameCount,
+        firstName: lastName,
+        missedNames: totalScreenNames !== nameCount ? 1 : 0
+      });
+    else
+      postTranslated(qChannel, "startUpdateSuccess", {
+        addedObjectName
+      });
     log(`Added ${addedObjectName}`, qChannel);
     const redoStream = !!results.find(({ users }) => users !== 0);
     if (redoStream) createStream();
@@ -290,11 +268,11 @@ const leaveGuild = async (args, qChannel) => {
   } else if (!qChannel.isDM) {
     guild = await qChannel.guild();
   } else {
-    postMessage(qChannel, "No valid guild ID provided");
+    postTranslated(qChannel, "noValidGid");
     return;
   }
   if (guild == undefined) {
-    postMessage(qChannel, "I couldn't find guild: " + args[0]);
+    postTranslated(qChannel, "guildNotFound", { guild: args[0] });
     return;
   }
   // Leave the guild
@@ -302,7 +280,8 @@ const leaveGuild = async (args, qChannel) => {
     .leave()
     .then(g => {
       log(`Left the guild ${g.name}`);
-      if (qChannel.isDM) postMessage(qChannel, `Left the guild ${g}`);
+      if (qChannel.isDM)
+        postTranslated(qChannel, "leaveSuccess", { name: guild.name });
     })
     .catch(err => {
       log("Could not leave guild", qChannel);
@@ -317,17 +296,9 @@ const stop = (args, qChannel) => {
       let twitterId = data[0].id_str;
       const { subs, users } = await rm(qChannel.id, twitterId);
       if (subs === 0) {
-        postMessage(
-          qChannel,
-          `**Not subscribed to @${screenName}**\nUse \`${
-            config.prefix
-          }list\` for a list of subscriptions!`
-        );
+        postTranslated(qChannel, "noSuchSubscription", { screenName });
       } else {
-        postMessage(
-          qChannel,
-          `**I've unsubscribed you from @${screenName}**\nYou should stop getting any tweets from them.`
-        );
+        postTranslated(qChannel, "stopSuccess", { screenName });
         if (users > 0) createStream();
       }
     })
@@ -336,10 +307,7 @@ const stop = (args, qChannel) => {
       if (!code) {
         log("Exception thrown without error", qChannel);
         log(response, qChannel);
-        postMessage(
-          qChannel,
-          `**Something went wrong trying to unsubscribe from ${screenName}**\nI'm looking into it, sorry for the trouble!`
-        );
+        postTranslated(qChannel, "stopGeneralError", { screenName });
         return;
       } else {
         handleTwitterError(qChannel, code, msg, [screenName]);
@@ -352,40 +320,35 @@ const stopchannel = async (args, qChannel) => {
   let channelName = await qChannel.name();
   if (args.length > 0) {
     if (qChannel.isDM) {
-      postMessage(
-        qChannel,
-        `**Use this command in the server you want to target**\nIn DMs, this command will affect your DM subscriptions so you don't have to use an argument`
-      );
+      postTranslated(qChannel, "stopChannelInDm");
       return;
     }
     const guild = await qChannel.guild();
     targetChannel = args[0];
     const channelObj = guild.channels.find(c => c.id === targetChannel);
     if (!channelObj) {
-      postMessage(
-        qChannel,
-        `**I couldn't find channel ${targetChannel} in your server.**\nIf you deleted it, I'll leave it by myself whenever I try to post there, don't worry!`
-      );
+      postTranslated(qChannel, "noSuchChannel", { targetChannel });
       return;
     }
     channelName = await new QChannel(channelObj).name();
   }
-  const { users } = await rmChannel(targetChannel);
-  log(`Removed all gets from channel ID:${targetChannel}`, qChannel);
-  postMessage(
-    qChannel,
-    `**I've unsubscribed you from ${users} users**\nYou should now stop getting any tweets in ${channelName}.`
+  const { subs } = await rmChannel(targetChannel);
+  log(
+    `Removed all gets from channel ID:${targetChannel}. ${subs} subs removed.`,
+    qChannel
   );
+  postTranslated(qChannel, "stopChannelSuccess", { subs, channelName });
 };
 
-const list = (args, qChannel) => {
-  formatChannelList(qChannel, qChannel);
+const list = async (args, qChannel) => {
+  const subs = await getChannelSubs(qChannel.id, true);
+  formatSubsList(qChannel, subs);
 };
 
 const channelInfo = async (args, qChannel) => {
   const channelId = args.shift();
   if (!channelId) {
-    postMessage(qChannel, "Usage: `!!admin c <id>`");
+    postTranslated(qChannel, "usage-admin-channel");
     return;
   }
   let qc = null;
@@ -394,30 +357,64 @@ const channelInfo = async (args, qChannel) => {
   } else {
     qc = QChannel.unserialize({ channelId, isDM: true });
   }
-  if (!(await qc.obj())) {
-    postMessage(
-      qChannel,
-      `I couldn't build a valid channel object with id: ${channelId}`
-    );
+  if (!qc || !(await qc.obj())) {
+    postTranslated(qChannel, "adminInvalidId", { channelId });
     return;
   }
   let info = await formatQChannel(qc);
   postMessage(qChannel, info);
-  formatChannelList(qChannel, qc);
+  const subs = await getChannelSubs(qc.id, true);
+  formatSubsList(qChannel, subs);
 };
 
 const twitterInfo = async (args, qChannel) => {
   const screenName = args.shift();
   if (!screenName) {
-    postMessage(qChannel, "Usage: `!!admin t <screenName>`");
+    postTranslated(qChannel, "usage-admin-twitter");
     return;
   }
   const user = await getUserFromScreenName(screenName);
   if (!user) {
-    postMessage(qChannel, `We're not getting any user called @${screenName}`);
+    postTranslated(qChannel, "adminInvalidTwitter", { screenName });
     return;
   }
   formatTwitterUser(qChannel, user.twitterId);
+};
+
+const lang = async (args, qChannel) => {
+  const verb = args.shift();
+  switch (verb[0]) {
+    case "l":
+      formatLanguages(qChannel, supportedLangs);
+      break;
+    case "s": {
+      const language = args.shift();
+      if (!language) {
+        postTranslated(qChannel, "usage-lang-set");
+        return;
+      }
+      if (supportedLangs.indexOf(language) === -1) {
+        postTranslated(qChannel, "noSuchLang", { language });
+        return;
+      }
+      await setLang(qChannel.guildId(), language);
+      postTranslated(qChannel, "langSuccess");
+      log(`Changed language to ${language}`, qChannel);
+      break;
+    }
+    default:
+      postTranslated(qChannel, "invalidVerb", { verb });
+  }
+};
+
+const guildInfo = async (args, qChannel) => {
+  const gid = args.shift();
+  if (!gid) {
+    postTranslated(qChannel, "usage-admin-guild");
+    return;
+  }
+  const subs = await getGuildSubs(gid);
+  formatSubsList(qChannel, subs);
 };
 
 const admin = (args, qChannel) => {
@@ -429,11 +426,11 @@ const admin = (args, qChannel) => {
     case "t":
       twitterInfo(args, qChannel);
       return;
+    case "g":
+      guildInfo(args, qChannel);
+      return;
     default: {
-      postMessage(
-        qChannel,
-        `**admin command failed**\nInvalid verb: ${verb}\n`
-      );
+      postTranslated(qChannel, "invalidVerb", { verb });
     }
   }
 };
@@ -446,46 +443,35 @@ const announce = async args => {
 };
 
 const handleTwitterError = (qChannel, code, msg, screenNames) => {
-  if (code === 17) {
-    if (screenNames.length === 1) {
-      postMessage(
-        qChannel,
-        `**I can't find a user by the name of ${
-          screenNames[0]
-        }**\nYou most likely tried using their display name and not their twitter handle.`
-      );
-    } else {
-      postMessage(
-        qChannel,
-        `**I can't find any of those users:** ${screenNames.toString()}\nYou most likely tried using their display names and not their twitter handles.`
-      );
-    }
+  if (code === 17 || code === 34) {
+    postTranslated(qChannel, "noSuchTwitterUser", {
+      count: screenNames.length,
+      name: screenNames.toString()
+    });
   } else if (code === 18) {
     log("Exceeded user lookup limit", qChannel);
-    postMessage(
-      qChannel,
-      "**Too many users requested**\nIt seems I requested too many users to twitter. This shouldn't happen, but in the meantime try requesting fewer users!"
-    );
-  } else if (code === 34) {
-    // Not found
-    postMessage(
-      qChannel,
-      `**Invalid name: ${
-        screenNames[0]
-      }**\nMake sure you enter the screen name and not the display name.`
-    );
+    postTranslated(qChannel, "tooManyUsersRequested");
   } else if (code === 144) {
-    postMessage(
-      qChannel,
-      `**No such ID**\nTwitter says there's no tweet with this id!`
-    );
+    postTranslated(qChannel, "noSuchTwitterId");
   } else {
     log(`Unknown twitter error: ${code} ${msg}`);
-    postMessage(
-      qChannel,
-      "**Oops!**\nSomething went wrong, I've never seen this error before. I'll do my best to fix it soon!"
-    );
+    postTranslated(qChannel, "twitterUnknwnError");
   }
+};
+
+const help = async (args, qChannel) => {
+  const lang = await getLang(qChannel.guildId());
+  const embed = new RichEmbed()
+    .setColor(0x0e7675)
+    .setTitle(i18n(lang, "helpHeader"))
+    .setURL(profileURL)
+    .setDescription(i18n(lang, "helpIntro"))
+    .addField(`${prefix}tweet`, i18n(lang, "usage-tweet"))
+    .addField(`${prefix}start`, i18n(lang, "usage-start"))
+    .addField(`${prefix}stop`, i18n(lang, "usage-stop"))
+    .addField(`${prefix}list`, i18n(lang, "usage-list"))
+    .setFooter(i18n(lang, "helpFooter", { artist: "ryusukehamamoto" }));
+  postEmbed(qChannel, { embed });
 };
 
 export default {
@@ -494,9 +480,17 @@ export default {
     checks: [
       {
         f: checks.isMod,
-        badB: `**Not authorized**\nTo subscribe to a twitter account you need to be a moderator or to have the ${
-          config.modRole
-        } role!`
+        badB: "startForMods"
+      }
+    ],
+    minArgs: 1
+  },
+  lang: {
+    function: lang,
+    checks: [
+      {
+        f: checks.isMod,
+        badB: "langForMods"
       }
     ],
     minArgs: 1
@@ -506,8 +500,7 @@ export default {
     checks: [
       {
         f: checks.isMod,
-        badB:
-          "**Not authorized**\nOnly moderators can unsubscribe from a twitter account!"
+        badB: "stopForMods"
       }
     ],
     minArgs: 1
@@ -522,12 +515,11 @@ export default {
     checks: [
       {
         f: checks.isAdmin,
-        badB:
-          "**Bot Owner command**\nThis command accesses other servers' data so only my owner can use it!"
+        badB: "adminForAdmin"
       },
       {
         f: checks.isDm,
-        badB: "For user privacy reasons, this command is only allowed in DMs."
+        badB: "cmdInDms"
       }
     ],
     minArgs: 1
@@ -547,18 +539,21 @@ export default {
     checks: [
       {
         f: checks.isMod,
-        badB:
-          "**Not authorized**\nOnly moderators can unsubscribe from a twitter account!"
+        badB: "stopForMods"
       }
     ]
+  },
+  help: {
+    function: help,
+    checks: [],
+    minArgs: 0
   },
   leaveguild: {
     function: leaveGuild,
     checks: [
       {
         f: checks.isAdmin,
-        badB:
-          "**Bot Owner command**\nSorry, only my owner can force me off a server"
+        badB: "leaveForAdmin"
       }
     ],
     minArgs: 0
@@ -568,8 +563,7 @@ export default {
     checks: [
       {
         f: checks.isAdmin,
-        badB:
-          "**Bot Owner command**\nSorry, only my owner can do announcements!"
+        badB: "announceForAdmin"
       }
     ]
   }

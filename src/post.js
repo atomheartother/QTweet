@@ -1,7 +1,9 @@
 import * as config from "../config.json";
-import { rmChannel } from "./subs";
+import { rmChannel, getLang } from "./subs";
 import log from "./log";
 import QChannel from "./QChannel";
+import i18n from "./i18n";
+
 // Return values for post functions:
 // 0: Success
 // 1: Unknown error / exception thrown, user wasn't warned
@@ -59,7 +61,6 @@ const handleDiscordPostError = async (
     log(error);
     logMsg = `qChannel wasn't built: Auto-deleted ${subs} subs, ${users} users. qChannel removed`;
     channelToPostIn = "none";
-    newType = "404 notification";
   } else if (
     errCode === 403 ||
     errCode === 50013 ||
@@ -73,13 +74,10 @@ const handleDiscordPostError = async (
     logMsg = `Tried to post ${type} but lacked permissions: ${errCode} ${
       error.name
     }`;
-    newMsg = `**Missing Permissions:** I couldn't send a ${type} in ${await qChannel.name()}.\nIf a mod could give me the **Send Messages**, **Send Embeds** and **Attach Files** permissions there that would be nice.\nIf you'd like me to stop trying to send messages there, moderators can use \`${
-      config.prefix
-    }stopchannel ${
-      qChannel.id
-    }\`.\nIf you think you've done everything right but keep getting this message, join our support server, it's linked in my \`${
-      config.prefix
-    }help\` message.`;
+    newMsg = i18n(await getLang(qChannel.guildId()), "postPermissionError", {
+      name: await qChannel.name(),
+      id: qChannel.id
+    });
     newType = "permission message";
   } else if (
     errCode === "ECONNRESET" ||
@@ -91,44 +89,45 @@ const handleDiscordPostError = async (
     delay = errorCount * 1500;
     // retry posting in the same channel
     channelToPostIn = "same";
+  } else if (errCode === 50006) {
+    log(msg, qChannel);
+    logMsg = `${errCode}: Message was empty.`;
+    channelToPostIn = "none";
   } else if (errCode === 50007) {
     logMsg = `This user won't accept DMs from us`;
     channelToPostIn = "none";
+    retCode = 4;
   } else {
-    retCode = 1;
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
     }`;
     channelToPostIn = "none";
   }
-  log(`${logMsg} (attempt #${errorCount})`, qChannel);
   log(qChannel);
-  log(msg);
-  if (channelToPostIn !== "none") {
-    const targetChannel =
-      channelToPostIn === "same"
-        ? qChannel
-        : await qChannel.bestChannel(newType);
-    if (!targetChannel || !targetChannel.id) {
-      log("Couldn't find a way to send error notification", qChannel);
-      return 4;
-    }
-    return asyncTimeout(async () => {
-      try {
-        await targetChannel.send(newMsg);
-      } catch (err) {
-        return handleDiscordPostError(
-          err,
-          targetChannel,
-          newType,
-          newMsg,
-          errorCount + 1
-        );
-      }
-      return retCode;
-    }, delay);
+  log(`${logMsg} (attempt #${errorCount})`, qChannel);
+  if (channelToPostIn === "none") {
+    return 1;
   }
-  return 1;
+  const targetChannel =
+    channelToPostIn === "same" ? qChannel : await qChannel.bestChannel(newType);
+  if (!targetChannel || !targetChannel.id) {
+    log("Couldn't find a way to send error notification", qChannel);
+    return 4;
+  }
+  return asyncTimeout(async () => {
+    try {
+      await targetChannel.send(newMsg);
+    } catch (err) {
+      return handleDiscordPostError(
+        err,
+        targetChannel,
+        newType,
+        newMsg,
+        errorCount + 1
+      );
+    }
+    return retCode;
+  }, delay);
 };
 
 export const embed = async (qChannel, embed) => {
@@ -165,4 +164,11 @@ export const dm = async (qChannel, content) => {
     return handleDiscordPostError(err, qChannel, "dm", content);
   }
   return 0;
+};
+
+export const translated = async (qChannel, key, options = {}) => {
+  return message(
+    qChannel,
+    i18n(await getLang(qChannel.guildId()), key, options)
+  );
 };

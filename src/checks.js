@@ -2,21 +2,23 @@ import * as config from "../config.json";
 import log from "./log";
 
 // Takes an author and returns whether or not they are an admin
-export const isAdmin = (author, qChannel, callback) => {
-  callback(author.id === config.ownerID);
+export const isAdmin = author => {
+  return author.id === config.ownerID;
 };
 
 // Takes an author. checks that they're able to perform mod-level commands
-export const isMod = async (author, qChannel, callback) => {
+export const isMod = async (author, qChannel) => {
   const guild = await qChannel.guild();
   const isSomeOwner =
     author.id === config.ownerID ||
-    (!!qChannel && author.id === (await qChannel.ownerId()));
+    (!!qChannel && author.id === qChannel.ownerId());
   if (isSomeOwner)
     // The user is either the channel owner or us. We can just accept their command
-    callback(true);
-  else if (qChannel && !!guild) {
-    // Less fun part. We need to get their GuildMember object first of all
+    return true;
+  if (!qChannel && !guild) {
+    return false;
+  }
+  return new Promise(resolve =>
     guild
       .fetchMember(author)
       .then(member => {
@@ -32,22 +34,20 @@ export const isMod = async (author, qChannel, callback) => {
         // Now we can check if they have the appropriate role
         if (!modRole)
           modRole = member.roles.find(role => role.name === config.modRole);
-        callback(modRole ? true : false);
+        resolve(modRole ? true : false);
       })
       .catch(err => {
         log(`Couldn't get info for ${author.username}`, qChannel);
         log(err);
-        callback(false);
-      });
-  } else {
-    callback(false);
-  }
+        resolve(false);
+      })
+  );
 };
 
-export const isDm = (author, qChannel, callback) => {
-  callback(qChannel.isDM);
+export const isDm = (author, qChannel) => {
+  return qChannel.isDM;
 };
 
-export const isNotDm = (author, qChannel, callback) => {
-  callback(!qChannel.isDM);
+export const isNotDm = (author, qChannel) => {
+  return !qChannel.isDM;
 };

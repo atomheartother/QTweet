@@ -4,17 +4,17 @@
   "description": "A cute bot who cross-posts twitter posts to Discord",
   "main": "src/index.js",
   "scripts": {
-    "start": "node -r esm src/index.js"
+    "start": "node --max_old_space_size=1024 -r esm src/index.js"
   },
   "author": "Thomas Navennec",
   "license": "AGPL-3.0",
   "dependencies": {
     "dblapi.js": "^2.3.0",
     "discord.js": "latest",
-    "eslint": "^6.0.0",
     "esm": "^3.2.25",
+    "fluent": "^0.12.0",
     "fortune-teller": "latest",
-    "twitter-lite": "latest",
-    "sqlite3": "latest"
+    "sqlite3": "latest",
+    "twitter-lite": "latest"
   }
 }

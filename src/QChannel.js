@@ -45,16 +45,14 @@ class QChannel {
     return getChannel(this.id);
   }
 
-  async ownerId() {
+  ownerId() {
     if (this.isDM) return this.id;
-    const channel = await this.obj();
-    return channel.guild.ownerID;
+    return getChannel(this.id).guild.ownerID;
   }
 
-  async guildId() {
-    if (this.isDM) return null;
-    const channel = await this.obj();
-    return channel.guild.id;
+  guildId() {
+    if (this.isDM) return this.id;
+    return getChannel(this.id).guild.id;
   }
 
   // Return a direct channel to the owner of this qChannel
@@ -80,7 +78,7 @@ class QChannel {
     if (this.isDM) {
       return null;
     }
-    return getGuild(await this.guildId());
+    return getGuild(this.guildId());
   }
 
   static async bestGuildChannel(guild, msgType = "message") {

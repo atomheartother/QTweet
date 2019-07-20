@@ -2,18 +2,19 @@
 
 import Discord from "discord.js";
 import * as config from "../config.json";
-import { getChannelSubs, getUserSubs } from "./subs";
-import { embed as postEmbed, message as postMessage } from "./post";
+import { getUserSubs, getLang } from "./subs";
+import { embed as postEmbed, translated as postTranslated } from "./post";
 import { isSet } from "./flags";
 import QChannel from "./QChannel.js";
+import i18n from "./i18n.js";
 
 const defaults = {
   data: [],
   formatTitle: () => "",
   formatField: () => "",
   description: null,
-  noElements: "List is empty, nothing to display.",
-  objectName: "objects",
+  noElements: "genericEmptyList",
+  objectName: "genericObjects",
   color: 0x0e7675
 };
 
@@ -46,13 +47,14 @@ export const formatGenericList = async (
     params = {}
   } = {}
 ) => {
+  const lang = await getLang(qChannel.guildId());
   if (data.length === 0) {
-    postMessage(qChannel, noElements);
+    postTranslated(qChannel, noElements);
   }
   let page = 1;
   let embed = new Discord.RichEmbed()
     .setColor(color)
-    .setTitle(`${data.length} ${objectName}:`)
+    .setTitle(`${i18n(lang, objectName, { count: data.length })}:`)
     .setURL(config.profileURL);
   if (description) {
     embed.setDescription(description);
@@ -70,7 +72,9 @@ export const formatGenericList = async (
       postEmbed(qChannel, { embed });
       embed = new Discord.RichEmbed()
         .setColor(color)
-        .setTitle(`${data.length} ${objectName} (p.${page}):`)
+        .setTitle(
+          `${i18n(lang, objectName, { count: data.length })} (${page}):`
+        )
         .setURL(config.profileURL);
       counter = 0;
     }
@@ -83,15 +87,17 @@ export const formatGenericList = async (
 export const formatTwitterUserShort = name =>
   `@${name} (https://twitter.com/${name})`;
 
-export const formatFlags = flags =>
-  `With ${isSet(flags, "notext") ? "no text posts" : "text posts"}, ${
-    isSet(flags, "retweet") ? "retweets" : "no retweets"
-  }, ${isSet(flags, "noquote") ? "no quotes" : "quotes"}, pings ${
-    isSet(flags, "ping") ? "on" : "off"
-  }`;
+export const formatFlags = (lang, flags) =>
+  i18n(lang, "formatFlags", {
+    notext: isSet(flags, "notext"),
+    retweet: isSet(flags, "retweet"),
+    noquote: isSet(flags, "noquote"),
+    ping: isSet(flags, "ping")
+  });
 
 export const formatTwitterUser = async (qChannel, id) => {
   const subs = await getUserSubs(id);
+  const lang = await getLang(qChannel.guildId());
   const subsWithQchannels = [];
   for (let i = 0; i < subs.length; i++) {
     const { channelId, flags, isDM } = subs[i];
@@ -104,26 +110,37 @@ export const formatTwitterUser = async (qChannel, id) => {
     data: subsWithQchannels,
     formatTitle: async ({ qChannel }) => await qChannel.name(),
     formatField: async ({ flags, qChannel }) =>
-      `**ID:** ${qChannel.id}\n**Type:** ${qChannel.isDM ? "dm" : "serv"}\n${
+      `**${i18n(lang, "id")}:** ${qChannel.id}\n**${i18n(
+        lang,
+        "type"
+      )}:** ${i18n(lang, qChannel.isDM ? "dm" : "serv")}\n${
         qChannel.isDM
           ? ""
-          : `**Gld:** ${await qChannel.guildId()}\n**Own:** ${await qChannel.ownerId()}\n`
-      }${formatFlags(flags)}`,
-    noElements: `**This user has no subs**\nThis shouldn't happen`,
+          : `**Gld:** ${qChannel.guildId()}\n**Own:** ${qChannel.ownerId()}\n`
+      }${formatFlags(lang, flags)}`,
+    noElements: "noUserSubscriptions",
     objectName: "subscriptions"
   });
 };
 
-export const formatChannelList = async (qChannel, targetChannel) => {
-  const subs = await getChannelSubs(targetChannel.id, true);
+export const formatSubsList = async (qChannel, subs) => {
+  const lang = await getLang(qChannel.guildId());
   formatGenericList(qChannel, {
     data: subs,
     formatTitle: ({ name }) => formatTwitterUserShort(name),
     formatField: ({ twitterId, flags }) =>
-      `**ID:** ${twitterId}\n${formatFlags(flags)}`,
-    noElements: `**You're not subscribed to anyone**\nUse \`${
-      config.prefix
-    }start <screen_name>\` to get started!`,
+      `**${i18n(lang, "id")}:** ${twitterId}\n${formatFlags(lang, flags)}`,
+    noElements: "noSubscriptions",
     objectName: "subscriptions"
+  });
+};
+
+export const formatLanguages = async (qChannel, languagesList) => {
+  const lang = await getLang(qChannel.id);
+  formatGenericList(qChannel, {
+    data: languagesList,
+    formatTitle: k => (k === lang ? `[${k}]` : k),
+    formatField: k => i18n(k, "languageCredit"),
+    objectName: "languages"
   });
 };

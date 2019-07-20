@@ -16,7 +16,7 @@ export const open = file =>
           [],
           async (err, tables) => {
             if (err) reject(err);
-            if (tables.length === 3) {
+            if (tables.length === 4) {
               log(`Successfully opened database at ${file || config.dbFile}`);
               resolve();
             } else {
@@ -49,6 +49,17 @@ const initTables = () =>
           err => {
             if (err) {
               log("Error creating subs table");
+              reject(err);
+            }
+          }
+        )
+        .run(
+          `CREATE TABLE IF NOT EXISTS guilds(guildId INTEGER PRIMARY KEY, lang TEXT NOT NULL DEFAULT '${
+            config.defaultLang
+          }')`,
+          err => {
+            if (err) {
+              log("Error creating guilds table");
               reject(err);
             }
           }
@@ -172,6 +183,7 @@ export const getUniqueChannels = () =>
       }
     )
   );
+
 export const getUserInfo = twitterId =>
   new Promise((resolve, reject) =>
     db.get(
@@ -184,12 +196,57 @@ export const getUserInfo = twitterId =>
     )
   );
 
+export const createGuild = guildId =>
+  new Promise((resolve, reject) =>
+    db.run(
+      `INSERT OR IGNORE INTO guilds(guildId) VALUES(?)`,
+      [guildId],
+      err => {
+        if (err) reject(err);
+        resolve(1);
+      }
+    )
+  );
+
+export const rmGuild = guildId =>
+  new Promise((resolve, reject) =>
+    db.run(`DELETE FROM guilds WHERE guildId = ?`, [guildId], err => {
+      if (err) reject(err);
+      resolve(1);
+    })
+  );
+
+export const setLang = (guildId, lang) =>
+  new Promise((resolve, reject) =>
+    db.run(
+      `INSERT OR REPLACE INTO guilds(guildId, lang) VALUES (?, ?)`,
+      [guildId, lang],
+      err => {
+        if (err) reject(err);
+        resolve(0);
+      }
+    )
+  );
+
+export const getLang = guildId =>
+  new Promise((resolve, reject) =>
+    db.get(
+      `SELECT lang FROM guilds WHERE guildId = ?`,
+      [guildId],
+      (err, row) => {
+        if (err) reject(err);
+        resolve(row);
+      }
+    )
+  );
+
 export const getGuildSubs = guildId =>
   new Promise((resolve, reject) =>
     db.all(
       `SELECT ${GETINT("subs.channelId", "channelId")}, ${GETINT(
+        "subs.twitterId",
         "twitterId"
-      )}, subs.isDM AS isDM, flags FROM subs INNER JOIN channels ON channels.channelId = subs.channelId WHERE guildId = ?`,
+      )}, name, subs.isDM AS isDM, flags FROM subs INNER JOIN channels ON channels.channelId = subs.channelId INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE guildId = ?`,
       [guildId],
       (err, rows) => {
         if (err) reject(err);
@@ -210,11 +267,6 @@ export const getUserFromScreenName = name =>
     );
   });
 
-export const hasUser = async twitterId => {
-  const row = await getUserInfo(twitterId);
-  return !!row;
-};
-
 export const getAllSubs = async () =>
   new Promise((resolve, reject) => {
     db.all(
@@ -232,90 +284,47 @@ export const getAllSubs = async () =>
 export const addChannel = async (channelId, guildId, ownerId, isDM) =>
   new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO channels(channelId, guildId, ownerId, isDM) VALUES(?, ?, ?, ?)`,
+      `INSERT OR IGNORE INTO channels(channelId, guildId, ownerId, isDM) VALUES(?, ?, ?, ?)`,
       [channelId, guildId, ownerId, isDM],
-      err => {
+      function(err) {
         if (err) reject(err);
-        resolve(1);
+        resolve(this.changes !== 0 ? 1 : 0);
       }
     );
   });
-
-export const hasChannel = async channelId =>
-  new Promise((resolve, reject) => {
-    db.get(
-      `SELECT 1 FROM channels WHERE channelId=?`,
-      [channelId],
-      (err, row) => {
-        if (err) reject(err);
-        resolve(row !== undefined);
-      }
-    );
-  });
-export const hasSubscription = (twitterId, channelId) =>
-  new Promise((resolve, reject) =>
-    db.get(
-      `SELECT 1 FROM subs WHERE twitterId=? AND channelId=?`,
-      [twitterId, channelId],
-      (err, row) => {
-        if (err) reject(err);
-        resolve(row !== undefined);
-      }
-    )
-  );
 
 // Return value: how many subs were created. If 0, sub was updated.
-export const addSubscription = async (channelId, twitterId, flags, isDM) => {
-  const subExists = await hasSubscription(twitterId, channelId);
-  return await new Promise((resolve, reject) => {
-    if (subExists) {
-      db.run(
-        "UPDATE subs SET flags = ? WHERE channelId = ? AND twitterId = ?",
-        [flags, channelId, twitterId],
-        err => {
-          if (err) reject(err);
-          resolve(0);
-        }
-      );
-    } else {
-      db.run(
-        "INSERT INTO subs(channelId, twitterId, flags, isDM) VALUES(?, ?, ?, ?)",
-        [channelId, twitterId, flags, isDM],
-        err => {
-          if (err) reject(err);
-          resolve(1);
-        }
-      );
-    }
-  });
-};
-
-export const addUser = (twitterId, name) =>
+export const addSubscription = async (channelId, twitterId, flags, isDM) =>
   new Promise((resolve, reject) => {
-    db.get(
-      `SELECT 1 FROM twitterUsers WHERE twitterId = ?`,
-      [twitterId],
-      (err, row) => {
+    db.run(
+      "INSERT OR IGNORE INTO subs(channelId, twitterId, flags, isDM) VALUES(?, ?, ?, ?)",
+      [channelId, twitterId, flags, isDM],
+      function(err) {
         if (err) reject(err);
-        if (row) {
+        if (this.changes !== 0) {
+          resolve(1);
+        } else {
           db.run(
-            "UPDATE twitterUsers SET name = ? WHERE twitterId = ?",
-            [name, twitterId],
+            "UPDATE subs SET flags=? WHERE channelId = ? AND twitterId = ?",
+            [flags, channelId, twitterId],
             err => {
               if (err) reject(err);
               resolve(0);
             }
           );
-        } else {
-          db.run(
-            `INSERT INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
-            [twitterId, name],
-            err => {
-              if (err) reject(err);
-              resolve(1);
-            }
-          );
         }
+      }
+    );
+  });
+
+export const addUser = (twitterId, name) =>
+  new Promise((resolve, reject) => {
+    db.run(
+      `INSERT OR IGNORE INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
+      [twitterId, name],
+      function(err) {
+        if (err) reject(err);
+        resolve(this.changes !== 0 ? 1 : 0);
       }
     );
   });

@@ -40,7 +40,7 @@ export const compute = options => {
   return flags.serialize();
 };
 
-export const isSet = (val, flag) => val & FlagsEnum[flag];
+export const isSet = (val, flag) => (val & FlagsEnum[flag] ? 1 : 0);
 
 export class Flags {
   constructor() {
