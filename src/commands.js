@@ -147,7 +147,7 @@ const tweet = async (args, qChannel, author) => {
   }
   const maxCount = 5;
   const aLot = 15;
-  if (count * screenNames.length > maxCount) {
+  if (!isMod && count * screenNames.length > maxCount) {
     if (screenNames.length === 1) count = maxCount;
     else {
       screenNames = screenNames.slice(0, maxCount);
