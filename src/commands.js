@@ -58,17 +58,15 @@ const getScreenName = word => {
 const argParse = args => {
   const values = [];
   const flags = [];
-  const options = [];
+  const options = {};
   for (let arg of args) {
     if (arg.substring(0, 2) == "--") {
       const optStr = arg.substring(2);
       const equalIdx = optStr.indexOf("=");
       if (equalIdx === -1) flags.push(arg.substring(2));
       // flag
-      else {
-        options.push({
-          [optStr.substring(0, equalIdx)]: optStr.substring(equalIdx + 1)
-        });
+      else if (equalIdx > 0) {
+        options[optStr.substring(0, equalIdx)] = optStr.substring(equalIdx + 1);
       }
     } else {
       values.push(arg);
@@ -117,7 +115,7 @@ const postTimeline = async (qChannel, screenName, count) =>
           `Posted latest ${validTweets.length} tweet(s) from ${screenName}`,
           qChannel
         );
-        return resolve(validTweets.length);
+        resolve(validTweets.length);
       })
       .catch(function(response) {
         const { code, msg } = getError(response);
@@ -167,6 +165,7 @@ const tweet = async (args, qChannel, author) => {
   }
   for (let i = 0; i < screenNames.length; i++) {
     const posts = await postTimeline(qChannel, screenNames[i], count);
+    if (posts < 1) return;
   }
 };
 
