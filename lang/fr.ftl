@@ -71,7 +71,7 @@ tweetCountHighConfirm =
   {-b}Tu m'as demandé d'envoyer beaucoup de tweets{-b}
   Es-tu sûr·e de vouloir {$count} tweets? Une fois que j'aurais commencé je ne peux pas être arrêtée!
   Si tu est bien sûr·e, envoie:
-  `{-pr}tweet {$screenName} {$count} --force`
+  `{-pr}tweet {$screenName} --count={$count} --force`
 
 tweetNotAuthorized =
   {-b}J'ai essayé d'obtenir un tweet de {$screenName} mais Twitter me dit que ne ne suis pas autorisé.{-b}

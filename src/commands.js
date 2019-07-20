@@ -77,39 +77,8 @@ const argParse = args => {
   return { values, flags, options };
 };
 
-const tweet = (args, qChannel, author) => {
-  const { values, flags } = argParse(args);
-  let force = false;
-  if (values.length < 1 || values.length > 2) {
-    postTranslated(qChannel, "usage-tweet");
-    return;
-  }
-  const screenName = getScreenName(values[0]);
-  if (flags.indexOf("force") !== -1) force = true;
-  let count = 1;
-  if (values.length > 1) {
-    count = Number(values[1]);
-  }
-  if (isNaN(count)) {
-    postTranslated(qChannel, "countIsNaN", { count });
-    return;
-  }
-  const maxCount = 5;
-  const aLot = 15;
-  checks.isMod(author, qChannel, isMod => {
-    if (!isMod && count > maxCount) {
-      postTranslated(qChannel, "tweetCountLimited", { maxCount });
-      count = maxCount;
-    }
-    if (count < 1) {
-      postTranslated(qChannel, "tweetCountUnderOne", { count });
-      return;
-    }
-    if (count >= aLot && !force) {
-      log("Asked user to confirm", qChannel);
-      postTranslated(qChannel, "tweetCountHighConfirm", { screenName, count });
-      return;
-    }
+const postTimeline = async (qChannel, screenName, count) =>
+  new Promise(resolve =>
     userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
       .then(async tweets => {
         if (tweets.error) {
@@ -123,28 +92,32 @@ const tweet = (args, qChannel, author) => {
             log("Unknown error on twitter timeline", qChannel);
             log(tweets.error, qChannel);
           }
-          return;
+          return resolve(0);
         }
         if (tweets.length < 1) {
           postTranslated(qChannel, "noTweets", { screenName });
-          return;
+          return resolve(0);
         }
         let validTweets = tweets.filter(t => t && t.user);
         if (validTweets.length == 0) {
           postTranslated(qChannel, "noValidTweets");
           log("Invalid tweets from timeline", qChannel);
           log(tweets, qChannel);
-          return;
+          return resolve(0);
         }
         for (let i = 0; i < validTweets.length; i++) {
           const { embed } = formatTweet(validTweets[i]);
           const res = await postEmbed(qChannel, embed);
           if (res) {
             log(`Stopped posting tweets after ${i}`, qChannel);
-            break;
+            return resolve(i);
           }
         }
-        log(`Posted latest ${count} tweet(s) from ${screenName}`, qChannel);
+        log(
+          `Posted latest ${validTweets.length} tweet(s) from ${screenName}`,
+          qChannel
+        );
+        return resolve(validTweets.length);
       })
       .catch(function(response) {
         const { code, msg } = getError(response);
@@ -152,12 +125,49 @@ const tweet = (args, qChannel, author) => {
           log("Exception thrown without error", qChannel);
           log(response, qChannel);
           postTranslated(qChannel, "tweetGeneralError", { screenName });
-          return;
         } else {
           handleTwitterError(qChannel, code, msg, [screenName]);
         }
-      });
-  });
+        resolve(0);
+      })
+  );
+
+const tweet = async (args, qChannel, author) => {
+  const { values, flags, options } = argParse(args);
+  let force = false;
+  if (values.length < 1) {
+    postTranslated(qChannel, "usage-tweet");
+    return;
+  }
+  const screenNames = values.map(name => getScreenName(name));
+  if (flags.indexOf("force") !== -1) force = true;
+  const isMod = await checks.isMod(author, qChannel);
+  let count = options.count ? Number(options.count) : 1;
+  if (!count || isNaN(count)) {
+    postTranslated(qChannel, "countIsNaN", { count: options.count });
+    return;
+  }
+  const maxCount = screenNames.length > 1 ? 1 : 5;
+  const aLot = 15;
+  if (!isMod && count * screenNames.length > maxCount) {
+    postTranslated(qChannel, "tweetCountLimited", { maxCount });
+    count = maxCount;
+  }
+  if (count < 1) {
+    postTranslated(qChannel, "tweetCountUnderOne", { count });
+    return;
+  }
+  if (count * screenNames.length >= aLot && !force) {
+    log("Asked user to confirm", qChannel);
+    postTranslated(qChannel, "tweetCountHighConfirm", {
+      screenName: screenNames.join(" "),
+      count
+    });
+    return;
+  }
+  for (let i = 0; i < screenNames.length; i++) {
+    const posts = await postTimeline(qChannel, screenNames[i], count);
+  }
 };
 
 const tweetId = (args, qChannel) => {

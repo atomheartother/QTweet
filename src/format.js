@@ -87,6 +87,8 @@ export const formatGenericList = async (
 export const formatTwitterUserShort = name =>
   `@${name} (https://twitter.com/${name})`;
 
+export const formatOptions = options;
+
 export const formatFlags = (lang, flags) =>
   i18n(lang, "formatFlags", {
     notext: isSet(flags, "notext"),
