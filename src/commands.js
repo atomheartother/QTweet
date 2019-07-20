@@ -137,7 +137,7 @@ const tweet = async (args, qChannel, author) => {
     postTranslated(qChannel, "usage-tweet");
     return;
   }
-  const screenNames = values.map(name => getScreenName(name));
+  let screenNames = values.map(name => getScreenName(name));
   if (flags.indexOf("force") !== -1) force = true;
   const isMod = await checks.isMod(author, qChannel);
   let count = options.count ? Number(options.count) : 1;
@@ -145,11 +145,17 @@ const tweet = async (args, qChannel, author) => {
     postTranslated(qChannel, "countIsNaN", { count: options.count });
     return;
   }
-  const maxCount = screenNames.length > 1 ? 1 : 5;
+  const maxCount = 5;
   const aLot = 15;
-  if (!isMod && count * screenNames.length > maxCount) {
-    postTranslated(qChannel, "tweetCountLimited", { maxCount });
-    count = maxCount;
+  if (count * screenNames.length > maxCount) {
+    if (screenNames.length === 1) count = maxCount;
+    else {
+      screenNames = screenNames.slice(0, maxCount);
+      count = Math.floor(maxCount / screenNames.length);
+    }
+    postTranslated(qChannel, "tweetCountLimited", {
+      maxCount: count * screenNames.length
+    });
   }
   if (count < 1) {
     postTranslated(qChannel, "tweetCountUnderOne", { count });
