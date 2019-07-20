@@ -27,10 +27,11 @@ const testFormatting = () => {
 };
 
 const test = () => {
+  console.log("## Starting Twitter tests");
   if (testFormatting()) {
     return;
   }
-  console.log("All tests successful");
+  console.log("## Twitter tests successful");
 };
 
-test();
+export default test;

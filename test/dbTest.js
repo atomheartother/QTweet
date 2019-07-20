@@ -171,6 +171,4 @@ const test = async () => {
   return 0;
 };
 
-test();
-
 export default test;
