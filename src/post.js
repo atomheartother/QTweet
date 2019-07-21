@@ -1,4 +1,3 @@
-import * as config from "../config.json";
 import { rmChannel, getLang } from "./subs";
 import log from "./log";
 import QChannel from "./QChannel";
@@ -117,6 +116,7 @@ const handleDiscordPostError = async (
   return asyncTimeout(async () => {
     try {
       await targetChannel.send(newMsg);
+      log(`Posted ${newType} successfully`, targetChannel);
     } catch (err) {
       return handleDiscordPostError(
         err,
