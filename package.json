@@ -14,6 +14,7 @@
     "esm": "^3.2.25",
     "fluent": "^0.12.0",
     "fortune-teller": "latest",
+    "grabity": "^1.0.5",
     "sqlite3": "latest",
     "twitter-lite": "latest"
   }
