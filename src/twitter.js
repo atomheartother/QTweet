@@ -128,6 +128,9 @@ const formatTweetText = async (text, entities, isTextTweet) => {
             tags["og:image"] || tags["twitter:image:src"] || bestPreview;
           if (bestPreview && bestPreview.startsWith("//"))
             bestPreview = "https:" + bestPreview;
+          else if (!bestPreview.startsWith("http")) {
+            bestPreview = null;
+          }
         } catch (e) {}
       }
       const [start, end] = indices;
