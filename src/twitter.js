@@ -10,7 +10,7 @@ import log from "./log";
 import { embed as postEmbed, message as postMessage } from "./post";
 import Stream from "./twitterStream";
 import QChannel from "./QChannel.js";
-import { grab } from "grabity";
+import unfurl from "unfurl.js";
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -123,15 +123,25 @@ const formatTweetText = async (text, entities, isTextTweet) => {
       if (!(expanded_url && indices && indices.length === 2)) return;
       if (isTextTweet && !bestPreview) {
         try {
-          const tags = await grab(expanded_url);
+          const { open_graph, twitter_card } = await unfurl(expanded_url);
           bestPreview =
-            tags["og:image"] || tags["twitter:image:src"] || bestPreview;
+            (twitter_card &&
+              twitter_card.images &&
+              twitter_card.images[0] &&
+              twitter_card.images[0].url) ||
+            (open_graph &&
+              open_graph.images &&
+              open_graph.images[0] &&
+              open_graph.images[0].url) ||
+            bestPreview;
           if (bestPreview && bestPreview.startsWith("//"))
             bestPreview = "https:" + bestPreview;
-          else if (!bestPreview.startsWith("http")) {
+          else if (bestPreview && !bestPreview.startsWith("http")) {
             bestPreview = null;
           }
-        } catch (e) {}
+        } catch (e) {
+          bestPreview = null;
+        }
       }
       const [start, end] = indices;
       changes.push({ start, end, newText: expanded_url });
