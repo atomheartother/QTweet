@@ -126,9 +126,7 @@ const formatTweetText = async (text, entities, isTextTweet) => {
           const tags = await grab(expanded_url);
           bestPreview =
             tags["og:image"] || tags["twitter:image:src"] || bestPreview;
-        } catch (e) {
-          log(`Error getting ${expanded_url}`);
-        }
+        } catch (e) {}
       }
       const [start, end] = indices;
       changes.push({ start, end, newText: expanded_url });
