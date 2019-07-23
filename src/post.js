@@ -107,6 +107,7 @@ const handleDiscordPostError = async (
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
     }`;
+    log(message);
     channelToPostIn = "none";
   }
   log(qChannel);
