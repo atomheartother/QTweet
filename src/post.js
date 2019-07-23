@@ -53,7 +53,8 @@ const handleDiscordPostError = async (
     errCode === 10003 ||
     (errCode === undefined && error.name === "TypeError")
   ) {
-    if (errorCount >= 2 || !(await qChannel.obj())) {
+    channelToPostIn = "none";
+    if (!(await qChannel.obj())) {
       retCode = 2;
       // The channel was deleted or we don't have access to it, auto-delete it
       // And notify the user
@@ -61,11 +62,10 @@ const handleDiscordPostError = async (
       log(error);
       logMsg = `${errCode ||
         "no qChannel"}: Auto-deleted ${subs} subs, ${users} users. qChannel removed`;
-      channelToPostIn = "none";
     } else {
-      delay = errorCount * 500;
-      channelToPostIn = "same";
-      logMsg = `${errCode}: Channel might have been deleted, trying again`;
+      log(error);
+      log(msg);
+      logMsg = `${errCode} on channel but channel still here`;
     }
   } else if (
     errCode === 403 ||
