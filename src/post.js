@@ -107,7 +107,7 @@ const handleDiscordPostError = async (
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
     }`;
-    log(message);
+    log(msg);
     channelToPostIn = "none";
   }
   log(qChannel);
@@ -174,9 +174,5 @@ export const dm = async (qChannel, content) => {
   return 0;
 };
 
-export const translated = async (qChannel, key, options = {}) => {
-  return message(
-    qChannel,
-    i18n(await getLang(qChannel.guildId()), key, options)
-  );
-};
+export const translated = async (qChannel, key, options = {}) =>
+  message(qChannel, i18n(await getLang(qChannel.guildId()), key, options));
