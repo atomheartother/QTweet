@@ -118,14 +118,16 @@ const formatTweetText = async (text, entities, isTextTweet) => {
   }
   let bestPreview = null;
   if (urls) {
-    for (let i = 0; i < urls.length; i++) {
+    for (let i = urls.length - 1; i >= 0; i--) {
       const { expanded_url, indices } = urls[i];
       if (!(expanded_url && indices && indices.length === 2)) return;
-      if (isTextTweet) {
+      if (isTextTweet && !bestPreview) {
         try {
           const tags = await grab(expanded_url);
           bestPreview =
             tags["og:image"] || tags["twitter:image:src"] || bestPreview;
+          if (bestPreview && bestPreview.startsWith("//"))
+            bestPreview = "https:" + bestPreview;
         } catch (e) {}
       }
       const [start, end] = indices;
