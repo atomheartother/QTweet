@@ -104,7 +104,7 @@ const postTimeline = async (qChannel, screenName, count) =>
           return resolve(0);
         }
         for (let i = 0; i < validTweets.length; i++) {
-          const { embed } = formatTweet(validTweets[i]);
+          const { embed } = await formatTweet(validTweets[i]);
           const res = await postEmbed(qChannel, embed);
           if (res) {
             log(`Stopped posting tweets after ${i}`, qChannel);
@@ -178,18 +178,18 @@ const tweet = async (args, qChannel, author) => {
 const tweetId = (args, qChannel) => {
   const id = args[0];
   showTweet(id, { tweet_mode: "extended" })
-    .then((tweet, error) => {
+    .then(async (tweet, error) => {
       if (error) {
         log(error, qChannel);
         return;
       }
 
-      const { embed } = formatTweet(tweet);
+      const { embed } = await formatTweet(tweet);
       postEmbed(qChannel, embed);
       log(`Posting tweet ${id}`, qChannel);
 
       if (tweet.quoted_status && tweet.quoted_status.user) {
-        const { embed: quotedEmbed } = formatTweet(tweet);
+        const { embed: quotedEmbed } = await formatTweet(tweet);
         postEmbed(qChannel, quotedEmbed);
       }
     })

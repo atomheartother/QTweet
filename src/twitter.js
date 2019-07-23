@@ -10,6 +10,7 @@ import log from "./log";
 import { embed as postEmbed, message as postMessage } from "./post";
 import Stream from "./twitterStream";
 import QChannel from "./QChannel.js";
+import { grab } from "grabity";
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -83,7 +84,7 @@ export const isValid = tweet =>
       (!tweet.quoted_status || !tweet.quoted_status.user))
   );
 
-const formatTweetText = (text, entities) => {
+const formatTweetText = async (text, entities, isTextTweet) => {
   if (!entities) return text;
   const { user_mentions, urls, hashtags } = entities;
   const changes = [];
@@ -115,19 +116,23 @@ const formatTweetText = (text, entities) => {
         }
       });
   }
-
+  let bestPreview = null;
   if (urls) {
-    urls
-      .filter(
-        ({ expanded_url, indices }) =>
-          expanded_url && indices && indices.length === 2
-      )
-      .forEach(({ expanded_url, indices }) => {
-        const [start, end] = indices;
-        changes.push({ start, end, newText: expanded_url });
-      });
+    for (let i = 0; i < urls.length; i++) {
+      const { expanded_url, indices } = urls[i];
+      if (!(expanded_url && indices && indices.length === 2)) return;
+      if (isTextTweet) {
+        const tags = await grab(expanded_url);
+        bestPreview =
+          tags["og:image"] || tags["twitter:image:src"] || bestPreview;
+      }
+      const [start, end] = indices;
+      changes.push({ start, end, newText: expanded_url });
+    }
   }
-
+  if (bestPreview) {
+    metadata.preview = bestPreview;
+  }
   if (hashtags) {
     hashtags
       .filter(({ text, indices }) => text && indices && indices.length === 2)
@@ -171,7 +176,7 @@ const formatTweetText = (text, entities) => {
 };
 
 // Takes a tweet and formats it for posting.
-export const formatTweet = tweet => {
+export const formatTweet = async tweet => {
   let {
     id_str,
     user,
@@ -210,10 +215,18 @@ export const formatTweet = tweet => {
   };
   // For any additional files
   let files = null;
-  const { text: formattedText, metadata } = formatTweetText(txt, entities);
+  const isTextTweet = !hasMedia(tweet);
+  const { text: formattedText, metadata } = await formatTweetText(
+    txt,
+    entities,
+    isTextTweet
+  );
   txt = formattedText;
-  if (!hasMedia(tweet)) {
+  if (isTextTweet) {
     // Text tweet
+    if (metadata.preview) {
+      embed.image = { url: metadata.preview };
+    }
     embed.color = embed.color || colors["text"];
   } else if (
     extended_entities.media[0].type === "animated_gif" ||
@@ -296,7 +309,7 @@ const streamData = async tweet => {
   startTimeout();
   const subs = await getFilteredSubs(tweet);
   if (subs.length === 0) return;
-  const { embed, metadata } = formatTweet(tweet);
+  const { embed, metadata } = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && flags.ping) {
       log("Pinging @everyone", qChannel);
@@ -305,7 +318,7 @@ const streamData = async tweet => {
     postEmbed(qChannel, embed);
   });
   if (tweet.is_quote_status) {
-    const { embed: quotedEmbed } = formatTweet(tweet.quoted_status);
+    const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status);
     subs.forEach(({ flags, qChannel }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });
