@@ -480,6 +480,7 @@ const help = async (args, qChannel) => {
     .addField(`${prefix}tweet`, i18n(lang, "usage-tweet"))
     .addField(`${prefix}start`, i18n(lang, "usage-start"))
     .addField(`${prefix}stop`, i18n(lang, "usage-stop"))
+    .addField(`${prefix}lang`, i18n(lang, "usage-lang"))
     .addField(`${prefix}list`, i18n(lang, "usage-list"))
     .setFooter(i18n(lang, "helpFooter", { artist: "ryusukehamamoto" }));
   postEmbed(qChannel, { embed });

@@ -53,19 +53,25 @@ const handleDiscordPostError = async (
     errCode === 10003 ||
     (errCode === undefined && error.name === "TypeError")
   ) {
+    // Either the channel was deleted or Discord 404'd trying to access twitter data.
+    retCode = 2;
     channelToPostIn = "none";
     if (!(await qChannel.obj())) {
-      retCode = 2;
+      // Channel deleted
       // The channel was deleted or we don't have access to it, auto-delete it
       // And notify the user
       const { subs, users } = await rmChannel(qChannel.id);
       log(error);
       logMsg = `${errCode ||
         "no qChannel"}: Auto-deleted ${subs} subs, ${users} users. qChannel removed`;
+    } else if (error.request.method === "GET") {
+      logMsg = `${errCode}: Discord encountered an error getting ${
+        error.request.path
+      }`;
     } else {
       log(error);
       log(msg);
-      logMsg = `${errCode} on channel but channel still here`;
+      logMsg = `${errCode} on channel`;
     }
   } else if (
     errCode === 403 ||
