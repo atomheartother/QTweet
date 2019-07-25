@@ -103,7 +103,7 @@ Examples:
 
 ### lang
 
-Usage: `!!lang [list | set <language>]`
+Usage: `!!lang [list] [set <language>]`
 
 List supported languages and change the current server language.
 
