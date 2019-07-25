@@ -59,7 +59,10 @@ usage-admin-channel = {-usage}: `{-pr}admin c <channel_id>`
 usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
 usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
 
-usage-lang = {-usage}: `{-pr}lang [list|set <language>]`
+usage-lang = 
+  List available languages or change the language.
+  Read the docs if you want to help translate me in your language!
+  {-usage}: `{-pr}lang [list] [set <language>]`
 usage-lang-set = {-usage}: `{-pr}lang set <language>`
 
 ### Command feedback
