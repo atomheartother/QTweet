@@ -109,6 +109,7 @@ List supported languages and change the current server language.
 
 Examples:
 
+`!!lang list`: List supported languages.
 `!!lang set fr`: Change to the French language! Parlez-vous français?
 
 ## Bot Owner
