@@ -16,10 +16,6 @@ import unfurl from "unfurl.js";
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
 
-// Timeout detecting when there haven't been new tweets in the past min
-let lastTweetTimeout = null;
-const lastTweetDelay = 1000 * 60 * 1;
-
 const colors = Object.freeze({
   text: 0x69b2d6,
   video: 0x67d67d,
@@ -40,13 +36,6 @@ const reconnectionDelay = new Backup({
   maxValue: 16000
 });
 
-const resetTimeout = () => {
-  if (lastTweetTimeout) {
-    clearTimeout(lastTweetTimeout);
-    lastTweetTimeout = null;
-  }
-};
-
 // Checks if a tweet has any media attached. If false, it's a text tweet
 const hasMedia = ({ extended_entities, extended_tweet, retweeted_status }) =>
   (extended_entities &&
@@ -61,19 +50,9 @@ const hasMedia = ({ extended_entities, extended_tweet, retweeted_status }) =>
     retweeted_status.extended_entities.media &&
     retweeted_status.extended_entities.media.length > 0);
 
-const startTimeout = () => {
-  resetTimeout();
-  lastTweetTimeout = setTimeout(() => {
-    lastTweetTimeout = null;
-    log("⚠️ TIMEOUT: No tweets in a while, re-creating stream");
-    createStream();
-  }, lastTweetDelay);
-};
-
 const streamStart = () => {
   log("Stream successfully started");
   reconnectionDelay.reset();
-  startTimeout();
 };
 
 // Validation function for tweets
@@ -323,8 +302,6 @@ export const getFilteredSubs = async tweet => {
 };
 
 const streamData = async tweet => {
-  // Reset the last tweet timeout
-  startTimeout();
   const subs = await getFilteredSubs(tweet);
   if (subs.length === 0) return;
   const { embed, metadata } = await formatTweet(tweet);
@@ -347,7 +324,6 @@ const streamData = async tweet => {
 const streamEnd = () => {
   // The backup exponential algorithm will take care of reconnecting
   stream.disconnected();
-  resetTimeout();
   log(
     `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`
   );
@@ -358,7 +334,6 @@ const streamEnd = () => {
 const streamError = ({ url, status, statusText }) => {
   // We simply can't get a stream, don't retry
   stream.disconnected();
-  resetTimeout();
   let delay = 0;
   if (status === 420) {
     delay = 30000;
@@ -398,7 +373,6 @@ export const createStream = async () => {
 };
 
 export const destroyStream = () => {
-  resetTimeout();
   stream.disconnected();
 };
 
