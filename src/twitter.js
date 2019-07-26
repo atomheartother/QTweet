@@ -1,3 +1,4 @@
+"use strict";
 import Twitter from "twitter-lite";
 
 import * as pw from "../pw.json";

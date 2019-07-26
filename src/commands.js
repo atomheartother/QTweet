@@ -238,10 +238,9 @@ const start = async (args, qChannel) => {
     }
     return;
   }
-  const promises = [];
-  data.forEach(({ id_str: userId, screen_name: name }) => {
-    promises.push(add(qChannel.id, userId, name, flags, qChannel.isDM));
-  });
+  const promises = data.map(({ id_str: userId, screen_name: name }) =>
+    add(qChannel.id, userId, name, flags, qChannel.isDM)
+  );
   Promise.all(promises).then(async results => {
     const screenNamesFinal = data.map(user => `@${user.screen_name}`);
     const nameCount = screenNamesFinal.length;
