@@ -24,14 +24,14 @@ export const isMod = async (author, qChannel) => {
       .fetchMember(author)
       .then(member => {
         // Are they an admin or have global management rights? (means they're a moderator)
-        let modRole = member.permissions
-          .toArray()
-          .find(
-            perm =>
-              perm === "ADMINISTRATOR" ||
-              perm === "MANAGE_GUILD" ||
-              perm === "MANAGE_CHANNELS"
+        let modRole = member.permissions.toArray().find(perm => {
+          console.log(perm);
+          return (
+            perm === "ADMINISTRATOR" ||
+            perm === "MANAGE_GUILD" ||
+            perm === "MANAGE_CHANNELS"
           );
+        });
         log(`User is some mod: ${!!modRole}`, qChannel);
         // Now we can check if they have the appropriate role
         if (!modRole) {
