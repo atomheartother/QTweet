@@ -14,6 +14,8 @@ helpIntro =
   {-b}You should read my [complete documentation]({ -docs-url }){-b}
   {-b}Want to invite me to your server?{-b} [Click here]({ -invite-url })!
   {-b}Problems, questions?{-b} [We have a support server!]({ -support-server })
+  {-b}Want to support QTweet?{-b} [Make a Patreon donation!]({ -patreon-link })
+  
   Here's a short list of commands to get you started:
 
 # Footer giving credit to the artist
