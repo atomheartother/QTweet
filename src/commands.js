@@ -37,7 +37,7 @@ import {
   userLookup,
   getError
 } from "./twitter";
-import { getGuild, getChannel } from "./discord";
+import { getGuild, getChannel, getUser } from "./discord";
 import i18n from "./i18n";
 
 const getScreenName = word => {
@@ -206,6 +206,18 @@ const tweetId = (args, qChannel) => {
     });
 };
 
+const getUserIds = async screenNames => {
+  const chunks = 100;
+  let data = [];
+  for (let i = 0; i < screenNames.length; i += chunks) {
+    const res = await userLookup({
+      screenName: screenNames.slice(i, i + chunks).toString()
+    });
+    data = data.concat(res);
+  }
+  return data;
+};
+
 const start = async (args, qChannel) => {
   let { values, flags: strFlags } = argParse(args);
   const flags = computeFlags(strFlags);
@@ -214,17 +226,8 @@ const start = async (args, qChannel) => {
     postTranslated(qChannel, "usage-start");
     return;
   }
-  const slices = 100;
-  const totalScreenNames = screenNames.length;
   try {
-    var data = [];
-    while (screenNames.length > 0) {
-      const res = await userLookup({
-        screen_name: screenNames.slice(0, slices).toString()
-      });
-      data = data.concat(res);
-      screenNames = screenNames.slice(slices);
-    }
+    var data = await getUserIds(screenNames);
   } catch (res) {
     const { code, msg } = getError(res);
     if (!code) {
@@ -236,8 +239,9 @@ const start = async (args, qChannel) => {
     } else {
       handleTwitterError(qChannel, code, msg, screenNames);
     }
-    return;
+    return null;
   }
+
   const promises = data.map(({ id_str: userId, screen_name: name }) =>
     add(qChannel.id, userId, name, flags, qChannel.isDM)
   );
@@ -259,7 +263,7 @@ const start = async (args, qChannel) => {
         addedObjectName,
         nameCount,
         firstName: lastName,
-        missedNames: totalScreenNames !== nameCount ? 1 : 0
+        missedNames: screenNames.length !== nameCount ? 1 : 0
       });
     else
       postTranslated(qChannel, "startUpdateSuccess", {
