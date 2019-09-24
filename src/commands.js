@@ -218,6 +218,15 @@ const getUserIds = async screenNames => {
   return data;
 };
 
+// This changes screenNames.
+const formatScreenNames = async (qChannel, screenNames, lastName) => {
+  return i18n(await getLang(qChannel.guildId()), "formatUserNames", {
+    count: screenNames.length + 1,
+    names: screenNames.toString(),
+    lastName
+  });
+};
+
 const start = async (args, qChannel) => {
   let { values, flags: strFlags } = argParse(args);
   const flags = computeFlags(strFlags);
@@ -246,17 +255,13 @@ const start = async (args, qChannel) => {
     add(qChannel.id, userId, name, flags, qChannel.isDM)
   );
   Promise.all(promises).then(async results => {
-    const screenNamesFinal = data.map(user => `@${user.screen_name}`);
+    const screenNamesFinal = data.map(({ screen_name }) => `@${screen_name}`);
     const nameCount = screenNamesFinal.length;
     const lastName = screenNamesFinal.pop();
-    const addedObjectName = i18n(
-      await getLang(qChannel.guildId()),
-      "formatUserNames",
-      {
-        count: nameCount,
-        names: screenNamesFinal.toString(),
-        lastName
-      }
+    const addedObjectName = await formatScreenNames(
+      qChannel,
+      screenNamesFinal,
+      lastName
     );
     if (results.find(({ subs }) => subs !== 0))
       postTranslated(qChannel, "startSuccess", {
@@ -303,30 +308,58 @@ const leaveGuild = async (args, qChannel) => {
     });
 };
 
-const stop = (args, qChannel) => {
-  const screenName = getScreenName(args[0]);
-  userLookup({ screen_name: screenName })
-    .then(async data => {
-      let twitterId = data[0].id_str;
-      const { subs, users } = await rm(qChannel.id, twitterId);
-      if (subs === 0) {
-        postTranslated(qChannel, "noSuchSubscription", { screenName });
-      } else {
-        postTranslated(qChannel, "stopSuccess", { screenName });
-        if (users > 0) createStream();
-      }
-    })
-    .catch(function(response) {
-      const { code, msg } = getError(response);
-      if (!code) {
-        log("Exception thrown without error", qChannel);
-        log(response, qChannel);
-        postTranslated(qChannel, "stopGeneralError", { screenName });
-        return;
-      } else {
-        handleTwitterError(qChannel, code, msg, [screenName]);
-      }
-    });
+const stop = async (args, qChannel) => {
+  let { values } = argParse(args);
+  let screenNames = values.map(getScreenName);
+  if (screenNames.length < 1) {
+    postTranslated(qChannel, "usage-stop");
+    return;
+  }
+  try {
+    var data = await getUserIds(screenNames);
+  } catch (response) {
+    const { code, msg } = getError(response);
+    if (!code) {
+      log("Exception thrown without error", qChannel);
+      log(response, qChannel);
+      postTranslated(qChannel, "getInfoGeneralError", {
+        namesCount: screenNames.length
+      });
+      return;
+    } else {
+      handleTwitterError(qChannel, code, msg, screenNames);
+    }
+    return;
+  }
+  const promises = data.map(({ id_str: userId }) => rm(qChannel.id, userId));
+
+  Promise.all(promises).then(async results => {
+    const screenNamesFinal = data.map(({ screen_name }) => `@${screen_name}`);
+    const lastName = screenNamesFinal.pop();
+    const removedObjectName = await formatScreenNames(
+      qChannel,
+      screenNamesFinal,
+      lastName
+    );
+    const { users, subs } = results.reduce(
+      (acc, { subs, users }) => {
+        return {
+          subs: acc.subs + subs,
+          users: acc.users + users
+        };
+      },
+      { users: 0, subs: 0 }
+    );
+    results.reduce;
+    if (subs === 0) {
+      postTranslated(qChannel, "noSuchSubscription", { screenNames });
+    } else {
+      postTranslated(qChannel, "stopSuccess", {
+        screenNames: removedObjectName
+      });
+      if (users > 0) createStream();
+    }
+  });
 };
 
 const stopchannel = async (args, qChannel) => {
