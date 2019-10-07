@@ -108,7 +108,7 @@ tweetIdGeneralError =
   {-error-apology}
 
 ## Generic for start and stop
-startGeneralError =
+getInfoGeneralError =
   {-b}Ceva nu a mers bine obținând informații de la {$namesCount ->
   [one] acest cont
   *[other] aceste conturi
