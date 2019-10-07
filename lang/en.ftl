@@ -112,14 +112,15 @@ tweetIdGeneralError =
   {-b}Something went wrong getting tweet {$id}{-b}
   {-error-apology}
 
-## !!start
-startGeneralError =
+## Generic for start and stop
+getInfoGeneralError =
   {-b}Something went wrong getting the info for {$namesCount ->
   [one] this account
   *[other] these accounts
   }.{-b}
   {-error-apology}
 
+## !!start
 startSuccess =
   {-b}You're now subscribed to {$addedObjectName}!{-b}
   Remember you can stop me at any time with `{-pr}stop {$nameCount ->
@@ -151,16 +152,12 @@ leaveSuccess = Left guild {$name}
 
 ## !!stop
 noSuchSubscription =
-  {-b}Not subscribed to `@{$screenName}`{-b}
+  {-b}Not subscribed to {$screenNames}{-b}
   Use `{-pr}list` for a list of subscriptions!
 
 stopSuccess =
-  {-b}I've unsubscribed you from `@{$screenName}`{-b}
+  {-b}I've unsubscribed you from {$screenNames}{-b}
   You should stop getting any tweets from them.
-
-stopGeneralError =
-  {-b}Something went wrong trying to unsubscribe from `@{$screenName}`{-b}
-  {-error-apology}
 
 ## !!stopchannel
 stopChannelInDm =
