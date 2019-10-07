@@ -211,7 +211,7 @@ const getUserIds = async screenNames => {
   let data = [];
   for (let i = 0; i < screenNames.length; i += chunks) {
     const res = await userLookup({
-      screenName: screenNames.slice(i, i + chunks).toString()
+      screen_name: screenNames.slice(i, i + chunks).toString()
     });
     data = data.concat(res);
   }
