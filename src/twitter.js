@@ -173,7 +173,7 @@ const formatTweetText = async (text, entities, isTextTweet) => {
 };
 
 // Takes a tweet and formats it for posting.
-export const formatTweet = async tweet => {
+export const formatTweet = async (tweet, isQuoted) => {
   let {
     id_str,
     user,
@@ -200,7 +200,7 @@ export const formatTweet = async tweet => {
   }
   let embed = {
     author: {
-      name: `${user.name} (@${user.screen_name})`,
+      name: `${isQuoted ? "[QUOTED] " : ""}${user.name} (@${user.screen_name})`,
       url: `https://twitter.com/${targetScreenName}/status/${id_str}`
     },
     thumbnail: {
@@ -313,7 +313,7 @@ const streamData = async tweet => {
     postEmbed(qChannel, embed);
   });
   if (tweet.is_quote_status) {
-    const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status);
+    const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
     subs.forEach(({ flags, qChannel }) => {
       if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
     });

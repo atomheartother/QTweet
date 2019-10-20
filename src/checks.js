@@ -8,14 +8,15 @@ export const isAdmin = author => {
 
 // Takes an author. checks that they're able to perform mod-level commands
 export const isMod = async (author, qChannel) => {
-  const guild = await qChannel.guild();
   const isSomeOwner =
     author.id === config.ownerID ||
     (!!qChannel && author.id === qChannel.ownerId());
   if (isSomeOwner)
     // The user is either the channel owner or us. We can just accept their command
     return true;
+  const guild = await qChannel.guild();
   if (!qChannel && !guild) {
+    log("User isn't an owner and we can't check for more", qChannel);
     return false;
   }
   return new Promise(resolve =>
@@ -31,9 +32,15 @@ export const isMod = async (author, qChannel) => {
               perm === "MANAGE_GUILD" ||
               perm === "MANAGE_CHANNELS"
           );
+        log(`User is some mod: ${!!modRole}`, qChannel);
         // Now we can check if they have the appropriate role
-        if (!modRole)
+        if (!modRole) {
           modRole = member.roles.find(role => role.name === config.modRole);
+          log(
+            `User has the custom '${config.modRole}' role: ${!!modRole}`,
+            qChannel
+          );
+        }
         resolve(modRole ? true : false);
       })
       .catch(err => {

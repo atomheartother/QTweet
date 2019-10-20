@@ -14,6 +14,8 @@ helpIntro =
   {-b}You should read my [complete documentation]({ -docs-url }){-b}
   {-b}Want to invite me to your server?{-b} [Click here]({ -invite-url })!
   {-b}Problems, questions?{-b} [We have a support server!]({ -support-server })
+  {-b}Want to support QTweet?{-b} [Make a Patreon donation!]({ -patreon-link })
+  
   Here's a short list of commands to get you started:
 
 # Footer giving credit to the artist
@@ -110,14 +112,15 @@ tweetIdGeneralError =
   {-b}Something went wrong getting tweet {$id}{-b}
   {-error-apology}
 
-## !!start
-startGeneralError =
+## Generic for start and stop
+getInfoGeneralError =
   {-b}Something went wrong getting the info for {$namesCount ->
   [one] this account
   *[other] these accounts
   }.{-b}
   {-error-apology}
 
+## !!start
 startSuccess =
   {-b}You're now subscribed to {$addedObjectName}!{-b}
   Remember you can stop me at any time with `{-pr}stop {$nameCount ->
@@ -149,16 +152,12 @@ leaveSuccess = Left guild {$name}
 
 ## !!stop
 noSuchSubscription =
-  {-b}Not subscribed to `@{$screenName}`{-b}
+  {-b}Not subscribed to {$screenNames}{-b}
   Use `{-pr}list` for a list of subscriptions!
 
 stopSuccess =
-  {-b}I've unsubscribed you from `@{$screenName}`{-b}
+  {-b}I've unsubscribed you from {$screenNames}{-b}
   You should stop getting any tweets from them.
-
-stopGeneralError =
-  {-b}Something went wrong trying to unsubscribe from `@{$screenName}`{-b}
-  {-error-apology}
 
 ## !!stopchannel
 stopChannelInDm =
@@ -296,6 +295,26 @@ postPermissionError =
   If a mod could give me the {-b}Send Messages{-b}, {-b}Send Embeds{-b} and {-b}Attach Files{-b} permissions there that would be nice.
   If you'd like me to stop trying to send messages there, moderators can use `{-pr}stopchannel {$id}`.
   If you think you've done everything right but keep getting this message, join our support server, it's linked in my `{-pr}help` message.
+
+### User Limit D:
+userLimit =
+  {-b}I've hit my user limit!{-b} Your subscription request contained subreddits no one else is subscribed to, so I had to drop them.
+
+  {-b}Why did you do this?{-b}
+  Twitter currently limits every app to 5 000 subscriptions. If you're reading this I have reached that limit, and I have no choice - if I ask for more users then everything will break for everyone.
+
+  {-b}What are you doing to fix this?{-b}
+  I've been working really hard to try and find options to get out of this situation, and it's been very stressful for me, because I really want everyone to get their tweets. However so far no option seems perfect.
+  You can find a thread on the topic here if you'd like to propose any solutions: https://github.com/atomheartother/QTweet/issues/32
+
+  {-b}Can I help?{-b}
+  If you read the thread I posted above, you'll see a lot of options will cost me money. If you'd like to help and make it possible for QTweet to function better for everyone, you can support QTweet's development on Patreon - every little bit helps: https://www.patreon.com/atomheartother
+
+  {-b}How do I get my tweets in the meantime?{-b}
+  You have a few options if you really want these accounts posted to your server:
+  - {-b}Host your own version of QTweet{-b}: I would really recommend doing this, QTweet is free and open source, and you can run her from any computer or server. You can read more in the `!!help` message and contact my creator if you need help.
+  - {-b}Remove some of your subscriptions{-b} if you have any, to free up some space - note that if another server is subscribed to that account this will not work unfortunately.
+  - {-b}Find an alternative to QTweet{-b}: Yup, that's it, if those options don't work for you I'm afraid I can't do anything else for you!
 
 ### Credit
 languageCredit = English, made by `Tom'#4242`

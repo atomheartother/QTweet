@@ -8,6 +8,8 @@ server.
 You never have to use Twitter again, just get the good stuff posted to your Discord server.
 !["universe"](img/preview.png?raw=true "A QT tweeting")
 
+[You can support QTweet with a Patreon donation](https://www.patreon.com/atomheartother)! All money goes towards servers and other running costs - even \$1 helps!
+
 # Features
 
 - Get the latest **text, image, album and video** tweet(s) from any twitter user, formatted for Discord.
