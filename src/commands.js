@@ -1,4 +1,5 @@
 import log from "./log";
+import { RichEmbed } from "discord.js";
 
 import * as checks from "./checks";
 import {
@@ -20,7 +21,7 @@ import {
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
-import { supportedLangs } from "../config.json";
+import { supportedLangs, prefix, profileURL } from "../config.json";
 
 import {
   formatSubsList,
@@ -55,56 +56,27 @@ const getScreenName = word => {
 };
 
 const argParse = args => {
-  let values = [];
-  let options = [];
+  const values = [];
+  const flags = [];
+  const options = {};
   for (let arg of args) {
     if (arg.substring(0, 2) == "--") {
-      options.push(arg.substring(2));
+      const optStr = arg.substring(2);
+      const equalIdx = optStr.indexOf("=");
+      if (equalIdx === -1) flags.push(arg.substring(2));
+      // flag
+      else if (equalIdx > 0) {
+        options[optStr.substring(0, equalIdx)] = optStr.substring(equalIdx + 1);
+      }
     } else {
       values.push(arg);
     }
   }
-  return { values, options };
+  return { values, flags, options };
 };
 
-const tweet = (args, qChannel, author) => {
-  const { values, options } = argParse(args);
-  let force = false;
-  if (values.length < 1 || values.length > 2) {
-    postTranslated(qChannel, "usage-tweet");
-    return;
-  }
-  const screenName = getScreenName(values[0]);
-  options.forEach(option => {
-    if (option === "force") {
-      force = true;
-    }
-  });
-
-  let count = 1;
-  if (values.length > 1) {
-    count = Number(values[1]);
-  }
-  if (isNaN(count)) {
-    postTranslated(qChannel, "countIsNaN", { count });
-    return;
-  }
-  const maxCount = 5;
-  const aLot = 15;
-  checks.isMod(author, qChannel, isMod => {
-    if (!isMod && count > maxCount) {
-      postTranslated(qChannel, "tweetCountLimited", { maxCount });
-      count = maxCount;
-    }
-    if (count < 1) {
-      postTranslated(qChannel, "tweetCountUnderOne", { count });
-      return;
-    }
-    if (count >= aLot && !force) {
-      log("Asked user to confirm", qChannel);
-      postTranslated(qChannel, "tweetCountHighConfirm", { screenName, count });
-      return;
-    }
+const postTimeline = async (qChannel, screenName, count) =>
+  new Promise(resolve =>
     userTimeline({ screen_name: screenName, tweet_mode: "extended", count })
       .then(async tweets => {
         if (tweets.error) {
@@ -118,28 +90,32 @@ const tweet = (args, qChannel, author) => {
             log("Unknown error on twitter timeline", qChannel);
             log(tweets.error, qChannel);
           }
-          return;
+          return resolve(0);
         }
         if (tweets.length < 1) {
           postTranslated(qChannel, "noTweets", { screenName });
-          return;
+          return resolve(0);
         }
         let validTweets = tweets.filter(t => t && t.user);
         if (validTweets.length == 0) {
           postTranslated(qChannel, "noValidTweets");
           log("Invalid tweets from timeline", qChannel);
           log(tweets, qChannel);
-          return;
+          return resolve(0);
         }
         for (let i = 0; i < validTweets.length; i++) {
-          const { embed } = formatTweet(validTweets[i]);
+          const { embed } = await formatTweet(validTweets[i]);
           const res = await postEmbed(qChannel, embed);
           if (res) {
             log(`Stopped posting tweets after ${i}`, qChannel);
-            break;
+            return resolve(i);
           }
         }
-        log(`Posted latest ${count} tweet(s) from ${screenName}`, qChannel);
+        log(
+          `Posted latest ${validTweets.length} tweet(s) from ${screenName}`,
+          qChannel
+        );
+        resolve(validTweets.length);
       })
       .catch(function(response) {
         const { code, msg } = getError(response);
@@ -147,29 +123,73 @@ const tweet = (args, qChannel, author) => {
           log("Exception thrown without error", qChannel);
           log(response, qChannel);
           postTranslated(qChannel, "tweetGeneralError", { screenName });
-          return;
         } else {
           handleTwitterError(qChannel, code, msg, [screenName]);
         }
-      });
-  });
+        resolve(0);
+      })
+  );
+
+const tweet = async (args, qChannel, author) => {
+  const { values, flags, options } = argParse(args);
+  let force = false;
+  if (values.length < 1) {
+    postTranslated(qChannel, "usage-tweet");
+    return;
+  }
+  let screenNames = values.map(name => getScreenName(name));
+  if (flags.indexOf("force") !== -1) force = true;
+  const isMod = await checks.isMod(author, qChannel);
+  let count = options.count ? Number(options.count) : 1;
+  if (!count || isNaN(count)) {
+    postTranslated(qChannel, "countIsNaN", { count: options.count });
+    return;
+  }
+  const maxCount = 5;
+  const aLot = 15;
+  if (!isMod && count * screenNames.length > maxCount) {
+    if (screenNames.length === 1) count = maxCount;
+    else {
+      screenNames = screenNames.slice(0, maxCount);
+      count = Math.floor(maxCount / screenNames.length);
+    }
+    postTranslated(qChannel, "tweetCountLimited", {
+      maxCount: count * screenNames.length
+    });
+  }
+  if (count < 1) {
+    postTranslated(qChannel, "tweetCountUnderOne", { count });
+    return;
+  }
+  if (count * screenNames.length >= aLot && !force) {
+    log("Asked user to confirm", qChannel);
+    postTranslated(qChannel, "tweetCountHighConfirm", {
+      screenName: screenNames.join(" "),
+      count
+    });
+    return;
+  }
+  for (let i = 0; i < screenNames.length; i++) {
+    const posts = await postTimeline(qChannel, screenNames[i], count);
+    if (posts < 1) return;
+  }
 };
 
 const tweetId = (args, qChannel) => {
   const id = args[0];
   showTweet(id, { tweet_mode: "extended" })
-    .then((tweet, error) => {
+    .then(async (tweet, error) => {
       if (error) {
         log(error, qChannel);
         return;
       }
 
-      const { embed } = formatTweet(tweet);
+      const { embed } = await formatTweet(tweet);
       postEmbed(qChannel, embed);
       log(`Posting tweet ${id}`, qChannel);
 
       if (tweet.quoted_status && tweet.quoted_status.user) {
-        const { embed: quotedEmbed } = formatTweet(tweet);
+        const { embed: quotedEmbed } = await formatTweet(tweet);
         postEmbed(qChannel, quotedEmbed);
       }
     })
@@ -187,8 +207,8 @@ const tweetId = (args, qChannel) => {
 };
 
 const start = async (args, qChannel) => {
-  let { values, options } = argParse(args);
-  const flags = computeFlags(options);
+  let { values, flags: strFlags } = argParse(args);
+  const flags = computeFlags(strFlags);
   let screenNames = values.map(getScreenName);
   if (screenNames.length < 1) {
     postTranslated(qChannel, "usage-start");
@@ -218,10 +238,9 @@ const start = async (args, qChannel) => {
     }
     return;
   }
-  const promises = [];
-  data.forEach(({ id_str: userId, screen_name: name }) => {
-    promises.push(add(qChannel.id, userId, name, flags, qChannel.isDM));
-  });
+  const promises = data.map(({ id_str: userId, screen_name: name }) =>
+    add(qChannel.id, userId, name, flags, qChannel.isDM)
+  );
   Promise.all(promises).then(async results => {
     const screenNamesFinal = data.map(user => `@${user.screen_name}`);
     const nameCount = screenNamesFinal.length;
@@ -235,12 +254,17 @@ const start = async (args, qChannel) => {
         lastName
       }
     );
-    postTranslated(qChannel, "startSuccess", {
-      addedObjectName,
-      nameCount,
-      firstName: lastName,
-      missedNames: totalScreenNames !== nameCount ? 1 : 0
-    });
+    if (results.find(({ subs }) => subs !== 0))
+      postTranslated(qChannel, "startSuccess", {
+        addedObjectName,
+        nameCount,
+        firstName: lastName,
+        missedNames: totalScreenNames !== nameCount ? 1 : 0
+      });
+    else
+      postTranslated(qChannel, "startUpdateSuccess", {
+        addedObjectName
+      });
     log(`Added ${addedObjectName}`, qChannel);
     const redoStream = !!results.find(({ users }) => users !== 0);
     if (redoStream) createStream();
@@ -445,6 +469,22 @@ const handleTwitterError = (qChannel, code, msg, screenNames) => {
   }
 };
 
+const help = async (args, qChannel) => {
+  const lang = await getLang(qChannel.guildId());
+  const embed = new RichEmbed()
+    .setColor(0x0e7675)
+    .setTitle(i18n(lang, "helpHeader"))
+    .setURL(profileURL)
+    .setDescription(i18n(lang, "helpIntro"))
+    .addField(`${prefix}tweet`, i18n(lang, "usage-tweet"))
+    .addField(`${prefix}start`, i18n(lang, "usage-start"))
+    .addField(`${prefix}stop`, i18n(lang, "usage-stop"))
+    .addField(`${prefix}lang`, i18n(lang, "usage-lang"))
+    .addField(`${prefix}list`, i18n(lang, "usage-list"))
+    .setFooter(i18n(lang, "helpFooter", { artist: "ryusukehamamoto" }));
+  postEmbed(qChannel, { embed });
+};
+
 export default {
   start: {
     function: start,
@@ -513,6 +553,11 @@ export default {
         badB: "stopForMods"
       }
     ]
+  },
+  help: {
+    function: help,
+    checks: [],
+    minArgs: 0
   },
   leaveguild: {
     function: leaveGuild,

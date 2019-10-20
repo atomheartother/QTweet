@@ -37,7 +37,7 @@ welcomeMessage =
 ## Usage for every command
 usage-tweet = 
   Post the latest tweet(s) from the given user.
-  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [count]`
+  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=count]`
 
 usage-start =
   Subscribe to a twitter user and post their tweets in real time.
@@ -59,10 +59,14 @@ usage-admin-channel = {-usage}: `{-pr}admin c <channel_id>`
 usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
 usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
 
-usage-lang = {-usage}: `{-pr}lang [list|set <language>]`
+usage-lang = 
+  List available languages or change the language.
+  Read the docs if you want to help translate me in your language!
+  {-usage}: `{-pr}lang [list] [set <language>]`
 usage-lang-set = {-usage}: `{-pr}lang set <language>`
 
 ### Command feedback
+-error-apology = I'm on it, sorry for the trouble!
 ## !!tweet
 countIsNaN =
   {-b}I need a number of tweets to get!{-b}
@@ -80,7 +84,7 @@ tweetCountHighConfirm =
   {-b}You're asking for a lot of tweets{-b}
   Are you sure you want me to post {$count} tweets? Once I start, you won't be able to stop me!
   If you're sure you want me to do it, run:
-  `{-pr}tweet {$screenName} {$count} --force`
+  `{-pr}tweet {$screenName} --count={$count} --force`
 
 tweetNotAuthorized =
   {-b}I tried getting a tweet from {$screenName} but Twitter tells me that's unauthorized.{-b}
@@ -118,7 +122,7 @@ startSuccess =
   {-b}You're now subscribed to {$addedObjectName}!{-b}
   Remember you can stop me at any time with `{-pr}stop {$nameCount ->
     [one] {$firstName}
-    *[other] <screen_name>
+    *[other] <{-screen-name-variable}>
   }`.
   It can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!
 

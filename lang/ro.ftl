@@ -37,7 +37,7 @@ welcomeMessage =
 ## Usage for every command
 usage-tweet = 
   Postează cele mai recente tweet-uri de la un utilizator specificat.
-  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [cardinalul]`
+  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=cardinalul]`
 
 usage-start =
   Abonează-te la un utilizator de twitter și voi posta toate tweet-urile lui în timp real.
@@ -63,6 +63,7 @@ usage-lang = {-usage}: `{-pr}lang [list|set <limba>]`
 usage-lang-set = {-usage}: `{-pr}lang set <limba>`
 
 ### Command feedback
+-error-apology = O voi rezolva curând!
 ## !!tweet
 countIsNaN =
   {-b}Am nevoie de un număr de tweet-uri pentru a le obține!{-b}
@@ -80,7 +81,7 @@ tweetCountHighConfirm =
   {-b}Îmi ceri să postez foarte multe tweet-uri!{-b}
   Ești sigur că vrei să postez {$count} tweet-uri? Odată ce încep, nu mă vei putea opri până nu termin!
   Dacă ești sigur ca vrei sa postez atâtea tweet-uri, rulează comanda:
-  `{-pr}tweet {$screenName} {$count} --force`
+  `{-pr}tweet {$screenName} --count={$count} --force`
 
 tweetNotAuthorized =
   {-b}Am încercat să iau un tweet de la {$screenName} , dar Twitter îmi refuză această acțiune.{-b}
@@ -118,7 +119,7 @@ startSuccess =
   {-b}Acum ești abonat la {$addedObjectName}!{-b}
   Amintește-ți că poți opri abonamentul folosind comanda: `{-pr}stop {$nameCount ->
     [one] {$firstName}
-    *[other] <nume_afișat>
+    *[other] <{-screen-name-variable}>
   }`.
   Poate să dureze până la 20 de minute pentru a începe postarea tweet-urilor lor recente, dar odată ce voi începe treaba, le voi posta în timp real!
 
