@@ -18,7 +18,7 @@ import {
   getGuildSubs,
   setLang,
   getLang,
-  getUserIds
+  getUserIds as getAllSubs
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
@@ -251,7 +251,7 @@ const start = async (args, qChannel) => {
     }
     return null;
   }
-  const allUserIds = await getUserIds();
+  const allUserIds = await getAllSubs();
   if (allUserIds.length + data.length >= 5000) {
     // Filter out users which would be new users
     const filteredData = allUserIds.reduce((acc, { twitterId }) => {
