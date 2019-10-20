@@ -17,7 +17,8 @@ import {
   getChannelSubs,
   getGuildSubs,
   setLang,
-  getLang
+  getLang,
+  getUserIds
 } from "./subs";
 import { compute as computeFlags } from "./flags";
 import QChannel from "./QChannel";
@@ -237,6 +238,24 @@ const start = async (args, qChannel) => {
       handleTwitterError(qChannel, code, msg, screenNames);
     }
     return;
+  }
+  const allUserIds = await getUserIds();
+  if (allUserIds.length + data.length >= 5000) {
+    // Filter out users which would be new users
+    const filteredData = allUserIds.reduce((acc, { twitterId }) => {
+      const idx = data.findIndex(({ id_str: userId }) => {
+        userId === twitterId;
+      });
+      if (idx === -1) return acc;
+      return acc.concat([data[idx]]);
+    }, []);
+    if (filteredData.length !== data.length) {
+      postTranslated(qChannel, "userLimit");
+    }
+    if (filteredData.length <= 0) {
+      return;
+    }
+    data = filteredData;
   }
   const promises = data.map(({ id_str: userId, screen_name: name }) =>
     add(qChannel.id, userId, name, flags, qChannel.isDM)
