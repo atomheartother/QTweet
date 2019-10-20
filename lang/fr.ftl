@@ -97,14 +97,15 @@ tweetIdGeneralError =
   {-b}J'ai rencontré une erreur en obtenant le tweet {$id}{-b}
   {-error-apology}
 
-## !!start
-startGeneralError =
+## Generic for start and stop
+getInfoGeneralError =
   {-b}J'ai rencontré une erreur en obtenant des infos sur {$namesCount ->
   [one] ce compte
   *[other] ces comptes
   }.{-b}
   {-error-apology}
 
+## !!start
 startSuccess =
   {-b}Tu es maintenan abonné·e à {$addedObjectName}!{-b}
   Tu peux toujours m'arrêter avec `{-pr}stop {$nameCount ->
@@ -136,16 +137,12 @@ leaveSuccess = J'ai quitté la guilde {$name}
 
 ## !!stop
 noSuchSubscription =
-  {-b}Tu n'es pas abonné·e à `@{$screenName}`{-b}
+  {-b}Tu n'es pas abonné·e à {$screenNames}{-b}
   Entre `{-pr}list` pour une liste de tes abonnements!
 
 stopSuccess =
-  {-b}Je t'ai désabonné de `@{$screenName}`{-b}
+  {-b}Je t'ai désabonné de {$screenName}{-b}
   Tu ne devrais plus recevoir de tweets de leur part.
-
-stopGeneralError =
-  {-b}J'ai rencontré un problème en te désabonnant de `@{$screenName}`{-b}
-  {-error-apology}
 
 ## !!stopchannel
 stopChannelInDm =
