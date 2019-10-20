@@ -257,16 +257,13 @@ noSubscriptions =
 formatFlags = {$notext -> 
     *[0] Met
     [1] Zonder 
-  } text posts
-   {$retweet ->
+  } text posts, {$retweet ->
     *[0] Met
     [1] Zonder
-  } Retweets
-   {$noquote ->
+  } retweets, {$noquote ->
     *[0] Met
     [1] Zonder
-  } quotes
-   pings {$ping -> 
+  } quotes, pings {$ping -> 
     *[0] aan
     [1] uit
   }
