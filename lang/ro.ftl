@@ -107,14 +107,15 @@ tweetIdGeneralError =
   {-b}Ceva nu a mers bine obținând tweet-ul {$id}{-b}
   {-error-apology}
 
-## !!start
-startGeneralError =
+## Generic for start and stop
+getInfoGeneralError =
   {-b}Ceva nu a mers bine obținând informații de la {$namesCount ->
   [one] acest cont
   *[other] aceste conturi
   }.{-b}
   {-error-apology}
 
+## !!start
 startSuccess =
   {-b}Acum ești abonat la {$addedObjectName}!{-b}
   Amintește-ți că poți opri abonamentul folosind comanda: `{-pr}stop {$nameCount ->
@@ -146,16 +147,12 @@ leaveSuccess = Guild-ul {$name} a fost părăsit!
 
 ## !!stop
 noSuchSubscription =
-  {-b}Nu există un abonament la `@{$screenName}`{-b}
+  {-b}Nu există un abonament la {$screenNames}{-b}
   Folosește `{-pr}list` pentru a vedea lista completă a abonamentelor!
 
 stopSuccess =
-  {-b}Te-am dezabonat de la `@{$screenName}`{-b}
+  {-b}Te-am dezabonat de la {$screenNames}{-b}
   Nu ar mai trebui să mai primești tweet-uri de la el.
-
-stopGeneralError =
-  {-b}Ceva nu a mers bine în încercarea de a te dezabona de la `@{$screenName}`{-b}
-  {-error-apology}
 
 ## !!stopchannel
 stopChannelInDm =
