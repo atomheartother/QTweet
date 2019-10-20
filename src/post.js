@@ -1,4 +1,3 @@
-import * as config from "../config.json";
 import { rmChannel, getLang } from "./subs";
 import log from "./log";
 import QChannel from "./QChannel";
@@ -54,13 +53,26 @@ const handleDiscordPostError = async (
     errCode === 10003 ||
     (errCode === undefined && error.name === "TypeError")
   ) {
+    // Either the channel was deleted or Discord 404'd trying to access twitter data.
     retCode = 2;
-    // The channel was deleted or we don't have access to it, auto-delete it
-    // And notify the user
-    const { subs, users } = await rmChannel(qChannel.id);
-    log(error);
-    logMsg = `qChannel wasn't built: Auto-deleted ${subs} subs, ${users} users. qChannel removed`;
     channelToPostIn = "none";
+    if (!(await qChannel.obj())) {
+      // Channel deleted
+      // The channel was deleted or we don't have access to it, auto-delete it
+      // And notify the user
+      const { subs, users } = await rmChannel(qChannel.id);
+      log(error);
+      logMsg = `${errCode ||
+        "no qChannel"}: Auto-deleted ${subs} subs, ${users} users. qChannel removed`;
+    } else if (error.request.method === "GET") {
+      logMsg = `${errCode}: Discord encountered an error getting ${
+        error.request.path
+      }`;
+    } else {
+      log(error);
+      log(msg);
+      logMsg = `${errCode} on channel`;
+    }
   } else if (
     errCode === 403 ||
     errCode === 50013 ||
@@ -101,6 +113,7 @@ const handleDiscordPostError = async (
     logMsg = `Posting ${type} failed (${errCode} ${error.name}): ${
       error.message
     }`;
+    log(msg);
     channelToPostIn = "none";
   }
   log(qChannel);
@@ -117,6 +130,7 @@ const handleDiscordPostError = async (
   return asyncTimeout(async () => {
     try {
       await targetChannel.send(newMsg);
+      log(`Posted ${newType} successfully`, targetChannel);
     } catch (err) {
       return handleDiscordPostError(
         err,
@@ -166,9 +180,5 @@ export const dm = async (qChannel, content) => {
   return 0;
 };
 
-export const translated = async (qChannel, key, options = {}) => {
-  return message(
-    qChannel,
-    i18n(await getLang(qChannel.guildId()), key, options)
-  );
-};
+export const translated = async (qChannel, key, options = {}) =>
+  message(qChannel, i18n(await getLang(qChannel.guildId()), key, options));

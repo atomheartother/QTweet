@@ -27,15 +27,15 @@ welcomeMessage =
 -screen-name-variable = nom_utilisateur_twitter
 usage-tweet = 
   Envoie le dernier tweet d'un utilisateur
-  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [nombre]`
+  {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=nombre]`
 
 usage-start =
-  S'abonner à un utilisateur Twitter et envoyer ses tweets en temps réel.
+  S'abonne à un utilisateur Twitter et envoye ses tweets en temps réel.
   {-b}{-usage}{-b}: `{-pr}start <{-screen-name-variable}> [options]`
   Supporte plusieurs utilisateurs, les retweets, le filtrage des tweets texte et plus! Cf. la documentation
 
 usage-stop = 
-  Se désabonner d'un utilisateur.
+  Se désabonne d'un utilisateur.
   {-b}{-usage}{-b}: `{-pr}stop <{-screen-name-variable}>`
 
 usage-stopchannel =
@@ -53,7 +53,7 @@ usage-lang = {-usage}: `{-pr}lang [list|set <langage>]`
 usage-lang-set = {-usage}: `{-pr}lang set <langage>`
 
 ## Command feedback
--error-apology = Je suis sur le coup, désolé du désagrément!
+-error-apology = Je suis sur le coup, désolée du désagrément!
 ### !!tweet
 countIsNaN =
   {-b}J'ai besoin d'un nombre de tweets{-b}
@@ -71,7 +71,7 @@ tweetCountHighConfirm =
   {-b}Tu m'as demandé d'envoyer beaucoup de tweets{-b}
   Es-tu sûr·e de vouloir {$count} tweets? Une fois que j'aurais commencé je ne peux pas être arrêtée!
   Si tu est bien sûr·e, envoie:
-  `{-pr}tweet {$screenName} {$count} --force`
+  `{-pr}tweet {$screenName} --count={$count} --force`
 
 tweetNotAuthorized =
   {-b}J'ai essayé d'obtenir un tweet de {$screenName} mais Twitter me dit que ne ne suis pas autorisé.{-b}
@@ -109,7 +109,7 @@ startSuccess =
   {-b}Tu es maintenan abonné·e à {$addedObjectName}!{-b}
   Tu peux toujours m'arrêter avec `{-pr}stop {$nameCount ->
     [one] {$firstName}
-    *[other] <screen_name>
+    *[other] <{-screen-name-variable}>
   }`.
   Obtenir le premier tweet peut me prendre jusqu'à 20min, mais après ça tout sera en temps réel!
 

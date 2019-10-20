@@ -9,13 +9,13 @@ const GETINT = (val, alias = val) => `CAST(${val} AS TEXT) AS ${alias}`;
 export const open = file =>
   new Promise((resolve, reject) => {
     db = new sqlite3.Database(file || config.dbFile, err => {
-      if (err) reject(err);
+      if (err) return reject(err);
       else {
         db.all(
           "select name from sqlite_master where type='table'",
           [],
           async (err, tables) => {
-            if (err) reject(err);
+            if (err) return reject(err);
             if (tables.length === 4) {
               log(`Successfully opened database at ${file || config.dbFile}`);
               resolve();
@@ -103,7 +103,7 @@ export const getSubscription = (channelId, twitterId, withName = false) =>
           )}, flags, isDM FROM subs WHERE channelId = ? AND twitterId = ?`,
       [channelId, twitterId],
       (err, row) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(row);
       }
     )
@@ -123,7 +123,7 @@ export const getUserSubs = (twitterId, withInfo = false) =>
           )}, flags, isDM FROM subs WHERE twitterId=?`,
       [twitterId],
       (err, rows) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(rows);
       }
     )
@@ -142,7 +142,7 @@ export const getChannelSubs = (channelId, withName = false) =>
           )}, flags FROM subs WHERE subs.channelId=?`,
       [channelId],
       (err, rows) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(rows);
       }
     )
@@ -154,7 +154,7 @@ export const getGuildChannels = guildId =>
       `SELECT ${GETINT("channelId")} FROM channels WHERE guildId = ?`,
       [guildId],
       (err, rows) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(rows);
       }
     )
@@ -166,7 +166,7 @@ export const getUserIds = () =>
       `SELECT ${GETINT("twitterId")} FROM twitterUsers`,
       [],
       (err, rows) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(rows);
       }
     );
@@ -178,7 +178,7 @@ export const getUniqueChannels = () =>
       `SELECT ${GETINT("channelId")}, isDM FROM channels GROUP BY guildId`,
       [],
       (err, rows) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(rows);
       }
     )
@@ -190,7 +190,7 @@ export const getUserInfo = twitterId =>
       `SELECT name FROM twitterUsers WHERE twitterId = ?`,
       [twitterId],
       (err, row) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(row);
       }
     )
@@ -202,7 +202,7 @@ export const createGuild = guildId =>
       `INSERT OR IGNORE INTO guilds(guildId) VALUES(?)`,
       [guildId],
       err => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(1);
       }
     )
@@ -211,7 +211,7 @@ export const createGuild = guildId =>
 export const rmGuild = guildId =>
   new Promise((resolve, reject) =>
     db.run(`DELETE FROM guilds WHERE guildId = ?`, [guildId], err => {
-      if (err) reject(err);
+      if (err) return reject(err);
       resolve(1);
     })
   );
@@ -222,7 +222,7 @@ export const setLang = (guildId, lang) =>
       `INSERT OR REPLACE INTO guilds(guildId, lang) VALUES (?, ?)`,
       [guildId, lang],
       err => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(0);
       }
     )
@@ -234,7 +234,7 @@ export const getLang = guildId =>
       `SELECT lang FROM guilds WHERE guildId = ?`,
       [guildId],
       (err, row) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(row);
       }
     )
@@ -249,7 +249,7 @@ export const getGuildSubs = guildId =>
       )}, name, subs.isDM AS isDM, flags FROM subs INNER JOIN channels ON channels.channelId = subs.channelId INNER JOIN twitterUsers ON subs.twitterId = twitterUsers.twitterId WHERE guildId = ?`,
       [guildId],
       (err, rows) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(rows);
       }
     )
@@ -261,7 +261,7 @@ export const getUserFromScreenName = name =>
       `SELECT ${GETINT("twitterId")} FROM twitterUsers WHERE name = ?`,
       [name],
       (err, row) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(row);
       }
     );
@@ -275,7 +275,7 @@ export const getAllSubs = async () =>
       )}, subs.isDM AS isDM, flags FROM subs`,
       [],
       (err, rows) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(rows);
       }
     );
@@ -287,7 +287,7 @@ export const addChannel = async (channelId, guildId, ownerId, isDM) =>
       `INSERT OR IGNORE INTO channels(channelId, guildId, ownerId, isDM) VALUES(?, ?, ?, ?)`,
       [channelId, guildId, ownerId, isDM],
       function(err) {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(this.changes !== 0 ? 1 : 0);
       }
     );
@@ -300,7 +300,7 @@ export const addSubscription = async (channelId, twitterId, flags, isDM) =>
       "INSERT OR IGNORE INTO subs(channelId, twitterId, flags, isDM) VALUES(?, ?, ?, ?)",
       [channelId, twitterId, flags, isDM],
       function(err) {
-        if (err) reject(err);
+        if (err) return reject(err);
         if (this.changes !== 0) {
           resolve(1);
         } else {
@@ -308,7 +308,7 @@ export const addSubscription = async (channelId, twitterId, flags, isDM) =>
             "UPDATE subs SET flags=? WHERE channelId = ? AND twitterId = ?",
             [flags, channelId, twitterId],
             err => {
-              if (err) reject(err);
+              if (err) return reject(err);
               resolve(0);
             }
           );
@@ -323,7 +323,7 @@ export const addUser = (twitterId, name) =>
       `INSERT OR IGNORE INTO twitterUsers(twitterId, name) VALUES(?, ?)`,
       [twitterId, name],
       function(err) {
-        if (err) reject(err);
+        if (err) return reject(err);
         resolve(this.changes !== 0 ? 1 : 0);
       }
     );
@@ -332,7 +332,7 @@ export const addUser = (twitterId, name) =>
 export const rmUser = twitterId =>
   new Promise((resolve, reject) =>
     db.run(`DELETE FROM twitterUsers WHERE twitterId = ?`, [twitterId], err => {
-      if (err) reject(err);
+      if (err) return reject(err);
       resolve(1);
     })
   );
@@ -344,7 +344,7 @@ export const removeSubscription = (channelId, twitterId) =>
       `SELECT 1 FROM subs WHERE twitterId=? AND channelId=?`,
       [twitterId, channelId],
       (err, row) => {
-        if (err) reject(err);
+        if (err) return reject(err);
         else if (row === undefined) {
           resolve(0);
         } else {
@@ -352,7 +352,7 @@ export const removeSubscription = (channelId, twitterId) =>
             "DELETE FROM subs WHERE channelId = ? AND twitterId = ?",
             [channelId, twitterId],
             err => {
-              if (err) reject(err);
+              if (err) return reject(err);
               resolve(1);
             }
           );
@@ -364,7 +364,7 @@ export const removeSubscription = (channelId, twitterId) =>
 export const rmChannel = channelId =>
   new Promise((resolve, reject) =>
     db.run(`DELETE FROM channels WHERE channelId = ?`, [channelId], err => {
-      if (err) reject(err);
+      if (err) return reject(err);
       resolve(1);
     })
   );

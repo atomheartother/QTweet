@@ -26,13 +26,13 @@ Everyone who can send messages in a channel QTweet is in can use these commands.
 
 ### tweet
 
-Usage: `!!tweet <screen_name> [count]`
+Usage: `!!tweet <screen_name> [--count=count]`
 Gets the latest tweet from a twitter user and posts it in this channel. Works in DMs.
 Examples:
 
 `!!tweet HamsterFragment` will post the latest tweet from @HamsterFragmentt.
 
-`!!tweet HamsterFragment 5` will post the 5 latest tweets from @HamsterFragment.
+`!!tweet HamsterFragment atomheartother --count=5` will post the 5 latest tweets from @HamsterFragment, then the 5 latest tweets from @atomheartother.
 
 ### list
 
@@ -103,12 +103,13 @@ Examples:
 
 ### lang
 
-Usage: `!!lang [list | set <language>]`
+Usage: `!!lang [list] [set <language>]`
 
 List supported languages and change the current server language.
 
 Examples:
 
+`!!lang list`: List supported languages.
 `!!lang set fr`: Change to the French language! Parlez-vous français?
 
 ## Bot Owner
