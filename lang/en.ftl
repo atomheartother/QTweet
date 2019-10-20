@@ -298,7 +298,7 @@ postPermissionError =
 
 ### User Limit D:
 userLimit =
-  {-b}I've hit my user limit!{-b} Your subscription request contained subreddits no one else is subscribed to, so I had to drop them.
+  {-b}I've hit my user limit!{-b} Your subscription request contained accounts no one else is subscribed to, so I had to drop them.
 
   {-b}Why did you do this?{-b}
   Twitter currently limits every app to 5 000 subscriptions. If you're reading this I have reached that limit, and I have no choice - if I ask for more users then everything will break for everyone.
