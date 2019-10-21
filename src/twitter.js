@@ -380,10 +380,74 @@ export const userLookup = params => {
   return tClient.post("users/lookup", params);
 };
 
+export const showTweet = (id, params) => {
+  return tClient.get(`statuses/show/${id}`, params);
+};
+
+// Max timeline requests per 15min window
+const maxRequests = 1000;
+// Total
+let requests = 0;
+let lastResetDate = new Date.now();
+// PLACEHOLDER
+let nextResetDate = "LAST RESET + 15MIN";
+
+const minDelay = 1000 * 60 * 15;
 export const userTimeline = params => {
+  requests++;
   return tClient.get("statuses/user_timeline", params);
 };
 
-export const showTweet = (id, params) => {
-  return tClient.get(`statuses/show/${id}`, params);
+// twitterId: The user's unique ID
+// lastFetchDate: The time we last got the user's data. Also the time !!start was run if we never got any tweets.
+//      Users are queued in order of last fetch date, so the ones who never get posted are always checked first.
+//      We call this queue privilege and you lose it when you tweet anything.
+// recommendedFetchDate: The date at which we think we should try again. Also the time !!start was run if the user was never checked.
+// lastTweetId: Last time we got a tweet, we recorded its last ID.
+const checkUser = async ({
+  twitterId,
+  lastFetchDate,
+  recommendedFetchDate,
+  lastTweetId
+}) => {
+  if (recommendedFetchDate > Date.now()) return; // If it's not your time, it's not your time, do nothing
+  if (requests > maxRequests) {
+    // Set the next check to be @ next reset, don't update any other data to keep queue privileges
+    return;
+  }
+  // We should now get their latest tweets.
+  const params = {
+    user_id: twitterId,
+    tweet_mode: "extended"
+  };
+  if (lastTweetId) {
+    params.since_id = lastTweetId;
+  } else {
+    params.count = 1;
+  }
+  // This costs us one call
+  const tweets = await userTimeline(params);
+  if (tweets.length > 0) {
+    // There are tweets to post! Post them and update user data with lower delay
+    // No minimum delay here, but they lose queue privileges
+    return;
+  }
+  // No tweets, bad user made us waste a request >:c
+  // Increase the recommended fetch date
+  let nextDelay = (Date.now() - lastFetchDate) * 2;
+  if (nextDelay < minDelay) {
+    // Apply minimum delay because they were bad boys
+    nextDelay = minDelay;
+  }
+  // Update recommended fetch date here, date = Date.now() + nextDelay
+};
+
+export const init = async () => {
+  // This function fetches all twitter users & their metadata
+  // Data should be ordered by last fetch ASCENDING so we start with the oldest ones
+  const users = PLACEHOLDER_get_data();
+  // Check each user
+  for (let i = 0; i < users.length; i++) {
+    checkUser(users[i]);
+  }
 };
