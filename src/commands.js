@@ -370,7 +370,7 @@ const stop = async (args, qChannel) => {
     );
     results.reduce;
     if (subs === 0) {
-      postTranslated(qChannel, "noSuchSubscription", { screenNames });
+      postTranslated(qChannel, "noSuchSubscription", { screenNames: removedObjectName });
     } else {
       postTranslated(qChannel, "stopSuccess", {
         screenNames: removedObjectName
