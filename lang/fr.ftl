@@ -107,7 +107,7 @@ getInfoGeneralError =
 
 ## !!start
 startSuccess =
-  {-b}Tu es maintenan abonné·e à {$addedObjectName}!{-b}
+  {-b}Tu es maintenant abonné·e à {$addedObjectName}!{-b}
   Tu peux toujours m'arrêter avec `{-pr}stop {$nameCount ->
     [one] {$firstName}
     *[other] <{-screen-name-variable}>
@@ -141,7 +141,7 @@ noSuchSubscription =
   Entre `{-pr}list` pour une liste de tes abonnements!
 
 stopSuccess =
-  {-b}Je t'ai désabonné de {$screenName}{-b}
+  {-b}Je t'ai désabonné de {$screenNames}{-b}
   Tu ne devrais plus recevoir de tweets de leur part.
 
 ## !!stopchannel
