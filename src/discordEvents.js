@@ -106,7 +106,7 @@ export const handleReady = async () => {
 export const handleChannelDelete = async ({ id, name }) => {
   const { subs, users } = await rmChannel(id);
   if (subs > 0) {
-    log(`Channel #${name} (${id}) deleted. Removed ${subs} subscriptions.`);
+    log(`Channel #${name} (${id}) deleted. Removed ${subs} subscriptions, ${users} users.`);
     if (users > 0) createStream();
   }
 };
