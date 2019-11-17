@@ -32,7 +32,6 @@ import {
 } from "./format";
 import {
   formatTweet,
-  createStream,
   userTimeline,
   showTweet,
   userLookup,
@@ -293,8 +292,8 @@ const start = async (args, qChannel) => {
         addedObjectName
       });
     log(`Added ${addedObjectName}`, qChannel);
-    const redoStream = !!results.find(({ users }) => users !== 0);
-    if (redoStream) createStream();
+    // const redoStream = !!results.find(({ users }) => users !== 0);
+    // if (redoStream) createStream();
   });
 };
 
@@ -375,7 +374,7 @@ const stop = async (args, qChannel) => {
       postTranslated(qChannel, "stopSuccess", {
         screenNames: removedObjectName
       });
-      if (users > 0) createStream();
+      // if (users > 0) createStream();
     }
   });
 };

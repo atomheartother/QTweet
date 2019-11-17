@@ -36,7 +36,7 @@ const initTables = () =>
   new Promise((resolve, reject) => {
     db.serialize(() => {
       db.run(
-        `CREATE TABLE IF NOT EXISTS twitterUsers(twitterId INTEGER PRIMARY KEY, name TEXT)`,
+        `CREATE TABLE IF NOT EXISTS twitterUsers(twitterId INTEGER PRIMARY KEY, name TEXT, lastFetchDate INTEGER, recommendedFetchDate INTEGER, lastTweetId INTEGER)`,
         err => {
           if (err) {
             log("Error creating twitterUsers table");
@@ -172,6 +172,41 @@ export const getUserIds = () =>
     );
   });
 
+export const getUser = (twitterId) => new Promise((resolve, reject) => {
+  db.get(`SELECT ${GETINT("twitterId")}, lastFetchDate, recommendedFetchDate, ${GETINT("lastTweetId")} FROM twitterUsers WHERE twitterId = ?`, [twitterId], (err, row) => {
+    if (err) return reject(err);
+    resolve(row);
+  });
+});
+  
+export const getAllUsers = () => new Promise((resolve, reject) => {
+  db.all(`SELECT ${GETINT("twitterId")}, lastFetchDate, recommendedFetchDate, ${GETINT("lastTweetId")} FROM twitterUsers ORDER BY lastFetchDate ASC`, [], (err, rows) => {
+    if (err) return reject(err);
+    resolve(rows);
+  });
+});
+
+export const updateRecommendedFetchDate = (twitterId, recommendedFetchDate) => new Promise((resolve, reject) => {
+  db.run(
+    "UPDATE twitterUsers SET recommendedFetchDate=? WHERE twitterId = ?",
+    [recommendedFetchDate, twitterId],
+    err => {
+      if (err) return reject(err);
+      resolve(0);
+    });
+});
+
+export const updateUserData = (twitterId, lastFetchDate, recommendedFetchDate, lastTweetId) => new Promise((resolve, reject) => {
+  db.run(
+    "UPDATE twitterUsers SET lastFetchDate=?, recommendedFetchDate=?, lastTweetId=? WHERE twitterId = ?",
+    [lastFetchDate, recommendedFetchDate, lastTweetId, twitterId],
+    err => {
+      if (err) return reject(err);
+      resolve(0);
+    }
+  );
+});
+
 export const getUniqueChannels = () =>
   new Promise((resolve, reject) =>
     db.all(
@@ -280,6 +315,8 @@ export const getAllSubs = async () =>
       }
     );
   });
+
+
 
 export const addChannel = async (channelId, guildId, ownerId, isDM) =>
   new Promise((resolve, reject) => {

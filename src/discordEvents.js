@@ -13,7 +13,6 @@ import {
   dm,
   translated as postTranslatedMessage
 } from "./post";
-import { createStream, destroyStream } from "./twitter";
 import commands from "./commands";
 import { user, login } from "./discord";
 import i18n from "./i18n";
@@ -76,8 +75,6 @@ export const handleMessage = async message => {
 export const handleError = ({ message, error }) => {
   log(`Discord client encountered an error: ${message}`);
   log(error);
-  // Destroy the twitter stream cleanly, we will re-intantiate it sooner that way
-  destroyStream();
   login();
 };
 
@@ -94,19 +91,19 @@ export const handleGuildCreate = async guild => {
 export const handleGuildDelete = async ({ id, name }) => {
   log(`Left guild ${name}`);
   const { users } = await rmGuild(id);
-  if (users > 0) createStream();
+  // if (users > 0) createStream();
 };
 
 export const handleReady = async () => {
   log("Successfully logged in to Discord");
   await sanityCheck();
-  createStream();
+  // createStream();
 };
 
 export const handleChannelDelete = async ({ id, name }) => {
   const { subs, users } = await rmChannel(id);
   if (subs > 0) {
     log(`Channel #${name} (${id}) deleted. Removed ${subs} subscriptions.`);
-    if (users > 0) createStream();
+    // if (users > 0) createStream();
   }
 };

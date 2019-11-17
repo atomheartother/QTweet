@@ -18,7 +18,10 @@ import {
   close as closeDb,
   getGuildChannels,
   setLang as SQL_setLang,
-  getLang as SQL_getLang
+  getLang as SQL_getLang,
+  getAllUsers as SQL_getAllUsers,
+  updateRecommendedFetchDate as SQL_updateRecommendedFetchDate,
+  updateUserData as SQL_updateUserData
 } from "./sqlite";
 import * as config from "../config.json";
 import log from "./log";
@@ -47,6 +50,12 @@ export const getChannelSubs = SQL_getChannelSubs;
 export const getUserFromScreenName = SQL_getUserFromScreenName;
 
 export const addUser = SQL_addUser;
+
+export const getAllUsers = SQL_getAllUsers;
+
+export const updateRecommendedFetchDate = SQL_updateRecommendedFetchDate;
+
+export const updateUserData = SQL_updateUserData;
 
 export const addUserIfNoExists = async (twitterId, name) => {
   return addUser(twitterId, name);
