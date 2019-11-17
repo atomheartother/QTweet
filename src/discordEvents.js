@@ -13,6 +13,7 @@ import {
   dm,
   translated as postTranslatedMessage
 } from "./post";
+import {init as startFetch, stop as stopFetch} from "./twitterFetch";
 import commands from "./commands";
 import { user, login } from "./discord";
 import i18n from "./i18n";
@@ -74,6 +75,7 @@ export const handleMessage = async message => {
 
 export const handleError = ({ message, error }) => {
   log(`Discord client encountered an error: ${message}`);
+  stopFetch();
   log(error);
   login();
 };
@@ -98,6 +100,7 @@ export const handleReady = async () => {
   log("Successfully logged in to Discord");
   await sanityCheck();
   // createStream();
+  startFetch();
 };
 
 export const handleChannelDelete = async ({ id, name }) => {

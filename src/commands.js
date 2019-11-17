@@ -32,11 +32,14 @@ import {
 } from "./format";
 import {
   formatTweet,
-  userTimeline,
   showTweet,
   userLookup,
   getError
 } from "./twitter";
+import {
+  userTimeline,
+} from "./twitterFetch";
+
 import { getGuild, getChannel, getUser } from "./discord";
 import i18n from "./i18n";
 

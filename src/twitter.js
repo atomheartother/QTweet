@@ -321,13 +321,19 @@ const sendTweet = async (tweet, subs) => {
 }
 
 // Saves us a database call if we already know the subs
-const postTweetWithSubs = async (tweet, subs) => {
+export const postTweetWithSubs = async (tweet, subs) => {
   const filteredSubs = await getFilteredSubs(tweet, subs);
   return sendTweet(tweet, filteredSubs);
 };
 
+// NEVER CALL THIS DIRECTLY
+// Use twitterFetch's 'userTimeline'.
+export const getTimeline = (params) => {
+  return tClient.get("statuses/user_timeline", params);
+}
+
 // We don't know the subs :(
-const postTweet = async tweet => {
+export const postTweet = async tweet => {
   const subs = await getFilteredSubs(tweet);
   return sendTweet(tweet, subs);
 };

@@ -1,9 +1,9 @@
 // This module takes care of using fetches to act as a stream
-import {postTweet, isValid} from './twitter';
-import { getAllUsers, updateRecommendedFetchDate, updateUserData} from './subs'
+import { postTweetWithSubs, isValid, getTimeline } from './twitter';
+import { getAllUsers, updateRecommendedFetchDate, updateUserData, getUserSubs } from './subs'
 
-// Check every 2 min
-const checkInterval = 1000 * 60 * 2;
+// Check every 10
+const checkInterval = 1000 * 10;
 // Reset every 15min
 const resetInterval = 1000 * 60 * 15;
 // Add at least this many ms in case of failure
@@ -15,11 +15,13 @@ const maxRequests = 1000;
 let requests = 0;
 let nextReset = Date.now();
 
-const userTimeline = params => {
-  requests++;
-  return tClient.get("statuses/user_timeline", params);
-};
+let intervals = [null, null];
 
+export const userTimeline = params => {
+    requests++;
+    return getTimeline(params);
+  };
+  
 const getNextFetchDateFromTweets = (tweets, lastFetchDate) => {
     const lastTweetDate = new Date(tweets[0].created_at);
     if (!isNaN(lastTweetDate.getTime())) {
@@ -62,6 +64,7 @@ const checkUser = async ({
     updateRecommendedFetchDate(twitterId, nextReset);
     return;
   }
+  console.log(`Checking user ${twitterId}`);
   // We should now get their latest tweets.
   const params = {
     user_id: twitterId,
@@ -84,8 +87,10 @@ const checkUser = async ({
         console.log(tweets[i]);
         postTweetWithSubs(tweets[i], subs);
     }
-    const latestTweetDate = new Date(tweets[0].created_at)
-    updateUserData(twitterId, isNaN(latestTweetDate.getTime()) ? Date.now() : latestTweetDate.getTime(), getNextFetchDateFromTweets(tweets, lastFetchDate), tweets[0].id_str);
+    const latestTweetDate = new Date(tweets[0].created_at);
+    const newLastFetchDate = isNaN(latestTweetDate.getTime()) ? Date.now() : latestTweetDate.getTime()
+    const newRecommended = getNextFetchDateFromTweets(tweets, lastFetchDate)
+    updateUserData(twitterId, newLastFetchDate, newRecommended, tweets[0].id_str);
     return;
   }
   // No tweets, bad user made us waste a request >:c
@@ -100,13 +105,11 @@ const checkUser = async ({
 };
 
 const checkAllUsers = async () => {
-  nextReset = Date.now() + minDelay;
-  // Queue the next check in 15min
-  setTimeout(checkAllUsers, minDelay);
   // This function fetches all twitter users & their metadata
   // Data should be ordered by last fetch ASCENDING so we start with the oldest ones
   const users = await getAllUsers();
   // Check each user
+  console.log(`Checking ${users.length} users...`);
   for (let i = 0; i < users.length; i++) {
     checkUser(users[i]);
   }
@@ -117,7 +120,17 @@ const requestReset = () => {
     requests = 0;
 }
 
+export const stop = () => {
+    for (let i=0 ; i < intervals.length ; i++) {
+        if (intervals[i]) {
+            clearInterval(intervals[i]);
+        }
+        intervals[i] = null;
+    }
+}
+
 export const init = () => {
-    setInterval(checkAllUsers, checkInterval);
-    setInterval(requestReset, resetInterval);
+    stop();
+    intervals[0] = setInterval(checkAllUsers, checkInterval);
+    intervals[1] = setInterval(requestReset, resetInterval);
 };
