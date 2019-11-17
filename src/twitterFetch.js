@@ -1,9 +1,10 @@
 // This module takes care of using fetches to act as a stream
 import { postTweetWithSubs, isValid, getTimeline } from './twitter';
 import { getAllUsers, updateRecommendedFetchDate, updateUserData, getUserSubs } from './subs'
+import { isArray } from 'util';
 
-// Check every 10
-const checkInterval = 1000 * 10;
+// Check every 30s
+const checkInterval = 1000 * 30;
 // Reset every 15min
 const resetInterval = 1000 * 60 * 15;
 // Add at least this many ms in case of failure
@@ -17,9 +18,23 @@ let nextReset = Date.now();
 
 let intervals = [null, null];
 
-export const userTimeline = params => {
+export const userTimeline = async params => {
     requests++;
-    return getTimeline(params);
+    const timeline =  await getTimeline(params);
+    if (!isArray(timeline)) {
+        if (!timeline.error) {
+            console.error("Weirdly formatted error getting timeline:");
+            console.error(timeline);
+        }
+        else if (timeline.error === 'Not authorized.') {
+            console.error(`User is unauthorized: ${params.user_id}`);
+        } else {
+            console.error("Unknown error getting timeline:");
+            console.error(timeline);
+        }
+        return [];
+    }
+    return timeline;
   };
   
 const getNextFetchDateFromTweets = (tweets, lastFetchDate) => {
@@ -36,7 +51,7 @@ const getNextFetchDateFromTweets = (tweets, lastFetchDate) => {
         // We only have one valid tweet date.
         if (lastFetchDate) {
             // We have a lastFetchDate, giving us a second date to use as basis
-            return lastFetchDate.getTime() + (lastTweetDate.getTime() - lastFetchDate) * 1.1;
+            return lastFetchDate + (lastTweetDate.getTime() - lastFetchDate) * 1.1;
         }
         // We don't have a lastFetchDate. Use the current time and the tweet date to extrapolate the next tweet.
         return Date.now() + (Date.now() - lastTweetDate.getTime()) * 2
@@ -57,7 +72,11 @@ const checkUser = async ({
   recommendedFetchDate = Date.now(),
   lastTweetId
 }) => {
-  if (recommendedFetchDate > Date.now()) return; // If it's not your time, it's not your time, do nothing
+  if (recommendedFetchDate > Date.now())  {
+    // If it's not your time, it's not your time, do nothing
+    return;
+  }
+   
   if (requests > maxRequests) {
     console.log(`Check occurred too early, next check at next reset ${nextReset}`);
     // Set the next check to be @ next reset, don't update any other data to keep queue privileges
@@ -68,7 +87,8 @@ const checkUser = async ({
   // We should now get their latest tweets.
   const params = {
     user_id: twitterId,
-    tweet_mode: "extended"
+    tweet_mode: "extended",
+    exclude_replies: true
   };
   if (lastTweetId) {
     params.since_id = lastTweetId;
@@ -81,15 +101,15 @@ const checkUser = async ({
   tweets = tweets.filter(tweet => isValid(tweet));
   if (tweets.length > 0) {
     // Post tweet here
-    console.log("Posting tweets!");
+    console.log(`Posting ${tweets.length} tweets!`);
     const subs = await getUserSubs(tweets[0].user.id_str);
     for (let i=tweets.length - 1 ; i >= 0 ; i--) {
-        console.log(tweets[i]);
         postTweetWithSubs(tweets[i], subs);
     }
     const latestTweetDate = new Date(tweets[0].created_at);
-    const newLastFetchDate = isNaN(latestTweetDate.getTime()) ? Date.now() : latestTweetDate.getTime()
-    const newRecommended = getNextFetchDateFromTweets(tweets, lastFetchDate)
+    const newLastFetchDate = isNaN(latestTweetDate.getTime()) ? Date.now() : latestTweetDate.getTime();
+    const newRecommended = getNextFetchDateFromTweets(tweets, lastFetchDate);
+    console.log(`New tweet values: lastFetchDate: ${newLastFetchDate}, recommended: ${newRecommended}, id: ${tweets[0].id_str}`);
     updateUserData(twitterId, newLastFetchDate, newRecommended, tweets[0].id_str);
     return;
   }
@@ -100,7 +120,7 @@ const checkUser = async ({
     // Apply minimum delay because they were bad boys
     nextDelay = minDelay;
   }
-  console.log(`No new tweets, new delay is ${nextDelay}ms`)
+  console.log(`No new tweets, new delay is ${nextDelay}ms`);
   updateRecommendedFetchDate(twitterId, Date.now() + nextDelay);
 };
 
@@ -131,6 +151,8 @@ export const stop = () => {
 
 export const init = () => {
     stop();
+    requestReset();
+    checkAllUsers();
     intervals[0] = setInterval(checkAllUsers, checkInterval);
     intervals[1] = setInterval(requestReset, resetInterval);
 };
