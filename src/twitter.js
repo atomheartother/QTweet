@@ -4,7 +4,7 @@ import Twitter from "twitter-lite";
 import * as pw from "../pw.json";
 
 import { isSet } from "./flags";
-import { getUserIds, getUserSubs, updateUser } from "./subs";
+import { getUserIds, getUserSubs, updateUser} from "./subs";
 import Backup from "./backup";
 import log from "./log";
 
@@ -278,11 +278,11 @@ const flagsFilter = (flags, tweet) => {
   return true;
 };
 
-export const getFilteredSubs = async tweet => {
+export const getFilteredSubs = async (tweet, nonFilteredSubs = null) => {
   // Ignore invalid tweets
   if (!isValid(tweet)) return [];
   // Ignore tweets from people we don't follow, and replies unless they're replies to oneself (threads)
-  const subs = await getUserSubs(tweet.user.id_str);
+  const subs = nonFilteredSubs || (await getUserSubs(tweet.user.id_str));
   if (
     !subs ||
     subs.length === 0 ||
@@ -301,8 +301,7 @@ export const getFilteredSubs = async tweet => {
   return targetSubs;
 };
 
-const streamData = async tweet => {
-  const subs = await getFilteredSubs(tweet);
+const sendTweet = async (tweet, subs) => {
   if (subs.length === 0) return;
   const { embed, metadata } = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel }) => {
@@ -319,33 +318,45 @@ const streamData = async tweet => {
     });
   }
   updateUser(tweet.user);
+}
+
+// Saves us a database call if we already know the subs
+const postTweetWithSubs = async (tweet, subs) => {
+  const filteredSubs = await getFilteredSubs(tweet, subs);
+  return sendTweet(tweet, filteredSubs);
 };
 
-const streamEnd = () => {
-  // The backup exponential algorithm will take care of reconnecting
-  stream.disconnected();
-  log(
-    `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`
-  );
-  setTimeout(createStream, reconnectionDelay.value());
-  reconnectionDelay.increment();
+// We don't know the subs :(
+const postTweet = async tweet => {
+  const subs = await getFilteredSubs(tweet);
+  return sendTweet(tweet, subs);
 };
 
-const streamError = ({ url, status, statusText }) => {
-  // We simply can't get a stream, don't retry
-  stream.disconnected();
-  let delay = 0;
-  if (status === 420) {
-    delay = 30000;
-  } else {
-    delay = reconnectionDelay.value();
-    reconnectionDelay.increment();
-  }
-  log(
-    `Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`
-  );
-  setTimeout(createStream, delay);
-};
+// const streamEnd = () => {
+//   // The backup exponential algorithm will take care of reconnecting
+//   stream.disconnected();
+//   log(
+//     `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`
+//   );
+//   setTimeout(createStream, reconnectionDelay.value());
+//   reconnectionDelay.increment();
+// };
+
+// const streamError = ({ url, status, statusText }) => {
+//   // We simply can't get a stream, don't retry
+//   stream.disconnected();
+//   let delay = 0;
+//   if (status === 420) {
+//     delay = 30000;
+//   } else {
+//     delay = reconnectionDelay.value();
+//     reconnectionDelay.increment();
+//   }
+//   log(
+//     `Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`
+//   );
+//   setTimeout(createStream, delay);
+// };
 
 export const getError = response => {
   if (!response || !response.errors || response.errors.length < 1)
@@ -355,26 +366,26 @@ export const getError = response => {
 
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
-export const createStream = async () => {
-  if (!stream) {
-    stream = new Stream(
-      tClient,
-      streamStart,
-      streamData,
-      streamError,
-      streamEnd
-    );
-  }
-  // Get all the user IDs
-  const userIds = await getUserIds();
-  // If there are none, we can just leave stream at null
-  if (!userIds || userIds.length < 1) return;
-  stream.create(userIds.map(({ twitterId }) => twitterId));
-};
+// export const createStream = async () => {
+//   if (!stream) {
+//     stream = new Stream(
+//       tClient,
+//       streamStart,
+//       streamData,
+//       streamError,
+//       streamEnd
+//     );
+//   }
+//   // Get all the user IDs
+//   const userIds = await getUserIds();
+//   // If there are none, we can just leave stream at null
+//   if (!userIds || userIds.length < 1) return;
+//   stream.create(userIds.map(({ twitterId }) => twitterId));
+// };
 
-export const destroyStream = () => {
-  stream.disconnected();
-};
+// export const destroyStream = () => {
+//   stream.disconnected();
+// };
 
 export const userLookup = params => {
   return tClient.post("users/lookup", params);
@@ -382,72 +393,4 @@ export const userLookup = params => {
 
 export const showTweet = (id, params) => {
   return tClient.get(`statuses/show/${id}`, params);
-};
-
-// Max timeline requests per 15min window
-const maxRequests = 1000;
-// Total
-let requests = 0;
-let lastResetDate = new Date.now();
-// PLACEHOLDER
-let nextResetDate = "LAST RESET + 15MIN";
-
-const minDelay = 1000 * 60 * 15;
-export const userTimeline = params => {
-  requests++;
-  return tClient.get("statuses/user_timeline", params);
-};
-
-// twitterId: The user's unique ID
-// lastFetchDate: The time we last got the user's data. Also the time !!start was run if we never got any tweets.
-//      Users are queued in order of last fetch date, so the ones who never get posted are always checked first.
-//      We call this queue privilege and you lose it when you tweet anything.
-// recommendedFetchDate: The date at which we think we should try again. Also the time !!start was run if the user was never checked.
-// lastTweetId: Last time we got a tweet, we recorded its last ID.
-const checkUser = async ({
-  twitterId,
-  lastFetchDate,
-  recommendedFetchDate,
-  lastTweetId
-}) => {
-  if (recommendedFetchDate > Date.now()) return; // If it's not your time, it's not your time, do nothing
-  if (requests > maxRequests) {
-    // Set the next check to be @ next reset, don't update any other data to keep queue privileges
-    return;
-  }
-  // We should now get their latest tweets.
-  const params = {
-    user_id: twitterId,
-    tweet_mode: "extended"
-  };
-  if (lastTweetId) {
-    params.since_id = lastTweetId;
-  } else {
-    params.count = 1;
-  }
-  // This costs us one call
-  const tweets = await userTimeline(params);
-  if (tweets.length > 0) {
-    // There are tweets to post! Post them and update user data with lower delay
-    // No minimum delay here, but they lose queue privileges
-    return;
-  }
-  // No tweets, bad user made us waste a request >:c
-  // Increase the recommended fetch date
-  let nextDelay = (Date.now() - lastFetchDate) * 2;
-  if (nextDelay < minDelay) {
-    // Apply minimum delay because they were bad boys
-    nextDelay = minDelay;
-  }
-  // Update recommended fetch date here, date = Date.now() + nextDelay
-};
-
-export const init = async () => {
-  // This function fetches all twitter users & their metadata
-  // Data should be ordered by last fetch ASCENDING so we start with the oldest ones
-  const users = PLACEHOLDER_get_data();
-  // Check each user
-  for (let i = 0; i < users.length; i++) {
-    checkUser(users[i]);
-  }
 };
