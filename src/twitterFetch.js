@@ -57,11 +57,12 @@ const getNextFetchDateFromTweets = (dates, lastFetchDate) => {
     meanTweetInterval += Math.abs(timesArray[i+1] - timesArray[i])
   }
   meanTweetInterval /= timesArray.length - 1;
+  console.log(`Mean interval between ${dates.length} tweets: ${meanTweetInterval / (1000 * 60)}min`);
   // We now have the average time this user takes to tweet.
   // We add it to the last tweet we got, if it's after now, use this value
-  if (dates[0] + meanTweetInterval > now) {
+  if (dates[dates.length - 1] + meanTweetInterval > now) {
     // Add a 5% margin to catch slightly late tweets
-    return dates[0] + (meanTweetInterval * 1.05);
+    return dates[dates.length - 1] + (meanTweetInterval * 1.05);
   }
   // Otherwise try starting now, doubling the interval
   return now + (meanTweetInterval * 2);
@@ -75,17 +76,19 @@ const getNextFetchDateFromTweets = (dates, lastFetchDate) => {
 // lastTweetId: Last time we got a tweet, we recorded its last ID.
 const checkUser = async ({
   twitterId,
+  name,
   lastFetchDate,
   recommendedFetchDate = Date.now(),
   lastTweetId
 }) => {
   if (recommendedFetchDate > Date.now())  {
     // If it's not your time, it's not your time, do nothing
+    console.log(`${name}: Was checked but it wasn't their time.`);
     return;
   }
-   
+
   if (requests > maxRequests) {
-    console.log(`Check occurred too early, next check at next reset ${nextReset}`);
+    console.log(`${name}: No more requests, next check at next reset ${nextReset}`);
     // Set the next check to be @ next reset, don't update any other data to keep queue privileges
     updateRecommendedFetchDate(twitterId, nextReset);
     return;
@@ -94,17 +97,21 @@ const checkUser = async ({
   const params = {
     user_id: twitterId,
     tweet_mode: "extended",
-    exclude_replies: true
-  };
-  if (lastTweetId) {
-    params.since_id = lastTweetId;
-  } else {
-    params.count = 1;
-  }
+    include_rts: true,
+    count: 200, // Get the max value possible
+  };  
   // This costs us one call
   let tweets = await userTimeline(params);
   // Filter out invalid tweets
-  tweets = tweets.filter(tweet => isValid(tweet));
+  tweets = tweets.filter(tweet => !(tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id) && isValid(tweet));
+  // If we have a last ID, trim tweets, otherwise just use the last few ones & post the latest one
+  let onlyPostLatest = !lastTweetId;
+  if (lastTweetId) {
+    const idx = tweets.findIndex(({id_str}) => id_str === lastTweetId);
+    if (idx !== -1) {
+      tweets = tweets.slice(0, idx);
+    }
+  }
   if (tweets.length > 0) {
     // Post tweet here
     const subs = await getUserSubs(tweets[0].user.id_str);
@@ -112,15 +119,19 @@ const checkUser = async ({
     const dates = [];
     // Go through the tweets list backwards and do all the computrons we need
     for (let i=tweets.length - 1 ; i >= 0 ; i--) {
-      postTweetWithSubs(tweets[i], subs);
       const time = new Date(tweets[i].created_at);
+      if (!onlyPostLatest || i === 0) {
+        postTweetWithSubs(tweets[i], subs);
+        tweetToPost.push(Date.now() - time.getTime());
+      }
+      // Even if we don't post the tweet, use it for our time calculations
       if (!isNaN(time.getTime())) {
         dates.push(time.getTime());
-        tweetToPost.push(Date.now() - time.getTime());
       }
     }
     const newLastFetchDate = dates.length > 0 ? dates[dates.length - 1] : Date.now();
     const newRecommended = getNextFetchDateFromTweets(dates, lastFetchDate);
+    console.log(`${name}: Got ${tweets.length} tweets, next fetch at ${(new Date(newRecommended)).toLocaleString()}`)
     updateUserData(twitterId, newLastFetchDate, newRecommended, tweets[0].id_str);
     return;
   }
@@ -131,6 +142,7 @@ const checkUser = async ({
     // Apply minimum delay because they were bad boys
     nextDelay = minDelay;
   }
+  console.log(`${name}: Fetch yieled no tweets, next check in ${nextDelay / 1000}s`);
   updateRecommendedFetchDate(twitterId, Date.now() + nextDelay);
 };
 

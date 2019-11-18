@@ -180,7 +180,7 @@ export const getUser = (twitterId) => new Promise((resolve, reject) => {
 });
   
 export const getAllUsers = () => new Promise((resolve, reject) => {
-  db.all(`SELECT ${GETINT("twitterId")}, lastFetchDate, recommendedFetchDate, ${GETINT("lastTweetId")} FROM twitterUsers ORDER BY lastFetchDate ASC`, [], (err, rows) => {
+  db.all(`SELECT ${GETINT("twitterId")}, name, lastFetchDate, recommendedFetchDate, ${GETINT("lastTweetId")} FROM twitterUsers ORDER BY lastFetchDate ASC`, [], (err, rows) => {
     if (err) return reject(err);
     resolve(rows);
   });
