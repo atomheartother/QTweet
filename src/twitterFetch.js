@@ -103,15 +103,14 @@ const checkUser = async ({
   // This costs us one call
   let tweets = await userTimeline(params);
   // Filter out invalid tweets
-  tweets = tweets.filter(tweet => !(tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id) && isValid(tweet));
+  tweets = tweets.filter(tweet => 
+      !(tweet.in_reply_to_user_id &&
+        tweet.in_reply_to_user_id !== tweet.user.id) && // Don't keep replies to other users
+        (!lastTweetId || lastTweetId.localeCompare(tweet.id_str) === -1) && // Don't keep tweets below lastTweetId if we have it
+      isValid(tweet) // Don't keep invalid tweets
+    ); 
   // If we have a last ID, trim tweets, otherwise just use the last few ones & post the latest one
   let onlyPostLatest = !lastTweetId;
-  if (lastTweetId) {
-    const idx = tweets.findIndex(({id_str}) => id_str === lastTweetId);
-    if (idx !== -1) {
-      tweets = tweets.slice(0, idx);
-    }
-  }
   if (tweets.length > 0) {
     // Post tweet here
     const subs = await getUserSubs(tweets[0].user.id_str);
