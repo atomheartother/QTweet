@@ -110,7 +110,7 @@ const checkUser = async ({
     const subs = await getUserSubs(tweets[0].user.id_str);
     // Tweets -> Epoch times
     const dates = [];
-    // Go through the tweets list and do all the computrons we need
+    // Go through the tweets list backwards and do all the computrons we need
     for (let i=tweets.length - 1 ; i >= 0 ; i--) {
       postTweetWithSubs(tweets[i], subs);
       const time = new Date(tweets[i].created_at);
@@ -119,7 +119,7 @@ const checkUser = async ({
         tweetToPost.push(Date.now() - time.getTime());
       }
     }
-    const newLastFetchDate = dates.length > 0 ? dates[0] : Date.now();
+    const newLastFetchDate = dates.length > 0 ? dates[dates.length - 1] : Date.now();
     const newRecommended = getNextFetchDateFromTweets(dates, lastFetchDate);
     updateUserData(twitterId, newLastFetchDate, newRecommended, tweets[0].id_str);
     return;
