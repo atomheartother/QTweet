@@ -3,15 +3,20 @@ import { postTweetWithSubs, isValid, getTimeline } from './twitter';
 import { getAllUsers, updateRecommendedFetchDate, updateUserData, getUserSubs } from './subs'
 import { isArray } from 'util';
 
-// Check every 30s
-const checkInterval = 1000 * 30;
-// Reset every 15min
-const resetInterval = 1000 * 60 * 15;
+// Check every minute
+const checkInterval = 1000 * 60;
+// How do we divide the hour for our resets?
+const resetsPerHour = 5;
+// Calculate the reset interval in ms
+const resetInterval = (1000 * 60 * 60) / resetsPerHour;
 // Add at least this many ms in case of failure
 const minDelay = 1000 * 60 * 15;
 
-// Max timeline requests per 15min window
-const maxRequests = 1000;
+// Keeps track of the tweet-to-post values for the reset window.
+let tweetToPost = [];
+
+// Max timeline requests per reset window
+const maxRequests = 4000 / resetsPerHour;
 // Total
 let requests = 0;
 let nextReset = Date.now();
@@ -37,27 +42,29 @@ export const userTimeline = async params => {
     return timeline;
   };
   
-const getNextFetchDateFromTweets = (tweets, lastFetchDate) => {
-    const lastTweetDate = new Date(tweets[0].created_at);
-    if (!isNaN(lastTweetDate.getTime())) {
-        // First tweet is valid
-        if (tweets.length > 1) {
-            const secondTweetDate = new Date(tweets[1].created_at);
-            if (!isNaN(secondTweetDate.getTime())) {
-                // Ideal case: We have two tweets, we measure the time between them and assume the next post will happen with about the same frequency
-                return lastTweetDate.getTime() +  (lastTweetDate.getTime() - secondTweetDate.getTime()) * 1.1;
-            }
-        }
-        // We only have one valid tweet date.
-        if (lastFetchDate) {
-            // We have a lastFetchDate, giving us a second date to use as basis
-            return lastFetchDate + (lastTweetDate.getTime() - lastFetchDate) * 1.1;
-        }
-        // We don't have a lastFetchDate. Use the current time and the tweet date to extrapolate the next tweet.
-        return Date.now() + (Date.now() - lastTweetDate.getTime()) * 2
-    }
-    // No valid date given for tweet. Use min delay
-    return minDelay;
+// lastFetchDate is epoch, could be null
+const getNextFetchDateFromTweets = (dates, lastFetchDate) => {
+  const now = Date.now();
+  const timesArray = lastFetchDate ? [lastFetchDate, ...dates, now] : [...dates, now];
+  // If we somehow don't even have 2 time points, then just use the min value
+  if (timesArray.length < 2) {
+    return now + minDelay;
+  }
+  // Ok so we now have an array of timepoints from oldest to newest
+  // We need the average of the interval between each consequent value.
+  let meanTweetInterval = 0;
+  for (let i=0; i < timesArray.length - 1; i++) {
+    meanTweetInterval += Math.abs(timesArray[i+1] - timesArray[i])
+  }
+  meanTweetInterval /= timesArray.length - 1;
+  // We now have the average time this user takes to tweet.
+  // We add it to the last tweet we got, if it's after now, use this value
+  if (dates[0] + meanTweetInterval > now) {
+    // Add a 5% margin to catch slightly late tweets
+    return dates[0] + (meanTweetInterval * 1.05);
+  }
+  // Otherwise try starting now, doubling the interval
+  return now + (meanTweetInterval * 2);
 }
 
 // twitterId: The user's unique ID
@@ -68,7 +75,7 @@ const getNextFetchDateFromTweets = (tweets, lastFetchDate) => {
 // lastTweetId: Last time we got a tweet, we recorded its last ID.
 const checkUser = async ({
   twitterId,
-  lastFetchDate = Date.now(),
+  lastFetchDate,
   recommendedFetchDate = Date.now(),
   lastTweetId
 }) => {
@@ -83,7 +90,6 @@ const checkUser = async ({
     updateRecommendedFetchDate(twitterId, nextReset);
     return;
   }
-  console.log(`Checking user ${twitterId}`);
   // We should now get their latest tweets.
   const params = {
     user_id: twitterId,
@@ -101,15 +107,20 @@ const checkUser = async ({
   tweets = tweets.filter(tweet => isValid(tweet));
   if (tweets.length > 0) {
     // Post tweet here
-    console.log(`Posting ${tweets.length} tweets!`);
     const subs = await getUserSubs(tweets[0].user.id_str);
+    // Tweets -> Epoch times
+    const dates = [];
+    // Go through the tweets list and do all the computrons we need
     for (let i=tweets.length - 1 ; i >= 0 ; i--) {
-        postTweetWithSubs(tweets[i], subs);
+      postTweetWithSubs(tweets[i], subs);
+      const time = new Date(tweets[i].created_at);
+      if (!isNaN(time.getTime())) {
+        dates.push(time.getTime());
+        tweetToPost.push(Date.now() - time.getTime());
+      }
     }
-    const latestTweetDate = new Date(tweets[0].created_at);
-    const newLastFetchDate = isNaN(latestTweetDate.getTime()) ? Date.now() : latestTweetDate.getTime();
-    const newRecommended = getNextFetchDateFromTweets(tweets, lastFetchDate);
-    console.log(`New tweet values: lastFetchDate: ${newLastFetchDate}, recommended: ${newRecommended}, id: ${tweets[0].id_str}`);
+    const newLastFetchDate = dates.length > 0 ? dates[0] : Date.now();
+    const newRecommended = getNextFetchDateFromTweets(dates, lastFetchDate);
     updateUserData(twitterId, newLastFetchDate, newRecommended, tweets[0].id_str);
     return;
   }
@@ -120,7 +131,6 @@ const checkUser = async ({
     // Apply minimum delay because they were bad boys
     nextDelay = minDelay;
   }
-  console.log(`No new tweets, new delay is ${nextDelay}ms`);
   updateRecommendedFetchDate(twitterId, Date.now() + nextDelay);
 };
 
@@ -129,7 +139,6 @@ const checkAllUsers = async () => {
   // Data should be ordered by last fetch ASCENDING so we start with the oldest ones
   const users = await getAllUsers();
   // Check each user
-  console.log(`Checking ${users.length} users...`);
   for (let i = 0; i < users.length; i++) {
     checkUser(users[i]);
   }
@@ -137,7 +146,15 @@ const checkAllUsers = async () => {
 
 const requestReset = () => {
     nextReset = Date.now() + resetInterval;
+    console.log(`Resetting requests. Remaining requests: ${maxRequests - requests}`);
     requests = 0;
+    if (tweetToPost.length < 1) return;
+    let meanTweetToPost = 0;
+    for (let i=0; i < tweetToPost.length ; i++) {
+      meanTweetToPost += tweetToPost[i];
+    }
+    meanTweetToPost /= tweetToPost.length;
+    console.log(`Mean tweet-to-post: ${meanTweetToPost / (1000 * 60 * 60)}min`);
 }
 
 export const stop = () => {
