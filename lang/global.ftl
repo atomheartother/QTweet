@@ -3,7 +3,7 @@
 -bot-name = QTweet
 ## Various links
 -profile-url = {"https://discordbots.org/bot/433615162394804224"}
--docs-url = {"https://github.com/atomheartother/QTweet"}
+-docs-url = {"https://docs.google.com/document/d/1LGxfhxptioc653pqJaY5owwpZmzTg4rggqwBYcgO73I/edit?usp=sharing"}
 -invite-url = {"https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=51264"}
 -support-server = {"https://discord.gg/bF7yCdd"}
 -patreon-link = {"https://www.patreon.com/atomheartother"}
