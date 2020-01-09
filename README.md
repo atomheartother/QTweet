@@ -18,131 +18,13 @@ You never have to use Twitter again, just get the good stuff posted to your Disc
 - Ping your Discord server members directly from twitter with the `--ping` option!
 - **Can post to DMs** directly!
 
-# Usage, Permissions
+# Documentation, commands, etc
+[QTweet's full documentation can be found here](https://docs.google.com/document/d/1LGxfhxptioc653pqJaY5owwpZmzTg4rggqwBYcgO73I/edit?usp=sharing).
 
-Here's a detailed breakdown of QTweet's commands. I break them down in three permission categories. I use the standard notation for command parameters: `<param>` means that it's an obligatory parameter, `[param]` means it's optional. If you don't get it, don't worry there's examples c:
-
-## Everyone
-
-Everyone who can send messages in a channel QTweet is in can use these commands. So basically, if you don't want users to be able to do these, don't let them send messages in that channel.
-
-### tweet
-
-Usage: `!!tweet <screen_name> [--count=count]`
-Gets the latest tweet from a twitter user and posts it in this channel. Works in DMs.
-Examples:
-
-`!!tweet HamsterFragment` will post the latest tweet from @HamsterFragmentt.
-
-`!!tweet HamsterFragment atomheartother --count=5` will post the 5 latest tweets from @HamsterFragment, then the 5 latest tweets from @atomheartother.
-
-### list
-
-Usage: `!!list`
-
-Lists all the users whose tweets you're getting automatically **in the current channel**.
-
-### help
-
-Usage: `!!help`
-
-Posts a simple help message with some basic command usage.
-
-## Mods
-
-I consider a mod anyone who has elevated powers over QTweet in a channel. By default, that's the **server admins** and anyone with **manage channels** or **manage guild** permissions.
-
-You can allow anyone to be a QTweet mod by giving them the `qtweet-mod` role.
-
-### start
-
-Usage: `!!start <screen_name> [screen_name2 screen_name3 ...] [--notext] [--retweet] [--noquote] [--ping]`
-
-This command will cause QTweet to start posting tweets from this user (or these users) automatically into this discord channel, in real-time. It will take her a bit (between 5 and 20min) to start posting them because of twitter rate limits, but once she gets started they will be real-time. Works in DMs.
-
-Options:
-
-`--notext`: Don't post text tweets
-
-`--retweet`: Post retweets
-
-`--noquote`: Don't post quotes. Quotes are when an account retweets and adds a comment to the post. I make 2 posts for those, one for the quote and then one for the quoted message.
-
-`--ping`: Ping `@everyone` in the channel when a tweet with the hashtag "#qtweet" is posted from this account. Meant to be used for streamers and the likes.
-
-Examples:
-
-`!!start HamsterFragment --notext`: Will start posting tweets from @HamsterFragment, but not their text posts.
-
-`!!start HamsterFragment billwurtz`: Will start posting tweets from @HamsterFragment and @billwurtz.
-
-`!!start HamsterFragment --retweet --noquote`: Will post tweets and retweets from @HamsterFragment but not their quotes.
-
-### stop
-
-Usage: `!!stop <screen_name>`
-
-Causes QTweet to stop sending you tweets from this particular user.
-
-Example:
-
-- `!!stop HamsterFragment`: Will stop posting tweets from @HamsterFragment
-
-### stopchannel
-
-Usage: `!!stopchannel [channelID]`
-
-Acts like `!!stop` but on the whole channel. This is a command I made for two cases:
-
-- If you want to quickly remove all of QTweet's gets from a channel
-- If you stopped giving QTweet the right to post in a channel but she keeps trying to post to it and she keeps asking you for permission.
-
-Examples:
-
-`!!stopchannel`: Will stop getting posting any tweets in this channel.
-
-`!!stopchannel 464858170259406850`: Will stop posting any tweets in the channel with ID #464858170259406850. This command must be ran **in the server this channel is in**, it cannot be run in DMs!
-
-### lang
-
-Usage: `!!lang [list] [set <language>]`
-
-List supported languages and change the current server language.
-
-Examples:
-
-`!!lang list`: List supported languages.
-`!!lang set fr`: Change to the French language! Parlez-vous français?
-
-## Bot Owner
-
-This is only for me at the moment, it could be for you if you run **your own instance of QTweet**. QTweet knows who her owner is from the owner ID in `config.json`.
-
-### leaveguild
-
-Usage: `!!leaveguild <guildId>`
-
-Force QTweet to leave a guild. Useful if the owner really messed up or something.
-
-### announce
-
-Usage: `!!announce <message>`
-
-Posts an announcement to **every guild QTweet is currently posting in**. If a guild has multiple channel she's posting in, she will pick one and stick to it, she won't post the message across all channels. I use this to warn users in case of outages and that kind of stuff. Do not use this lightly.
-
-## Notes
-
-QTweet understands 3 formats for twitter screen names, therefore these 3 commands are equivalent:
-
-- `!!start HamsterFragment`
-- `!!start @HamsterFragment`
-- `!!start https://twitter.com/HamsterFragment`
-
-# Translation
-
-QTweet is available for translation, we currently support English and French. If you'd like to help translate QTweet in your language, you can read the [translation guide](https://github.com/atomheartother/QTweet/blob/master/TRANSLATION.md).
-
-You'll most likely need to join the [support server](https://discord.gg/bF7yCdd) especially if you have questions.
+It contains:
+- A detailed command guide describing what you can do with QTweet
+- The translation guide, for those of you who want to translate QTweet
+- A hosting guide, which will put you on the right path to run your own instance of QTweet.
 
 # Not So FAQ
 
@@ -152,11 +34,7 @@ If you wanna add QTweet to your server, you can just click [this link](https://d
 
 ## Can I modify and run your bot?
 
-Yes, unlike a lot of Discord bots, QTweet is open source. It'd be nice if you credited me. It runs like any old node package. You just need to fill in the `pw.json` file with your keys, then run `yarn start` (or `npm run start` if you're lame) and you're good to go. The code isn't commented enough to my liking but it should be understandable enough, if you have a question feel free to file an issue.
-
-You can also deploy it to docker, that's more kinda up to you, you'll have to make a volume mounted on the `data/` folder. DM me or file an issue for more info.
-
-Some stuff is already variable, you can change the configuration variables in `config.json` like the command prefix and the `get` file location.
+Yes, unlike a lot of Discord bots, QTweet is open source and meant to be run on independent instances. You can find a guide to hosting your own instance in the [full documentation](https://docs.google.com/document/d/1LGxfhxptioc653pqJaY5owwpZmzTg4rggqwBYcgO73I/edit?usp=sharing).
 
 ## I think your bot needs X feature
 
