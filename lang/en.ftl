@@ -44,7 +44,7 @@ usage-tweet =
 usage-start =
   Subscribe to a twitter user and post their tweets in real time.
   {-b}{-usage}{-b}: `{-pr}start <{-screen-name-variable}> [flags]`
-  Supports multiple users, retweets, filtering out text posts and more! Check out the documentation!`
+  Supports multiple users, retweets, filtering out text posts and more! Check out the documentation!
 
 usage-stop = 
   Unsubscribe from the given user.
