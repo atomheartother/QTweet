@@ -4,13 +4,23 @@ services:
   qtweet:
     build: .
     image: navenn_t/qtweet
-    volumes:
-      - qtweetData:/usr/src/app/data/
     environment:
-      - TZ=Europe/Paris
+      - TZ=${TIMEZONE}
     container_name: qtweet
     restart: on-failure
+    environment:
+      PGHOST: postgres
+      PGDATABASE: qtweetData
+      PGPASSWORD: ${DB_PASSWORD}
+      PGUSER: ${DB_USER}
+    depends_on:
+      - postgres
 
-volumes:
-  qtweetData:
-    external: true
+  postgres:
+    image: postgres:12.1-alpine
+    restart: always
+    container_name: postgres
+    environment:
+      POSTGRES_DB: qtweetData
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
