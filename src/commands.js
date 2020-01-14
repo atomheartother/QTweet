@@ -255,15 +255,15 @@ const start = async (args, qChannel) => {
   if (allUserIds.length + data.length >= 5000) {
     // Filter out users which would be new users
     const filteredData = allUserIds.reduce((acc, { twitterId }) => {
-      const idx = data.findIndex(({ id_str: userId }) => {
-        userId === twitterId;
-      });
+      const idx = data.findIndex(({ id_str: userId }) => userId === twitterId);
       if (idx === -1) return acc;
       return acc.concat([data[idx]]);
     }, []);
+    // If we've had to drop users, display a message
     if (filteredData.length !== data.length) {
       postTranslated(qChannel, "userLimit");
     }
+    // If all users were new users, we're done.
     if (filteredData.length <= 0) {
       return;
     }
