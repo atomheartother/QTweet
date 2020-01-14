@@ -20,7 +20,10 @@ services:
     image: postgres:12.1-alpine
     restart: always
     container_name: postgres
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_DB: qtweetData
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      DEFAULT_LANG: ${DEFAULT_LANG}
