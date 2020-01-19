@@ -13,6 +13,12 @@ services:
       PGDATABASE: qtweetData
       PGPASSWORD: ${DB_PASSWORD}
       PGUSER: ${DB_USER}
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      TWITTER_ID: ${TWITTER_ID}
+      TWITTER_SECRET: ${TWITTER_SECRET}
+      TWITTER_TOKEN: ${TWITTER_TOKEN}
+      TWITTER_TOKEN_SECRET: ${TWITTER_TOKEN_SECRET}
+      DBL_TOKEN: ${DBL_TOKEN}
     depends_on:
       - postgres
 
