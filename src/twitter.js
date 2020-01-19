@@ -1,7 +1,4 @@
-"use strict";
 import Twitter from "twitter-lite";
-
-import * as pw from "../pw.json";
 
 import { isSet } from "./flags";
 import { getUserIds, getUserSubs, updateUser } from "./subs";
@@ -23,11 +20,11 @@ const colors = Object.freeze({
   images: 0x53a38d
 });
 
-var tClient = new Twitter({
-  consumer_key: pw.tId,
-  consumer_secret: pw.tSecret,
-  access_token_key: pw.tToken,
-  access_token_secret: pw.tTokenS
+const tClient = new Twitter({
+  consumer_key: process.env.TWITTER_ID,
+  consumer_secret: process.env.TWITTER_SECRET,
+  access_token_key: process.env.TWITTER_TOKEN,
+  access_token_secret: process.env.TWITTER_TOKEN_SECRET,
 });
 
 const reconnectionDelay = new Backup({
