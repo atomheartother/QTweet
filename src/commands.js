@@ -252,7 +252,7 @@ const start = async (args, qChannel) => {
     return null;
   }
   const allUserIds = await getAllSubs();
-  if (allUserIds.length + data.length >= 1) {
+  if (allUserIds.length + data.length >= 5000) {
     // Filter out users which would be new users
     const filteredData = allUserIds.reduce((acc, { twitterId }) => {
       const idx = data.findIndex(({ id_str: userId }) => {
