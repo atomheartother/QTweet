@@ -24,6 +24,6 @@ CREATE TABLE channels (
     "channelId"   BIGINT PRIMARY KEY,
     "ownerId"     BIGINT NOT NULL,
     "guildId"     BIGINT NOT NULL,
-    "isDM"        integer NOT NULL DEFAULT 0
+    "isDM"        boolean NOT NULL DEFAULT false
 );
 EOSQL
