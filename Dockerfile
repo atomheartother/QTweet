@@ -1,10 +1,10 @@
-FROM node:11.15.0-slim
+FROM node:13.6.0-slim
 WORKDIR /usr/src/app
 
 # Copy build files and install using yarn
 COPY package.json ./
 COPY yarn.lock ./
-RUN yarn
+RUN yarn install --production
 
 # Copy everything over
 COPY . .

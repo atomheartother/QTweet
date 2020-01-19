@@ -14,17 +14,17 @@ import {
   addChannel,
   getAllSubs,
   addUser as SQL_addUser,
-  open as openDb,
+  init as initDb,
   close as closeDb,
   getGuildChannels,
   setLang as SQL_setLang,
   getLang as SQL_getLang
-} from "./sqlite";
+} from "./postgres";
 import * as config from "../config.json";
 import log from "./log";
 import QChannel from "./QChannel";
 
-export const init = openDb;
+export const init = initDb;
 
 export const close = closeDb;
 

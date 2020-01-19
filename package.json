@@ -15,7 +15,7 @@
     "esm": "^3.2.25",
     "fluent": "^0.12.0",
     "fortune-teller": "latest",
-    "sqlite3": "latest",
+    "pg": "^7.17.0",
     "twitter-lite": "latest",
     "unfurl.js": "^3.0.1"
   }

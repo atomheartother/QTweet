@@ -1,9 +1,9 @@
 class Backup {
   constructor({
-    mode = "exponential",
+    mode = 'exponential',
     inc = 2,
     startValue = 0,
-    maxValue = -1
+    maxValue = -1,
   } = {}) {
     this.mode = mode;
     this.inc = inc;
@@ -19,7 +19,7 @@ class Backup {
   increment() {
     if (this.maxValue >= 0 && this.val < this.maxValue) {
       switch (this.mode) {
-        case "linear":
+        case 'linear':
           this.val += this.inc;
           break;
         default:

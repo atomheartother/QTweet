@@ -1,9 +1,7 @@
 {
   "prefix": "!!",
   "ownerID": "135712262156451840",
-  "dbFile": "data/qtweetData.db",
   "profileURL": "https://discordbots.org/bot/433615162394804224",
   "modRole": "qtweet-mod",
-  "defaultLang": "en",
   "supportedLangs": ["en", "fr", "ro", "nl", "ru"]
 }
