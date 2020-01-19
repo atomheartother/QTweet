@@ -45,7 +45,7 @@ const reconnectionDelay = new Backup({
   maxValue: 60000
 });
 
-const dblClient = process.env.DBL_TOKEN === '' ? new DBL(process.env.DBL_TOKEN, dClient) : null;
+const dblClient = process.env.DBL_TOKEN !== '' ? new DBL(process.env.DBL_TOKEN, dClient) : null;
 
 export const getClient = () => {
   return dClient;
