@@ -1,6 +1,5 @@
-pw.json
-pw.json.qtweet
 node_modules/
 gets.json
 logs/
 .vscode/
+.env

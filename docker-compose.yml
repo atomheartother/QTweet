@@ -4,13 +4,32 @@ services:
   qtweet:
     build: .
     image: navenn_t/qtweet
-    volumes:
-      - qtweetData:/usr/src/app/data/
     environment:
-      - TZ=Europe/Paris
+      - TZ=${TIMEZONE}
     container_name: qtweet
     restart: on-failure
+    environment:
+      PGHOST: postgres
+      PGDATABASE: qtweetData
+      PGPASSWORD: ${DB_PASSWORD}
+      PGUSER: ${DB_USER}
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      TWITTER_ID: ${TWITTER_ID}
+      TWITTER_SECRET: ${TWITTER_SECRET}
+      TWITTER_TOKEN: ${TWITTER_TOKEN}
+      TWITTER_TOKEN_SECRET: ${TWITTER_TOKEN_SECRET}
+      DBL_TOKEN: ${DBL_TOKEN}
+    depends_on:
+      - postgres
 
-volumes:
-  qtweetData:
-    external: true
+  postgres:
+    image: postgres:12.1-alpine
+    restart: always
+    container_name: postgres
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_DB: qtweetData
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      DEFAULT_LANG: ${DEFAULT_LANG}
