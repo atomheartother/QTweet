@@ -4,10 +4,7 @@ import DBL from "dblapi.js";
 import log from "./log";
 import Backup from "./backup";
 
-// Passwords file
-import * as pw from "../pw.json";
-
-let dClient = new Discord.Client({
+const dClient = new Discord.Client({
   messageCacheMaxSize: 1,
   messageCacheLifetime: 30,
   messageSweepInterval: 60,
@@ -48,7 +45,7 @@ const reconnectionDelay = new Backup({
   maxValue: 60000
 });
 
-let dblClient = pw.DBLToken ? new DBL(pw.DBLToken, dClient) : null;
+const dblClient = process.env.DBL_TOKEN === '' ? new DBL(process.env.DBL_TOKEN, dClient) : null;
 
 export const getClient = () => {
   return dClient;
@@ -61,7 +58,7 @@ export const login = async () => {
     });
   }
   try {
-    await dClient.login(pw.dToken);
+    await dClient.login(process.env.DISCORD_TOKEN);
     reconnectionDelay.reset();
   } catch (err) {
     log("Couldn't log into discord:");
