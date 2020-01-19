@@ -19,7 +19,7 @@ import {
   getGuildChannels,
   setLang as SQL_setLang,
   getLang as SQL_getLang
-} from "./sqlite";
+} from "./postgres";
 import * as config from "../config.json";
 import log from "./log";
 import QChannel from "./QChannel";
