@@ -5,7 +5,6 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node --max-old-space-size=512 --optimize-for-size --gc-interval=10 -r esm src/index.js",
-    "debug": "node --inspect=9222 --expose-gc -r esm src/index.js",
     "lint": "yarn eslint src/* --fix"
   },
   "author": "Thomas Navennec",
