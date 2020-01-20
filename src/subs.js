@@ -58,6 +58,8 @@ export const sanityCheck = async () => {
   log(`Starting sanity check on ${allSubscriptions.length} subscriptions`);
   for (let i = 0; i < allSubscriptions.length; i++) {
     const sub = allSubscriptions[i];
+    console.log("Got subscription:");
+    console.log(sub);
     const qc = QChannel.unserialize(sub);
     const obj = await qc.obj();
     if (!obj) {
@@ -154,6 +156,8 @@ export const rm = async (channelId, twitterId) => {
 
 export const rmChannel = async channelId => {
   const subArray = await getChannelSubs(channelId);
+  console.log(`Got sub array for channel ${channelId}`);
+  console.log(subArray);
   let deletedSubs = 0;
   let deletedUsrs = 0;
   for (let i = 0; i < subArray.length; i++) {
