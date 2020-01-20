@@ -23,7 +23,7 @@ import {
 } from './subs';
 import { compute as computeFlags } from './flags';
 import QChannel from './QChannel';
-import { supportedLangs, prefix, profileURL } from '../config.json';
+import { supportedLangs, profileURL } from '../config.json';
 
 import {
   formatSubsList,
@@ -528,11 +528,11 @@ const help = async (args, qChannel) => {
     .setTitle(i18n(guildLang, 'helpHeader'))
     .setURL(profileURL)
     .setDescription(i18n(guildLang, 'helpIntro'))
-    .addField(`${prefix}tweet`, i18n(guildLang, 'usage-tweet'))
-    .addField(`${prefix}start`, i18n(guildLang, 'usage-start'))
-    .addField(`${prefix}stop`, i18n(guildLang, 'usage-stop'))
-    .addField(`${prefix}lang`, i18n(guildLang, 'usage-lang'))
-    .addField(`${prefix}list`, i18n(guildLang, 'usage-list'))
+    .addField(`${process.env.PREFIX}tweet`, i18n(guildLang, 'usage-tweet'))
+    .addField(`${process.env.PREFIX}start`, i18n(guildLang, 'usage-start'))
+    .addField(`${process.env.PREFIX}stop`, i18n(guildLang, 'usage-stop'))
+    .addField(`${process.env.PREFIX}lang`, i18n(guildLang, 'usage-lang'))
+    .addField(`${process.env.PREFIX}list`, i18n(guildLang, 'usage-list'))
     .setFooter(i18n(guildLang, 'helpFooter', { artist: 'ryusukehamamoto' }));
   postEmbed(qChannel, { embed });
 };
