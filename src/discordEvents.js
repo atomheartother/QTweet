@@ -2,7 +2,6 @@
 import { fortune } from 'fortune-teller';
 
 // Config file
-import * as config from '../config.json';
 import {
   rmChannel, rmGuild, sanityCheck, getLang,
 } from './subs';
@@ -52,7 +51,7 @@ export const handleMessage = async (message) => {
   if (message.author.bot) return;
   const { author, channel } = message;
 
-  if (message.content.indexOf(config.prefix) !== 0) {
+  if (message.content.indexOf(process.env.PREFIX) !== 0) {
     if (
       !!message.mentions
       && !!message.mentions.members
@@ -67,7 +66,7 @@ export const handleMessage = async (message) => {
     return;
   }
   const args = message.content
-    .slice(config.prefix.length)
+    .slice(process.env.PREFIX.length)
     .trim()
     .split(/ +/g);
 
