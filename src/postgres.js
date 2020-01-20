@@ -18,7 +18,7 @@ const getInt = (val, alias = val) => `${val}::text AS ${alias}`;
 export const getAllSubs = async () => {
   const { rows } = await pool.query(`SELECT ${getInt('subs."channelId"', '"channelId"')}, ${getInt(
     '"twitterId"',
-  )}, subs."isDM" AS isDM, "flags" FROM subs`);
+  )}, subs."isDM" AS "isDM", "flags" FROM subs`);
   return rows;
 };
 
