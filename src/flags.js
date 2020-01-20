@@ -4,14 +4,14 @@ const FlagsEnum = Object.freeze({
   notext: 1,
   retweet: 2,
   noquote: 4,
-  ping: 8
+  ping: 8,
 });
 
 // OBSOLETE
 // Returns a serialized int from flags
-export const serialize = flags => {
+export const serialize = (flags) => {
   let f = 0;
-  Object.keys(FlagsEnum).forEach(k => {
+  Object.keys(FlagsEnum).forEach((k) => {
     if (flags[k]) {
       f += FlagsEnum[k];
     }
@@ -21,18 +21,18 @@ export const serialize = flags => {
 
 // OBSOLETE
 // Returns flags object from a serialized int
-export const unserialize = f => {
+export const unserialize = (f) => {
   const flags = {};
-  Object.keys(FlagsEnum).forEach(k => {
+  Object.keys(FlagsEnum).forEach((k) => {
     flags[k] = (f & FlagsEnum[k]) === FlagsEnum[k];
   });
   return flags;
 };
 
 // Return a serialized flag from a bunch of strings
-export const compute = options => {
+export const compute = (options) => {
   const flags = new Flags();
-  options.forEach(opt => {
+  options.forEach((opt) => {
     if (FlagsEnum[opt]) {
       flags.set(opt);
     }
