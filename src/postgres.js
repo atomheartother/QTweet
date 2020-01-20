@@ -37,8 +37,8 @@ export const addSubscription = async (channelId, twitterId, flags, isDM) => {
 };
 
 export const removeSubscription = async (channelId, twitterId) => {
-  const { count } = await pool.query('DELETE FROM subs WHERE "channelId" = $1 AND "twitterId" = $2', [channelId, twitterId]);
-  return count;
+  const { rowCount } = await pool.query('DELETE FROM subs WHERE "channelId" = $1 AND "twitterId" = $2', [channelId, twitterId]);
+  return rowCount;
 };
 
 export const getSubscription = async (channelId, twitterId, withName = false) => {
@@ -109,8 +109,8 @@ export const addChannel = async (channelId, guildId, ownerId, isDM) => {
 };
 
 export const rmChannel = async (channelId) => {
-  const { count } = pool.query('DELETE FROM channels WHERE "channelId" = $1', [channelId]);
-  return count;
+  const { rowCount  } = pool.query('DELETE FROM channels WHERE "channelId" = $1', [channelId]);
+  return rowCount ;
 };
 
 export const getGuildChannels = async (guildId) => {
@@ -145,8 +145,8 @@ export const getUserFromScreenName = async (name) => {
 };
 
 export const rmUser = async (twitterId) => {
-  const { count } = await pool.query('DELETE FROM twitterUsers WHERE "twitterId" = $1', [twitterId]);
-  return count;
+  const { rowCount  } = await pool.query('DELETE FROM twitterUsers WHERE "twitterId" = $1', [twitterId]);
+  return rowCount ;
 };
 
 // Guild actions
@@ -157,8 +157,8 @@ export const createGuild = async (guildId) => {
 };
 
 export const rmGuild = async (guildId) => {
-  const { count } = await pool.query('DELETE FROM guilds WHERE "guildId" = $1', [guildId]);
-  return count;
+  const { rowCount  } = await pool.query('DELETE FROM guilds WHERE "guildId" = $1', [guildId]);
+  return rowCount ;
 };
 
 export const setLang = async (guildId, lang) => {
