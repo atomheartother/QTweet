@@ -109,12 +109,12 @@ export const addChannel = async (channelId, guildId, ownerId, isDM) => {
 };
 
 export const rmChannel = async (channelId) => {
-  const { rowCount  } = pool.query('DELETE FROM channels WHERE "channelId" = $1', [channelId]);
+  const { rowCount  } = await pool.query('DELETE FROM channels WHERE "channelId" = $1', [channelId]);
   return rowCount ;
 };
 
 export const getGuildChannels = async (guildId) => {
-  const { rows } = pool.query(`SELECT ${getInt('"channelId"')} FROM channels WHERE "guildId" = $1`, [guildId]);
+  const { rows } = await pool.query(`SELECT ${getInt('"channelId"')} FROM channels WHERE "guildId" = $1`, [guildId]);
   return rows;
 };
 
