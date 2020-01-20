@@ -1,11 +1,33 @@
+/* eslint no-bitwise: 0 */
 // This module defines subscription flags
-
 const FlagsEnum = Object.freeze({
   notext: 1,
   retweet: 2,
   noquote: 4,
   ping: 8,
 });
+
+export class Flags {
+  constructor() {
+    this.val = 0;
+  }
+
+  set(flag) {
+    if (!(this.val & FlagsEnum[flag])) this.val += FlagsEnum[flag];
+  }
+
+  unset(flag) {
+    this.val -= this.val & FlagsEnum[flag];
+  }
+
+  isSet(flag) {
+    return this.val && FlagsEnum[flag];
+  }
+
+  serialize() {
+    return this.val;
+  }
+}
 
 // OBSOLETE
 // Returns a serialized int from flags
@@ -41,25 +63,3 @@ export const compute = (options) => {
 };
 
 export const isSet = (val, flag) => (val & FlagsEnum[flag] ? 1 : 0);
-
-export class Flags {
-  constructor() {
-    this.val = 0;
-  }
-
-  set(flag) {
-    if (!(this.val & FlagsEnum[flag])) this.val += FlagsEnum[flag];
-  }
-
-  unset(flag) {
-    this.val -= this.val & FlagsEnum[flag];
-  }
-
-  isSet(flag) {
-    return this.val && FlagsEnum[flag];
-  }
-
-  serialize() {
-    return this.val;
-  }
-}
