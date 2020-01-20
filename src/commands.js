@@ -133,7 +133,7 @@ const postTimeline = async (qChannel, screenName, count) => {
     log(tweets, qChannel);
     return 0;
   }
-  for (let i = 0; i < validTweets.length; i++) {
+  for (let i = 0; i < validTweets.length; i += 1) {
     const { embed } = await formatTweet(validTweets[i]);
     const res = await postEmbed(qChannel, embed);
     if (res) {
@@ -159,7 +159,7 @@ const tweet = async (args, qChannel, author) => {
   if (flags.indexOf('force') !== -1) force = true;
   const isMod = await checks.isMod(author, qChannel);
   let count = options.count ? Number(options.count) : 1;
-  if (!count || isNaN(count)) {
+  if (!count || Number.isNaN(count)) {
     postTranslated(qChannel, 'countIsNaN', { count: options.count });
     return;
   }
@@ -187,27 +187,24 @@ const tweet = async (args, qChannel, author) => {
     });
     return;
   }
-  for (let i = 0; i < screenNames.length; i++) {
-    const posts = await postTimeline(qChannel, screenNames[i], count);
-    if (posts < 1) return;
-  }
+  await Promise.all(screenNames.map((screenName) => postTimeline(qChannel, screenName, count)));
 };
 
 const tweetId = (args, qChannel) => {
   const id = args[0];
   showTweet(id, { tweet_mode: 'extended' })
-    .then(async (tweet, error) => {
+    .then(async (tweetData, error) => {
       if (error) {
         log(error, qChannel);
         return;
       }
 
-      const { embed } = await formatTweet(tweet);
+      const { embed } = await formatTweet(tweetData);
       postEmbed(qChannel, embed);
       log(`Posting tweet ${id}`, qChannel);
 
-      if (tweet.quoted_status && tweet.quoted_status.user) {
-        const { embed: quotedEmbed } = await formatTweet(tweet);
+      if (tweetData.quoted_status && tweetData.quoted_status.user) {
+        const { embed: quotedEmbed } = await formatTweet(tweetData);
         postEmbed(qChannel, quotedEmbed);
       }
     })
@@ -225,14 +222,14 @@ const tweetId = (args, qChannel) => {
 
 const getUserIds = async (screenNames) => {
   const chunks = 100;
-  let data = [];
+  const promises = [];
   for (let i = 0; i < screenNames.length; i += chunks) {
-    const res = await userLookup({
+    promises.push(userLookup({
       screen_name: screenNames.slice(i, i + chunks).toString(),
-    });
-    data = data.concat(res);
+    }));
   }
-  return data;
+  const arrays = await Promise.all(promises);
+  return [].concat(...arrays);
 };
 
 // This changes screenNames.
