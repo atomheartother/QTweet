@@ -1,5 +1,5 @@
 export default async (message, qChannel = null) => {
-  const dateString = new Date().toLocaleString("en-GB");
+  const dateString = new Date().toLocaleString('en-GB');
   if (qChannel) {
     const obj = await qChannel.obj();
     const channelInfo = `[${

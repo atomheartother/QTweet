@@ -1,24 +1,24 @@
 // A module for formatting data for displaying
 
-import Discord from "discord.js";
-import * as config from "../config.json";
-import { getUserSubs, getLang } from "./subs";
-import { embed as postEmbed, translated as postTranslated } from "./post";
-import { isSet } from "./flags";
-import QChannel from "./QChannel.js";
-import i18n from "./i18n.js";
+import Discord from 'discord.js';
+import * as config from '../config.json';
+import { getUserSubs, getLang } from './subs';
+import { embed as postEmbed, translated as postTranslated } from './post';
+import { isSet } from './flags';
+import QChannel from './QChannel.js';
+import i18n from './i18n.js';
 
 const defaults = {
   data: [],
-  formatTitle: () => "",
-  formatField: () => "",
+  formatTitle: () => '',
+  formatField: () => '',
   description: null,
-  noElements: "genericEmptyList",
-  objectName: "genericObjects",
-  color: 0x0e7675
+  noElements: 'genericEmptyList',
+  objectName: 'genericObjects',
+  color: 0x0e7675,
 };
 
-export const formatQChannel = async qChannel => {
+export const formatQChannel = async (qChannel) => {
   const obj = await qChannel.obj();
   let res = `**${await qChannel.formattedName()}**\n`;
   if (qChannel.isDM) {
@@ -44,8 +44,8 @@ export const formatGenericList = async (
     noElements = defaults.noElements,
     objectName = defaults.objectName,
     color = defaults.color,
-    params = {}
-  } = {}
+    params = {},
+  } = {},
 ) => {
   const lang = await getLang(qChannel.guildId());
   if (data.length === 0) {
@@ -64,7 +64,7 @@ export const formatGenericList = async (
     const elem = data[i];
     embed.addField(
       await formatTitle(elem, params),
-      await formatField(elem, params)
+      await formatField(elem, params),
     );
     counter++;
     if (counter > 20) {
@@ -73,7 +73,7 @@ export const formatGenericList = async (
       embed = new Discord.RichEmbed()
         .setColor(color)
         .setTitle(
-          `${i18n(lang, objectName, { count: data.length })} (${page}):`
+          `${i18n(lang, objectName, { count: data.length })} (${page}):`,
         )
         .setURL(config.profileURL);
       counter = 0;
@@ -84,16 +84,14 @@ export const formatGenericList = async (
   }
 };
 
-export const formatTwitterUserShort = name =>
-  `@${name} (https://twitter.com/${name})`;
+export const formatTwitterUserShort = (name) => `@${name} (https://twitter.com/${name})`;
 
-export const formatFlags = (lang, flags) =>
-  i18n(lang, "formatFlags", {
-    notext: isSet(flags, "notext"),
-    retweet: isSet(flags, "retweet"),
-    noquote: isSet(flags, "noquote"),
-    ping: isSet(flags, "ping")
-  });
+export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
+  notext: isSet(flags, 'notext'),
+  retweet: isSet(flags, 'retweet'),
+  noquote: isSet(flags, 'noquote'),
+  ping: isSet(flags, 'ping'),
+});
 
 export const formatTwitterUser = async (qChannel, id) => {
   const subs = await getUserSubs(id);
@@ -103,23 +101,22 @@ export const formatTwitterUser = async (qChannel, id) => {
     const { channelId, flags, isDM } = subs[i];
     subsWithQchannels.push({
       flags,
-      qChannel: QChannel.unserialize({ channelId, isDM })
+      qChannel: QChannel.unserialize({ channelId, isDM }),
     });
   }
   formatGenericList(qChannel, {
     data: subsWithQchannels,
     formatTitle: async ({ qChannel }) => await qChannel.name(),
-    formatField: async ({ flags, qChannel }) =>
-      `**${i18n(lang, "id")}:** ${qChannel.id}\n**${i18n(
-        lang,
-        "type"
-      )}:** ${i18n(lang, qChannel.isDM ? "dm" : "serv")}\n${
-        qChannel.isDM
-          ? ""
-          : `**Gld:** ${qChannel.guildId()}\n**Own:** ${qChannel.ownerId()}\n`
-      }${formatFlags(lang, flags)}`,
-    noElements: "noUserSubscriptions",
-    objectName: "subscriptions"
+    formatField: async ({ flags, qChannel }) => `**${i18n(lang, 'id')}:** ${qChannel.id}\n**${i18n(
+      lang,
+      'type',
+    )}:** ${i18n(lang, qChannel.isDM ? 'dm' : 'serv')}\n${
+      qChannel.isDM
+        ? ''
+        : `**Gld:** ${qChannel.guildId()}\n**Own:** ${qChannel.ownerId()}\n`
+    }${formatFlags(lang, flags)}`,
+    noElements: 'noUserSubscriptions',
+    objectName: 'subscriptions',
   });
 };
 
@@ -128,10 +125,9 @@ export const formatSubsList = async (qChannel, subs) => {
   formatGenericList(qChannel, {
     data: subs,
     formatTitle: ({ name }) => formatTwitterUserShort(name),
-    formatField: ({ twitterId, flags }) =>
-      `**${i18n(lang, "id")}:** ${twitterId}\n${formatFlags(lang, flags)}`,
-    noElements: "noSubscriptions",
-    objectName: "subscriptions"
+    formatField: ({ twitterId, flags }) => `**${i18n(lang, 'id')}:** ${twitterId}\n${formatFlags(lang, flags)}`,
+    noElements: 'noSubscriptions',
+    objectName: 'subscriptions',
   });
 };
 
@@ -139,8 +135,8 @@ export const formatLanguages = async (qChannel, languagesList) => {
   const lang = await getLang(qChannel.id);
   formatGenericList(qChannel, {
     data: languagesList,
-    formatTitle: k => (k === lang ? `[${k}]` : k),
-    formatField: k => i18n(k, "languageCredit"),
-    objectName: "languages"
+    formatTitle: (k) => (k === lang ? `[${k}]` : k),
+    formatField: (k) => i18n(k, 'languageCredit'),
+    objectName: 'languages',
   });
 };

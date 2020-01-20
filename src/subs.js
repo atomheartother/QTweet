@@ -18,11 +18,11 @@ import {
   close as closeDb,
   getGuildChannels,
   setLang as SQL_setLang,
-  getLang as SQL_getLang
-} from "./postgres";
-import * as config from "../config.json";
-import log from "./log";
-import QChannel from "./QChannel";
+  getLang as SQL_getLang,
+} from './postgres';
+import * as config from '../config.json';
+import log from './log';
+import QChannel from './QChannel';
 
 export const init = initDb;
 
@@ -48,9 +48,7 @@ export const getUserFromScreenName = SQL_getUserFromScreenName;
 
 export const addUser = SQL_addUser;
 
-export const addUserIfNoExists = async (twitterId, name) => {
-  return addUser(twitterId, name);
-};
+export const addUserIfNoExists = async (twitterId, name) => addUser(twitterId, name);
 
 // Makes sure everything is consistent
 export const sanityCheck = async () => {
@@ -65,7 +63,7 @@ export const sanityCheck = async () => {
       log(
         `Found invalid qChannel: ${qc.id} (${
           qc.isDM
-        }). Deleted ${subs} subs, ${users} users.`
+        }). Deleted ${subs} subs, ${users} users.`,
       );
       continue;
     }
@@ -73,17 +71,17 @@ export const sanityCheck = async () => {
     if (c > 0) {
       log(`Channel wasn't in channels table: ${sub.channelId}`);
     }
-    const u = await addUserIfNoExists(sub.twitterId, "temp");
+    const u = await addUserIfNoExists(sub.twitterId, 'temp');
     if (u > 0) {
       log(`User ${sub.twitterId} wasn't in users table.`);
     }
   }
-  log(`Sanity check completed.`);
+  log('Sanity check completed.');
 };
 
 export const getUserInfo = SQL_getUserInfo;
 
-export const updateUser = async user => {
+export const updateUser = async (user) => {
   const usrInfo = await getUserInfo(user.id_str);
   if (!usrInfo || usrInfo.name !== user.screen_name) {
     return addUser(user.id_str, user.screen_name);
@@ -98,15 +96,14 @@ export const addChannelIfNoExists = async (channelId, isDM) => {
   const obj = await qc.obj();
   if (!obj) {
     log(
-      `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`
+      `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`,
     );
     return 0;
   }
   if (qc.isDM) {
     return await addChannel(channelId, channelId, channelId, qc.isDM);
-  } else {
-    return await addChannel(channelId, qc.guildId(), qc.ownerId(), qc.isDM);
   }
+  return await addChannel(channelId, qc.guildId(), qc.ownerId(), qc.isDM);
 };
 
 // Add a subscription to this userId or update an existing one
@@ -120,12 +117,12 @@ export const add = async (channelId, twitterId, name, flags, isDM) => {
 
 export const rmUser = SQL_rmUser;
 
-export const getLang = async guildId => {
+export const getLang = async (guildId) => {
   const guild = await SQL_getLang(guildId);
   return guild ? guild.lang : config.defaultLang;
 };
 
-const deleteUserIfEmpty = async twitterId => {
+const deleteUserIfEmpty = async (twitterId) => {
   const subs = await getUserSubs(twitterId);
   if (subs.length === 0) {
     await rmUser(twitterId);
@@ -134,7 +131,7 @@ const deleteUserIfEmpty = async twitterId => {
   return 0;
 };
 
-const deleteChannelIfEmpty = async channelId => {
+const deleteChannelIfEmpty = async (channelId) => {
   const subs = await getChannelSubs(channelId);
   if (subs.length === 0) {
     await rmChannel(channelId);
@@ -152,7 +149,7 @@ export const rm = async (channelId, twitterId) => {
   return { subs, users, channels };
 };
 
-export const rmChannel = async channelId => {
+export const rmChannel = async (channelId) => {
   const subArray = await getChannelSubs(channelId);
   let deletedSubs = 0;
   let deletedUsrs = 0;
@@ -166,7 +163,7 @@ export const rmChannel = async channelId => {
   return { subs: deletedSubs, users: deletedUsrs };
 };
 
-export const rmGuild = async guildId => {
+export const rmGuild = async (guildId) => {
   const channels = await getGuildChannels(guildId);
   let deletedSubs = 0;
   let deletedUsrs = 0;
@@ -179,6 +176,6 @@ export const rmGuild = async guildId => {
   return {
     subs: deletedSubs,
     users: deletedUsrs,
-    channels: channels.length
+    channels: channels.length,
   };
 };

@@ -109,8 +109,8 @@ export const addChannel = async (channelId, guildId, ownerId, isDM) => {
 };
 
 export const rmChannel = async (channelId) => {
-  const { rowCount  } = await pool.query('DELETE FROM channels WHERE "channelId" = $1', [channelId]);
-  return rowCount ;
+  const { rowCount } = await pool.query('DELETE FROM channels WHERE "channelId" = $1', [channelId]);
+  return rowCount;
 };
 
 export const getGuildChannels = async (guildId) => {
@@ -145,8 +145,8 @@ export const getUserFromScreenName = async (name) => {
 };
 
 export const rmUser = async (twitterId) => {
-  const { rowCount  } = await pool.query('DELETE FROM twitterUsers WHERE "twitterId" = $1', [twitterId]);
-  return rowCount ;
+  const { rowCount } = await pool.query('DELETE FROM twitterUsers WHERE "twitterId" = $1', [twitterId]);
+  return rowCount;
 };
 
 // Guild actions
@@ -157,8 +157,8 @@ export const createGuild = async (guildId) => {
 };
 
 export const rmGuild = async (guildId) => {
-  const { rowCount  } = await pool.query('DELETE FROM guilds WHERE "guildId" = $1', [guildId]);
-  return rowCount ;
+  const { rowCount } = await pool.query('DELETE FROM guilds WHERE "guildId" = $1', [guildId]);
+  return rowCount;
 };
 
 export const setLang = async (guildId, lang) => {

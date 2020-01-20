@@ -1,4 +1,4 @@
-import log from "./log";
+import log from './log';
 
 // Idle delay
 const shortDelay = 1000 * 60 * 5;
@@ -42,14 +42,14 @@ class Stream {
   doCreate() {
     log(`Creating a stream with ${this.userIds.length} registered users`);
     this.stream = this.tClient
-      .stream("statuses/filter", {
+      .stream('statuses/filter', {
         follow: this.userIds.toString(),
-        tweet_mode: "extended"
+        tweet_mode: 'extended',
       })
-      .on("start", this.streamStart)
-      .on("data", this.streamData)
-      .on("error", this.streamError)
-      .on("end", this.streamEnd);
+      .on('start', this.streamStart)
+      .on('data', this.streamData)
+      .on('error', this.streamError)
+      .on('end', this.streamEnd);
     this.timeout = setTimeout(() => {
       this.timeout = null;
       this.checkNewUsers();
