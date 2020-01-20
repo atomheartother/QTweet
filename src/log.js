@@ -7,8 +7,10 @@ export default async (message, qChannel = null) => {
         ? await qChannel.formattedName()
         : `${qChannel.id} -- ${qChannel.isDM}`
     }]`;
+    // eslint-disable-next-line no-console
     console.log(`${dateString}:${channelInfo}`, message);
   } else {
+    // eslint-disable-next-line no-console
     console.log(dateString, message);
   }
 };
