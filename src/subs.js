@@ -1,24 +1,24 @@
 import {
-  getUserIds as SQL_getUserIds,
-  getUserSubs as SQL_getUserSubs,
-  getUniqueChannels as SQL_getUniqueChannels,
-  getGuildSubs as SQL_getGuildSubs,
-  getChannelSubs as SQL_getChannelSubs,
-  rmChannel as SQL_rmChannel,
-  getSubscription as SQL_getSub,
-  getUserFromScreenName as SQL_getUserFromScreenName,
-  rmUser as SQL_rmUser,
+  getUserIds as SQLgetUserIds,
+  getUserSubs as SQLgetUserSubs,
+  getUniqueChannels as SQLgetUniqueChannels,
+  getGuildSubs as SQLgetGuildSubs,
+  getChannelSubs as SQLgetChannelSubs,
+  rmChannel as SQLrmChannel,
+  getSubscription as SQLgetSub,
+  getUserFromScreenName as SQLgetUserFromScreenName,
+  rmUser as SQLrmUser,
   addSubscription,
   removeSubscription,
-  getUserInfo as SQL_getUserInfo,
+  getUserInfo as SQLgetUserInfo,
   addChannel,
   getAllSubs,
-  addUser as SQL_addUser,
+  addUser as SQLaddUser,
   init as initDb,
   close as closeDb,
   getGuildChannels,
-  setLang as SQL_setLang,
-  getLang as SQL_getLang,
+  setLang as SQLsetLang,
+  getLang as SQLgetLang,
 } from './postgres';
 import * as config from '../config.json';
 import log from './log';
@@ -28,25 +28,25 @@ export const init = initDb;
 
 export const close = closeDb;
 
-export const getUserIds = SQL_getUserIds;
+export const getSub = SQLgetSub;
 
-export const getSub = SQL_getSub;
+export const getUserIds = SQLgetUserIds;
 
-export const getUserSubs = SQL_getUserSubs;
+export const getUserSubs = SQLgetUserSubs;
 
 // Returns a list of channel objects, each in an unique guild
 // DMs are also returned, as DMs are considered one-channel guilds
-export const getUniqueChannels = SQL_getUniqueChannels;
+export const getUniqueChannels = SQLgetUniqueChannels;
 
 // Returns a list of subscriptions matching this guild
-export const getGuildSubs = SQL_getGuildSubs;
+export const getGuildSubs = SQLgetGuildSubs;
 
 // Returns a list of subscriptions matching this channel
-export const getChannelSubs = SQL_getChannelSubs;
+export const getChannelSubs = SQLgetChannelSubs;
 
-export const getUserFromScreenName = SQL_getUserFromScreenName;
+export const getUserFromScreenName = SQLgetUserFromScreenName;
 
-export const addUser = SQL_addUser;
+export const addUser = SQLaddUser;
 
 export const addUserIfNoExists = async (twitterId, name) => addUser(twitterId, name);
 
@@ -79,7 +79,7 @@ export const sanityCheck = async () => {
   log('Sanity check completed.');
 };
 
-export const getUserInfo = SQL_getUserInfo;
+export const getUserInfo = SQLgetUserInfo;
 
 export const updateUser = async (user) => {
   const usrInfo = await getUserInfo(user.id_str);
@@ -89,7 +89,7 @@ export const updateUser = async (user) => {
   return 0;
 };
 
-export const setLang = SQL_setLang;
+export const setLang = SQLsetLang;
 
 export const addChannelIfNoExists = async (channelId, isDM) => {
   const qc = QChannel.unserialize({ channelId, isDM });
@@ -115,10 +115,10 @@ export const add = async (channelId, twitterId, name, flags, isDM) => {
   return { subs, users, channels };
 };
 
-export const rmUser = SQL_rmUser;
+export const rmUser = SQLrmUser;
 
 export const getLang = async (guildId) => {
-  const guild = await SQL_getLang(guildId);
+  const guild = await SQLgetLang(guildId);
   return guild ? guild.lang : config.defaultLang;
 };
 
@@ -159,7 +159,7 @@ export const rmChannel = async (channelId) => {
     deletedSubs += subs;
     deletedUsrs += users;
   }
-  SQL_rmChannel(channelId);
+  SQLrmChannel(channelId);
   return { subs: deletedSubs, users: deletedUsrs };
 };
 
