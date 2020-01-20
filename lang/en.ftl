@@ -173,7 +173,7 @@ stopChannelSuccess =
     [one] one user
     *[other] {$subs} users
   }.{-b}
-  You should now stop getting any tweets in {$channelName}.
+  You should now stop getting any tweets in `{$channelName}`.
 
 ## !!lang
 noSuchLang =
