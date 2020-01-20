@@ -105,7 +105,6 @@ export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
 });
 
 export const formatTwitterUser = async (qChannel, id) => {
-  console.log(id);
   const subs = await getUserSubs(id);
   const lang = await getLang(qChannel.guildId());
   const subsWithQchannels = [];
@@ -116,7 +115,6 @@ export const formatTwitterUser = async (qChannel, id) => {
       qChannel: QChannel.unserialize({ channelId, isDM }),
     });
   }
-  console.log(subs);
   formatGenericList(qChannel, {
     data: subsWithQchannels,
     formatTitle: async ({ qChannel: qc }) => qc.name(),
