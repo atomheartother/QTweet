@@ -8,9 +8,9 @@ export const isAdmin = (author) => author.id === config.ownerID;
 export const isMod = async (author, qChannel) => {
   const isSomeOwner = author.id === config.ownerID
     || (!!qChannel && author.id === qChannel.ownerId());
-  if (isSomeOwner)
-  // The user is either the channel owner or us. We can just accept their command
-  { return true; }
+  if (isSomeOwner) { // The user is either the channel owner or us. We can just accept their command
+    return true;
+  }
   const guild = await qChannel.guild();
   if (!qChannel && !guild) {
     log("User isn't an owner and we can't check for more", qChannel);

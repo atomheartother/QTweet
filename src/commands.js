@@ -38,7 +38,7 @@ import {
   userLookup,
   getError,
 } from './twitter';
-import { getGuild, getChannel, getUser } from './discord';
+import { getGuild, getChannel } from './discord';
 import i18n from './i18n';
 
 const getScreenName = (word) => {
@@ -60,8 +60,9 @@ const argParse = (args) => {
   const values = [];
   const flags = [];
   const options = {};
-  for (const arg of args) {
-    if (arg.substring(0, 2) == '--') {
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg.substring(0, 2) === '--') {
       const optStr = arg.substring(2);
       const equalIdx = optStr.indexOf('=');
       if (equalIdx === -1) flags.push(arg.substring(2));
@@ -76,47 +77,28 @@ const argParse = (args) => {
   return { values, flags, options };
 };
 
-const postTimeline = async (qChannel, screenName, count) => new Promise((resolve) => userTimeline({ screen_name: screenName, tweet_mode: 'extended', count })
-  .then(async (tweets) => {
-    if (tweets.error) {
-      if (tweets.error === 'Not authorized.') {
-        postTranslated(qChannel, 'tweetNotAuthorized', { screenName });
-      } else {
-        postTranslated(qChannel, 'tweetUnknwnError', {
-          error: tweets.error,
-          screenName,
-        });
-        log('Unknown error on twitter timeline', qChannel);
-        log(tweets.error, qChannel);
-      }
-      return resolve(0);
-    }
-    if (tweets.length < 1) {
-      postTranslated(qChannel, 'noTweets', { screenName });
-      return resolve(0);
-    }
-    const validTweets = tweets.filter((t) => t && t.user);
-    if (validTweets.length == 0) {
-      postTranslated(qChannel, 'noValidTweets');
-      log('Invalid tweets from timeline', qChannel);
-      log(tweets, qChannel);
-      return resolve(0);
-    }
-    for (let i = 0; i < validTweets.length; i++) {
-      const { embed } = await formatTweet(validTweets[i]);
-      const res = await postEmbed(qChannel, embed);
-      if (res) {
-        log(`Stopped posting tweets after ${i}`, qChannel);
-        return resolve(i);
-      }
-    }
-    log(
-      `Posted latest ${validTweets.length} tweet(s) from ${screenName}`,
-      qChannel,
-    );
-    resolve(validTweets.length);
-  })
-  .catch((response) => {
+const handleTwitterError = (qChannel, code, msg, screenNames) => {
+  if (code === 17 || code === 34) {
+    postTranslated(qChannel, 'noSuchTwitterUser', {
+      count: screenNames.length,
+      name: screenNames.toString(),
+    });
+  } else if (code === 18) {
+    log('Exceeded user lookup limit', qChannel);
+    postTranslated(qChannel, 'tooManyUsersRequested');
+  } else if (code === 144) {
+    postTranslated(qChannel, 'noSuchTwitterId');
+  } else {
+    log(`Unknown twitter error: ${code} ${msg}`);
+    postTranslated(qChannel, 'twitterUnknwnError');
+  }
+};
+
+const postTimeline = async (qChannel, screenName, count) => {
+  let tweets = [];
+  try {
+    tweets = await userTimeline({ screen_name: screenName, tweet_mode: 'extended', count });
+  } catch (response) {
     const { code, msg } = getError(response);
     if (!code) {
       log('Exception thrown without error', qChannel);
@@ -125,8 +107,46 @@ const postTimeline = async (qChannel, screenName, count) => new Promise((resolve
     } else {
       handleTwitterError(qChannel, code, msg, [screenName]);
     }
-    resolve(0);
-  }));
+    return 0;
+  }
+  if (tweets.error) {
+    if (tweets.error === 'Not authorized.') {
+      postTranslated(qChannel, 'tweetNotAuthorized', { screenName });
+    } else {
+      postTranslated(qChannel, 'tweetUnknwnError', {
+        error: tweets.error,
+        screenName,
+      });
+      log('Unknown error on twitter timeline', qChannel);
+      log(tweets.error, qChannel);
+    }
+    return 0;
+  }
+  if (tweets.length < 1) {
+    postTranslated(qChannel, 'noTweets', { screenName });
+    return 0;
+  }
+  const validTweets = tweets.filter((t) => t && t.user);
+  if (validTweets.length === 0) {
+    postTranslated(qChannel, 'noValidTweets');
+    log('Invalid tweets from timeline', qChannel);
+    log(tweets, qChannel);
+    return 0;
+  }
+  for (let i = 0; i < validTweets.length; i++) {
+    const { embed } = await formatTweet(validTweets[i]);
+    const res = await postEmbed(qChannel, embed);
+    if (res) {
+      log(`Stopped posting tweets after ${i}`, qChannel);
+      return i;
+    }
+  }
+  log(
+    `Posted latest ${validTweets.length} tweet(s) from ${screenName}`,
+    qChannel,
+  );
+  return validTweets.length;
+};
 
 const tweet = async (args, qChannel, author) => {
   const { values, flags, options } = argParse(args);
@@ -230,8 +250,9 @@ const start = async (args, qChannel) => {
     postTranslated(qChannel, 'usage-start');
     return;
   }
+  let data = [];
   try {
-    var data = await getUserIds(screenNames);
+    data = await getUserIds(screenNames);
   } catch (res) {
     const { code, msg } = getError(res);
     if (!code) {
@@ -243,7 +264,7 @@ const start = async (args, qChannel) => {
     } else {
       handleTwitterError(qChannel, code, msg, screenNames);
     }
-    return null;
+    return;
   }
   const allUserIds = await getAllSubs();
   if (allUserIds.length + data.length >= 5000) {
@@ -263,32 +284,34 @@ const start = async (args, qChannel) => {
     }
     data = filteredData;
   }
-  const promises = data.map(({ id_str: userId, screen_name: name }) => add(qChannel.id, userId, name, flags, qChannel.isDM));
-  Promise.all(promises).then(async (results) => {
-    const screenNamesFinal = data.map(({ screen_name }) => `@${screen_name}`);
-    const nameCount = screenNamesFinal.length;
-    const lastName = screenNamesFinal.pop();
-    const addedObjectName = await formatScreenNames(
-      qChannel,
-      screenNamesFinal,
-      lastName,
-    );
-    if (results.find(({ subs }) => subs !== 0)) {
-      postTranslated(qChannel, 'startSuccess', {
-        addedObjectName,
-        nameCount,
-        firstName: lastName,
-        missedNames: screenNames.length !== nameCount ? 1 : 0,
-      });
-    } else {
-      postTranslated(qChannel, 'startUpdateSuccess', {
-        addedObjectName,
-      });
-    }
-    log(`Added ${addedObjectName}`, qChannel);
-    const redoStream = !!results.find(({ users }) => users !== 0);
-    if (redoStream) createStream();
-  });
+  const promises = data.map(({
+    id_str: userId,
+    screen_name: name,
+  }) => add(qChannel.id, userId, name, flags, qChannel.isDM));
+  const screenNamesFinal = data.map(({ screen_name: screenName }) => `@${screenName}`);
+  const nameCount = screenNamesFinal.length;
+  const lastName = screenNamesFinal.pop();
+  const addedObjectName = await formatScreenNames(
+    qChannel,
+    screenNamesFinal,
+    lastName,
+  );
+  const results = await Promise.all(promises);
+  if (results.find(({ subs }) => subs !== 0)) {
+    postTranslated(qChannel, 'startSuccess', {
+      addedObjectName,
+      nameCount,
+      firstName: lastName,
+      missedNames: screenNames.length !== nameCount ? 1 : 0,
+    });
+  } else {
+    postTranslated(qChannel, 'startUpdateSuccess', {
+      addedObjectName,
+    });
+  }
+  log(`Added ${addedObjectName}`, qChannel);
+  const redoStream = !!results.find(({ users }) => users !== 0);
+  if (redoStream) createStream();
 };
 
 const leaveGuild = async (args, qChannel) => {
@@ -301,7 +324,7 @@ const leaveGuild = async (args, qChannel) => {
     postTranslated(qChannel, 'noValidGid');
     return;
   }
-  if (guild == undefined) {
+  if (guild === undefined) {
     postTranslated(qChannel, 'guildNotFound', { guild: args[0] });
     return;
   }
@@ -325,8 +348,9 @@ const stop = async (args, qChannel) => {
     postTranslated(qChannel, 'usage-stop');
     return;
   }
+  let data = [];
   try {
-    var data = await getUserIds(screenNames);
+    data = await getUserIds(screenNames);
   } catch (response) {
     const { code, msg } = getError(response);
     if (!code) {
@@ -344,7 +368,7 @@ const stop = async (args, qChannel) => {
   const promises = data.map(({ id_str: userId }) => rm(qChannel.id, userId));
 
   Promise.all(promises).then(async (results) => {
-    const screenNamesFinal = data.map(({ screen_name }) => `@${screen_name}`);
+    const screenNamesFinal = data.map(({ screen_name: screenName }) => `@${screenName}`);
     const lastName = screenNamesFinal.pop();
     const removedObjectName = await formatScreenNames(
       qChannel,
@@ -352,13 +376,12 @@ const stop = async (args, qChannel) => {
       lastName,
     );
     const { users, subs } = results.reduce(
-      (acc, { subs, users }) => ({
-        subs: acc.subs + subs,
-        users: acc.users + users,
+      (acc, { subs: removedSubs, removedUsers }) => ({
+        subs: acc.subs + removedSubs,
+        users: acc.users + removedUsers,
       }),
       { users: 0, subs: 0 },
     );
-    results.reduce;
     if (subs === 0) {
       postTranslated(qChannel, 'noSuchSubscription', { screenNames: removedObjectName });
     } else {
@@ -379,7 +402,7 @@ const stopchannel = async (args, qChannel) => {
       return;
     }
     const guild = await qChannel.guild();
-    targetChannel = args[0];
+    [targetChannel] = args;
     const channelObj = guild.channels.find((c) => c.id === targetChannel);
     if (!channelObj) {
       postTranslated(qChannel, 'noSuchChannel', { targetChannel });
@@ -497,36 +520,19 @@ const announce = async (args) => {
   announcement(msg, channels);
 };
 
-const handleTwitterError = (qChannel, code, msg, screenNames) => {
-  if (code === 17 || code === 34) {
-    postTranslated(qChannel, 'noSuchTwitterUser', {
-      count: screenNames.length,
-      name: screenNames.toString(),
-    });
-  } else if (code === 18) {
-    log('Exceeded user lookup limit', qChannel);
-    postTranslated(qChannel, 'tooManyUsersRequested');
-  } else if (code === 144) {
-    postTranslated(qChannel, 'noSuchTwitterId');
-  } else {
-    log(`Unknown twitter error: ${code} ${msg}`);
-    postTranslated(qChannel, 'twitterUnknwnError');
-  }
-};
-
 const help = async (args, qChannel) => {
-  const lang = await getLang(qChannel.guildId());
+  const guildLang = await getLang(qChannel.guildId());
   const embed = new RichEmbed()
     .setColor(0x0e7675)
-    .setTitle(i18n(lang, 'helpHeader'))
+    .setTitle(i18n(guildLang, 'helpHeader'))
     .setURL(profileURL)
-    .setDescription(i18n(lang, 'helpIntro'))
-    .addField(`${prefix}tweet`, i18n(lang, 'usage-tweet'))
-    .addField(`${prefix}start`, i18n(lang, 'usage-start'))
-    .addField(`${prefix}stop`, i18n(lang, 'usage-stop'))
-    .addField(`${prefix}lang`, i18n(lang, 'usage-lang'))
-    .addField(`${prefix}list`, i18n(lang, 'usage-list'))
-    .setFooter(i18n(lang, 'helpFooter', { artist: 'ryusukehamamoto' }));
+    .setDescription(i18n(guildLang, 'helpIntro'))
+    .addField(`${prefix}tweet`, i18n(guildLang, 'usage-tweet'))
+    .addField(`${prefix}start`, i18n(guildLang, 'usage-start'))
+    .addField(`${prefix}stop`, i18n(guildLang, 'usage-stop'))
+    .addField(`${prefix}lang`, i18n(guildLang, 'usage-lang'))
+    .addField(`${prefix}list`, i18n(guildLang, 'usage-list'))
+    .setFooter(i18n(guildLang, 'helpFooter', { artist: 'ryusukehamamoto' }));
   postEmbed(qChannel, { embed });
 };
 
