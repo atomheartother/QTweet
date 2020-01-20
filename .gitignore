@@ -2,5 +2,5 @@ node_modules/
 gets.json
 logs/
 .vscode/
-.env*
-!.env.example
+*.env
+!.example.env
