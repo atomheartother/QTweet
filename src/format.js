@@ -5,8 +5,8 @@ import * as config from '../config.json';
 import { getUserSubs, getLang } from './subs';
 import { embed as postEmbed, translated as postTranslated } from './post';
 import { isSet } from './flags';
-import QChannel from './QChannel.js';
-import i18n from './i18n.js';
+import QChannel from './QChannel';
+import i18n from './i18n';
 
 const defaults = {
   data: [],
@@ -32,6 +32,12 @@ export const formatQChannel = async (qChannel) => {
     res += `**Gld:** ${guild.name} (${guild.id}), ${guild.memberCount} members`;
   }
   return res;
+};
+
+const computeFormattedRow = async (elem, params, formatTitle, formatField) => {
+  const titlePromise = formatTitle(elem, params);
+  const fieldPromise = formatField(elem, params);
+  return { title: await titlePromise, field: await fieldPromise };
 };
 
 export const formatGenericList = async (
@@ -60,15 +66,20 @@ export const formatGenericList = async (
     embed.setDescription(description);
   }
   let counter = 0;
-  for (let i = 0; i < data.length; i++) {
-    const elem = data[i];
+  const formattedData = await Promise.all(data.map((
+    elem,
+  ) => computeFormattedRow(elem,
+    params,
+    formatTitle,
+    formatField)));
+  for (let i = 0; i < data.length; i += 1) {
     embed.addField(
-      await formatTitle(elem, params),
-      await formatField(elem, params),
+      formattedData[i].title,
+      formattedData[i].field,
     );
-    counter++;
+    counter += 1;
     if (counter > 20) {
-      page++;
+      page += 1;
       postEmbed(qChannel, { embed });
       embed = new Discord.RichEmbed()
         .setColor(color)
@@ -94,20 +105,22 @@ export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
 });
 
 export const formatTwitterUser = async (qChannel, id) => {
+  console.log(id);
   const subs = await getUserSubs(id);
   const lang = await getLang(qChannel.guildId());
   const subsWithQchannels = [];
-  for (let i = 0; i < subs.length; i++) {
+  for (let i = 0; i < subs.length; i += 1) {
     const { channelId, flags, isDM } = subs[i];
     subsWithQchannels.push({
       flags,
       qChannel: QChannel.unserialize({ channelId, isDM }),
     });
   }
+  console.log(subs);
   formatGenericList(qChannel, {
     data: subsWithQchannels,
-    formatTitle: async ({ qChannel }) => await qChannel.name(),
-    formatField: async ({ flags, qChannel }) => `**${i18n(lang, 'id')}:** ${qChannel.id}\n**${i18n(
+    formatTitle: async ({ qChannel: qc }) => qc.name(),
+    formatField: async ({ flags, qChannel: qc }) => `**${i18n(lang, 'id')}:** ${qc.id}\n**${i18n(
       lang,
       'type',
     )}:** ${i18n(lang, qChannel.isDM ? 'dm' : 'serv')}\n${
