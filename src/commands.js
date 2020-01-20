@@ -19,6 +19,7 @@ import {
   setLang,
   getLang,
   getUserIds as getAllSubs,
+  rmGuild,
 } from './subs';
 import { compute as computeFlags } from './flags';
 import QChannel from './QChannel';
@@ -40,6 +41,7 @@ import {
 } from './twitter';
 import { getGuild, getChannel } from './discord';
 import i18n from './i18n';
+
 
 const getScreenName = (word) => {
   if (word.startsWith('@')) {
@@ -286,7 +288,9 @@ const start = async (args, qChannel) => {
     id_str: userId,
     screen_name: name,
   }) => add(qChannel.id, userId, name, flags, qChannel.isDM));
-  const screenNamesFinal = data.map(({ screen_name: screenName }) => `@${screenName}`);
+  const screenNamesFinal = data.map(({
+    screen_name: screenName,
+  }) => `@${screenName}`);
   const nameCount = screenNamesFinal.length;
   const lastName = screenNamesFinal.pop();
   const addedObjectName = await formatScreenNames(
@@ -327,16 +331,15 @@ const leaveGuild = async (args, qChannel) => {
     return;
   }
   // Leave the guild
-  guild
-    .leave()
-    .then((g) => {
-      log(`Left the guild ${g.name}`);
-      if (qChannel.isDM) postTranslated(qChannel, 'leaveSuccess', { name: guild.name });
-    })
-    .catch((err) => {
-      log('Could not leave guild', qChannel);
-      log(err);
-    });
+  try {
+    const g = await guild.leave();
+    const { channels, users } = await rmGuild(g.id);
+    log(`Left the guild ${g.name} (${g.id}). Deleted ${channels} channels, ${users} users.`);
+    if (qChannel.isDM) postTranslated(qChannel, 'leaveSuccess', { name: guild.name });
+  } catch (err) {
+    log('Could not leave guild', qChannel);
+    log(err);
+  }
 };
 
 const stop = async (args, qChannel) => {
@@ -365,30 +368,29 @@ const stop = async (args, qChannel) => {
   }
   const promises = data.map(({ id_str: userId }) => rm(qChannel.id, userId));
 
-  Promise.all(promises).then(async (results) => {
-    const screenNamesFinal = data.map(({ screen_name: screenName }) => `@${screenName}`);
-    const lastName = screenNamesFinal.pop();
-    const removedObjectName = await formatScreenNames(
-      qChannel,
-      screenNamesFinal,
-      lastName,
-    );
-    const { users, subs } = results.reduce(
-      (acc, { subs: removedSubs, removedUsers }) => ({
-        subs: acc.subs + removedSubs,
-        users: acc.users + removedUsers,
-      }),
-      { users: 0, subs: 0 },
-    );
-    if (subs === 0) {
-      postTranslated(qChannel, 'noSuchSubscription', { screenNames: removedObjectName });
-    } else {
-      postTranslated(qChannel, 'stopSuccess', {
-        screenNames: removedObjectName,
-      });
-      if (users > 0) createStream();
-    }
-  });
+  const results = await Promise.all(promises);
+  const screenNamesFinal = data.map(({ screen_name: screenName }) => `@${screenName}`);
+  const lastName = screenNamesFinal.pop();
+  const removedObjectName = await formatScreenNames(
+    qChannel,
+    screenNamesFinal,
+    lastName,
+  );
+  const { users, subs } = results.reduce(
+    (acc, { subs: removedSubs, users: removedUsers }) => ({
+      subs: acc.subs + removedSubs,
+      users: acc.users + removedUsers,
+    }),
+    { users: 0, subs: 0 },
+  );
+  if (subs === 0) {
+    postTranslated(qChannel, 'noSuchSubscription', { screenNames: removedObjectName });
+  } else {
+    postTranslated(qChannel, 'stopSuccess', {
+      screenNames: removedObjectName,
+    });
+    if (users > 0) createStream();
+  }
 };
 
 const stopchannel = async (args, qChannel) => {
@@ -408,12 +410,13 @@ const stopchannel = async (args, qChannel) => {
     }
     channelName = await new QChannel(channelObj).name();
   }
-  const { subs } = await rmChannel(targetChannel);
+  const subs = await getChannelSubs(targetChannel);
+  await rmChannel(targetChannel);
   log(
-    `Removed all gets from channel ID:${targetChannel}. ${subs} subs removed.`,
+    `Removed all gets from channel ID:${targetChannel}. ${subs.length} subs removed.`,
     qChannel,
   );
-  postTranslated(qChannel, 'stopChannelSuccess', { subs, channelName });
+  postTranslated(qChannel, 'stopChannelSuccess', { subs: subs.length, channelName });
 };
 
 const list = async (args, qChannel) => {

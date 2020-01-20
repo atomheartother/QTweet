@@ -22,6 +22,39 @@ export const getAllSubs = async () => {
   return rows;
 };
 
+export const sanityCheck = async () => {
+  const client = await pool.connect();
+  let channels = 0;
+  let guilds = 0;
+  let users = 0;
+  try {
+    await client.query('BEGIN');
+    // Remove channels that are linked to no subs
+    ({ rowCount: channels } = await client.query(`DELETE FROM channels
+    WHERE NOT EXISTS (
+      SELECT FROM subs
+      WHERE  subs."channelId" = channels."channelId"
+    );`));
+    // Remove guilds that are linked to no channels.
+    ({ rowCount: guilds } = await client.query(`DELETE FROM guilds
+    WHERE NOT EXISTS (
+      SELECT FROM channels
+      WHERE  channels."guildId" = guilds."guildId"
+    );`));
+    // Remove users that are linked to no subs
+    ({ rowCount: users } = await client.query(`DELETE FROM twitterUsers
+    WHERE NOT EXISTS (
+      SELECT FROM subs
+      WHERE  twitterUsers."twitterId" = subs."twitterId"
+    );`));
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+  } finally {
+    client.release();
+  }
+  return { users, channels, guilds };
+};
 
 // Subscription management
 export const addSubscription = async (channelId, twitterId, flags, isDM) => {
@@ -101,6 +134,11 @@ export const getUserSubs = async (twitterId, withInfo = false) => {
 };
 
 // Channel actions
+
+export const getChannel = async (channelId) => {
+  const { rows: [channel] } = await pool.query('SELECT * FROM channels WHERE "channelId" = $1', [channelId]);
+  return channel;
+};
 
 export const addChannel = async (channelId, guildId, ownerId, isDM) => {
   const { rowCount } = await pool.query('INSERT INTO channels("channelId", "guildId", "ownerId", "isDM") VALUES($1, $2, $3, $4) ON CONFLICT DO NOTHING',
