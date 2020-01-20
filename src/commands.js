@@ -133,19 +133,20 @@ const postTimeline = async (qChannel, screenName, count) => {
     log(tweets, qChannel);
     return 0;
   }
-  for (let i = 0; i < validTweets.length; i += 1) {
-    const { embed } = await formatTweet(validTweets[i]);
-    const res = await postEmbed(qChannel, embed);
-    if (res) {
-      log(`Stopped posting tweets after ${i}`, qChannel);
-      return i;
-    }
-  }
+  const formattedTweets = await Promise.all(validTweets.map(formatTweet));
+  // Ignore errors to get a count of successful posts
+  const results = await Promise.all(formattedTweets.map(({
+    embed,
+  }) => postEmbed(qChannel, embed).catch((err) => err)));
+  const successCount = results.reduce((acc, res) => {
+    if (Number.isNaN(res)) return acc;
+    return res === 0 ? acc + 1 : acc;
+  }, 0);
   log(
-    `Posted latest ${validTweets.length} tweet(s) from ${screenName}`,
+    `Posted latest ${successCount}/${validTweets.length} tweet(s) from ${screenName}`,
     qChannel,
   );
-  return validTweets.length;
+  return successCount;
 };
 
 const tweet = async (args, qChannel, author) => {
