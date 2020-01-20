@@ -4,18 +4,18 @@ import {
   getChannel,
   canPostIn,
   getGuild,
-  canPostEmbedIn
-} from "./discord";
+  canPostEmbedIn,
+} from './discord';
 
-const getChannelName = c => {
-  if (c.type === "dm") {
+const getChannelName = (c) => {
+  if (c.type === 'dm') {
     return `${c.recipient.tag}`;
   }
   return `#${c.name}`;
 };
 
-const getFormattedName = c => {
-  if (c.type === "dm") {
+const getFormattedName = (c) => {
+  if (c.type === 'dm') {
     return `DM: ${c.recipient.tag} -- ${c.recipient.id}`;
   }
   return `#${c.name} -- ${c.guild.name} -- ${c.id}`;
@@ -25,8 +25,8 @@ class QChannel {
   // Created from a discord channel object
   constructor({ id, type, recipient }) {
     // Check validity of object
-    this.id = type === "dm" && recipient ? recipient.id : id;
-    this.isDM = type === "dm";
+    this.id = type === 'dm' && recipient ? recipient.id : id;
+    this.isDM = type === 'dm';
   }
 
   async formattedName() {
@@ -81,9 +81,9 @@ class QChannel {
     return getGuild(this.guildId());
   }
 
-  static async bestGuildChannel(guild, msgType = "message") {
+  static async bestGuildChannel(guild, msgType = 'message') {
     if (!guild) return null;
-    const checkFunction = msgType === "embed" ? canPostEmbedIn : canPostIn;
+    const checkFunction = msgType === 'embed' ? canPostEmbedIn : canPostIn;
     // Check the system channel
     if (guild.systemChannelID) {
       const sysChan = getChannel(guild.systemChannelID);
@@ -92,13 +92,13 @@ class QChannel {
 
     // Check #general
     const genChan = guild.channels.find(
-      c => c.type === "text" && c.name === "general"
+      (c) => c.type === 'text' && c.name === 'general',
     );
     if (genChan && checkFunction(genChan)) return new QChannel(genChan);
 
     // Iterate over all channels and find the first best one
     const firstBest = guild.channels.find(
-      c => c.type === "text" && checkFunction(c)
+      (c) => c.type === 'text' && checkFunction(c),
     );
     if (firstBest) return new QChannel(firstBest);
     // Try to reach the owner, this might fail, we'll return null here if all fails
@@ -109,9 +109,9 @@ class QChannel {
 
   // Best channel starting from this channel
   // Can return null
-  async bestChannel(msgType = "message") {
+  async bestChannel(msgType = 'message') {
     const c = await this.obj();
-    const checkFunction = msgType === "embed" ? canPostEmbedIn : canPostIn;
+    const checkFunction = msgType === 'embed' ? canPostEmbedIn : canPostIn;
     if (this.isDM || checkFunction(c)) {
       return this;
     }
@@ -122,12 +122,12 @@ class QChannel {
   serialize() {
     return {
       id: this.id,
-      isDM: this.isDM
+      isDM: this.isDM,
     };
   }
 
   static unserialize({ channelId, isDM }) {
-    return new QChannel({ id: channelId, type: isDM ? "dm" : "text" });
+    return new QChannel({ id: channelId, type: isDM ? 'dm' : 'text' });
   }
 }
 

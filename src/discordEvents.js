@@ -1,22 +1,24 @@
 // A module registering discord events and reacting to them
-import { fortune } from "fortune-teller";
+import { fortune } from 'fortune-teller';
 
 // Config file
-import * as config from "../config.json";
-import { rmChannel, rmGuild, sanityCheck, getLang } from "./subs";
-import QChannel from "./QChannel";
+import * as config from '../config.json';
+import {
+  rmChannel, rmGuild, sanityCheck, getLang,
+} from './subs';
+import QChannel from './QChannel';
 
 // logging
-import log from "./log";
+import log from './log';
 import {
   message as postMessage,
   dm,
-  translated as postTranslatedMessage
-} from "./post";
-import { createStream, destroyStream } from "./twitter";
-import commands from "./commands";
-import { user, login } from "./discord";
-import i18n from "./i18n";
+  translated as postTranslatedMessage,
+} from './post';
+import { createStream, destroyStream } from './twitter';
+import commands from './commands';
+import { user, login } from './discord';
+import i18n from './i18n';
 
 const handleCommand = async (commandName, author, qChannel, args) => {
   const command = commands[commandName];
@@ -29,13 +31,14 @@ const handleCommand = async (commandName, author, qChannel, args) => {
     }
     log(
       `Executing command: "${commandName} ${args}" from ${author.tag}`,
-      qChannel
+      qChannel,
     );
-    for (let i = 0; i < command.checks.length; i++) {
-      const { f, badB } = command.checks[i];
-      const passed = await f(author, qChannel);
-      if (!passed) {
-        if (badB) postTranslatedMessage(qChannel, badB); // If it's not met and we were given a bad boy, post it
+    const passedArray = await Promise.all(command.checks.map(({ f }) => f(author, qChannel)));
+    for (let i = 0; i < command.checks.length; i += 1) {
+      const { badB } = command.checks[i];
+      if (!passedArray[i]) {
+        // If it's not met and we were given a bad boy, post it
+        if (badB) postTranslatedMessage(qChannel, badB);
         log(`Rejected command "${commandName} ${args}" with reason: ${badB}`);
         return;
       }
@@ -44,31 +47,31 @@ const handleCommand = async (commandName, author, qChannel, args) => {
   }
 };
 
-export const handleMessage = async message => {
+export const handleMessage = async (message) => {
   // Ignore bots
   if (message.author.bot) return;
   const { author, channel } = message;
 
   if (message.content.indexOf(config.prefix) !== 0) {
     if (
-      !!message.mentions &&
-      !!message.mentions.members &&
-      message.mentions.members.find(item => item.user.id === user().id)
+      !!message.mentions
+      && !!message.mentions.members
+      && message.mentions.members.find((item) => item.user.id === user().id)
     ) {
       message.reply(fortune());
-    } else if (message.channel.type == "dm") {
+    } else if (message.channel.type === 'dm') {
       const qc = new QChannel(channel);
       const lang = await getLang(qc.guildId());
-      postMessage(qc, i18n(lang, "welcomeMessage"));
+      postMessage(qc, i18n(lang, 'welcomeMessage'));
     }
     return;
   }
-  let args = message.content
+  const args = message.content
     .slice(config.prefix.length)
     .trim()
     .split(/ +/g);
 
-  let command = args.shift().toLowerCase();
+  const command = args.shift().toLowerCase();
   const qc = new QChannel(channel);
   handleCommand(command, author, qc, args);
 };
@@ -81,11 +84,11 @@ export const handleError = ({ message, error }) => {
   login();
 };
 
-export const handleGuildCreate = async guild => {
+export const handleGuildCreate = async (guild) => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
   const qc = QChannel.unserialize({ channelId: guild.ownerID, isDM: true });
-  if (qc && qc.id) dm(qc, i18n("en", "welcomeMessage"));
+  if (qc && qc.id) dm(qc, i18n('en', 'welcomeMessage'));
   else {
     log(`Could not send welcome message for ${guild.name}`);
   }
@@ -98,7 +101,7 @@ export const handleGuildDelete = async ({ id, name }) => {
 };
 
 export const handleReady = async () => {
-  log("Successfully logged in to Discord");
+  log('Successfully logged in to Discord');
   await sanityCheck();
   createStream();
 };
