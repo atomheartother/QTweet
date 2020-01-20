@@ -127,7 +127,6 @@ class QChannel {
   }
 
   static unserialize({ channelId, isDM }) {
-    console.log(`Unserializing (${channelId}, ${isDM})`);
     return new QChannel({ id: channelId, type: isDM ? "dm" : "text" });
   }
 }
