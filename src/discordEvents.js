@@ -33,11 +33,12 @@ const handleCommand = async (commandName, author, qChannel, args) => {
       `Executing command: "${commandName} ${args}" from ${author.tag}`,
       qChannel,
     );
-    for (let i = 0; i < command.checks.length; i++) {
-      const { f, badB } = command.checks[i];
-      const passed = await f(author, qChannel);
-      if (!passed) {
-        if (badB) postTranslatedMessage(qChannel, badB); // If it's not met and we were given a bad boy, post it
+    const passedArray = await Promise.all(command.checks.map(({ f }) => f(author, qChannel)));
+    for (let i = 0; i < command.checks.length; i += 1) {
+      const { badB } = command.checks[i];
+      if (!passedArray[i]) {
+        // If it's not met and we were given a bad boy, post it
+        if (badB) postTranslatedMessage(qChannel, badB);
         log(`Rejected command "${commandName} ${args}" with reason: ${badB}`);
         return;
       }

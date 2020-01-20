@@ -140,11 +140,11 @@ const handleDiscordPostError = async (
   }, delay);
 };
 
-export const embed = async (qChannel, embed) => {
+export const embed = async (qChannel, content) => {
   try {
-    await qChannel.send(embed);
+    await qChannel.send(content);
   } catch (err) {
-    return handleDiscordPostError(err, qChannel, 'embed', embed);
+    return handleDiscordPostError(err, qChannel, 'embed', content);
   }
   return 0;
 };
@@ -176,4 +176,5 @@ export const dm = async (qChannel, content) => {
   return 0;
 };
 
-export const translated = async (qChannel, key, options = {}) => message(qChannel, i18n(await getLang(qChannel.guildId()), key, options));
+export const translated = async (qChannel, key, options = {}) => message(qChannel,
+  i18n(await getLang(qChannel.guildId()), key, options));
