@@ -59,7 +59,7 @@ export const handleMessage = async (message) => {
       && message.mentions.members.find((item) => item.user.id === user().id)
     ) {
       message.reply(fortune());
-    } else if (message.channel.type == 'dm') {
+    } else if (message.channel.type === 'dm') {
       const qc = new QChannel(channel);
       const lang = await getLang(qc.guildId());
       postMessage(qc, i18n(lang, 'welcomeMessage'));
