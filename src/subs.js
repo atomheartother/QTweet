@@ -4,6 +4,7 @@ import {
   getUniqueChannels as SQLgetUniqueChannels,
   getGuildSubs as SQLgetGuildSubs,
   getChannelSubs as SQLgetChannelSubs,
+  getChannel,
   rmChannel as SQLrmChannel,
   getSubscription as SQLgetSub,
   getUserFromScreenName as SQLgetUserFromScreenName,
@@ -16,9 +17,11 @@ import {
   addUser as SQLaddUser,
   init as initDb,
   close as closeDb,
-  getGuildChannels,
   setLang as SQLsetLang,
   getLang as SQLgetLang,
+  createGuild,
+  rmGuild as SQLrmGuild,
+  sanityCheck as dbSanityCheck,
 } from './postgres';
 import * as config from '../config.json';
 import log from './log';
@@ -48,38 +51,68 @@ export const getUserFromScreenName = SQLgetUserFromScreenName;
 
 export const addUser = SQLaddUser;
 
+export const getUserInfo = SQLgetUserInfo;
+
+export const setLang = SQLsetLang;
+
 export const addUserIfNoExists = async (twitterId, name) => addUser(twitterId, name);
+
+export const addChannelIfNoExists = async (channelId, isDM) => {
+  const c = await getChannel(channelId);
+  if (c !== undefined) return 0;
+  const qc = QChannel.unserialize({ channelId, isDM });
+  const obj = await qc.obj();
+  if (!obj) {
+    log(
+      `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`,
+    );
+    return 0;
+  }
+
+  const guildId = await qc.guildId();
+  await createGuild(guildId);
+  if (qc.isDM) {
+    return addChannel(channelId, channelId, channelId, qc.isDM);
+  }
+  return addChannel(channelId, guildId, qc.ownerId(), qc.isDM);
+};
 
 // Makes sure everything is consistent
 export const sanityCheck = async () => {
   const allSubscriptions = await getAllSubs();
   log(`Starting sanity check on ${allSubscriptions.length} subscriptions`);
-  for (let i = 0; i < allSubscriptions.length; i++) {
+  for (let i = 0; i < allSubscriptions.length; i += 1) {
     const sub = allSubscriptions[i];
     const qc = QChannel.unserialize(sub);
     const obj = await qc.obj();
     if (!obj) {
-      const { subs, users } = await rmChannel(qc.id);
+      await SQLrmChannel(qc.id);
       log(
-        `Found invalid qChannel: ${qc.id} (${
+        `Found invalid qChannel: ${
+          qc.id
+        } (${
           qc.isDM
-        }). Deleted ${subs} subs, ${users} users.`,
+        }).`,
       );
-      continue;
-    }
-    const c = await addChannelIfNoExists(sub.channelId, sub.isDM);
-    if (c > 0) {
-      log(`Channel wasn't in channels table: ${sub.channelId}`);
-    }
-    const u = await addUserIfNoExists(sub.twitterId, 'temp');
-    if (u > 0) {
-      log(`User ${sub.twitterId} wasn't in users table.`);
     }
   }
+  const { channels, users, guilds } = await dbSanityCheck();
+  log(`Removed ${channels} channels, ${guilds} guilds, ${users} users.`);
   log('Sanity check completed.');
 };
 
-export const getUserInfo = SQLgetUserInfo;
+export const rmChannel = async (channelId) => {
+  const channels = await SQLrmChannel(channelId);
+  const { users } = dbSanityCheck();
+  return { channels, users };
+};
+
+
+export const rmGuild = (guildId) => {
+  const guilds = SQLrmGuild(guildId);
+  const { channels, users } = dbSanityCheck();
+  return { channels, users, guilds };
+};
 
 export const updateUser = async (user) => {
   const usrInfo = await getUserInfo(user.id_str);
@@ -89,93 +122,29 @@ export const updateUser = async (user) => {
   return 0;
 };
 
-export const setLang = SQLsetLang;
-
-export const addChannelIfNoExists = async (channelId, isDM) => {
-  const qc = QChannel.unserialize({ channelId, isDM });
-  const obj = await qc.obj();
-  if (!obj) {
-    log(
-      `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`,
-    );
-    return 0;
-  }
-  if (qc.isDM) {
-    return await addChannel(channelId, channelId, channelId, qc.isDM);
-  }
-  return await addChannel(channelId, qc.guildId(), qc.ownerId(), qc.isDM);
-};
-
 // Add a subscription to this userId or update an existing one
 export const add = async (channelId, twitterId, name, flags, isDM) => {
+  const users = await addUserIfNoExists(twitterId, name);
+  const channels = await addChannelIfNoExists(channelId, isDM);
   const subs = await addSubscription(channelId, twitterId, flags, isDM);
-  // If we didn't update any subs we don't have to check for new users
-  const users = subs === 0 ? 0 : await addUserIfNoExists(twitterId, name);
-  const channels = subs === 0 ? 0 : await addChannelIfNoExists(channelId, isDM);
   return { subs, users, channels };
 };
 
-export const rmUser = SQLrmUser;
+export const rmUser = async (twitterId) => {
+  const users = await SQLrmUser(twitterId);
+  const { channels } = await dbSanityCheck();
+  return { users, channels };
+};
 
 export const getLang = async (guildId) => {
   const guild = await SQLgetLang(guildId);
   return guild ? guild.lang : config.defaultLang;
 };
 
-const deleteUserIfEmpty = async (twitterId) => {
-  const subs = await getUserSubs(twitterId);
-  if (subs.length === 0) {
-    await rmUser(twitterId);
-    return 1;
-  }
-  return 0;
-};
-
-const deleteChannelIfEmpty = async (channelId) => {
-  const subs = await getChannelSubs(channelId);
-  if (subs.length === 0) {
-    await rmChannel(channelId);
-    return 1;
-  }
-  return 0;
-};
-
 // Remove a subscription
 // If this user doesn't have any more subs, delete it as well
 export const rm = async (channelId, twitterId) => {
   const subs = await removeSubscription(channelId, twitterId);
-  const users = subs === 0 ? 0 : await deleteUserIfEmpty(twitterId);
-  const channels = subs === 0 ? 0 : await deleteChannelIfEmpty(channelId);
-  return { subs, users, channels };
-};
-
-export const rmChannel = async (channelId) => {
-  const subArray = await getChannelSubs(channelId);
-  let deletedSubs = 0;
-  let deletedUsrs = 0;
-  for (let i = 0; i < subArray.length; i++) {
-    const { twitterId } = subArray[i];
-    const { subs, users } = await rm(channelId, twitterId);
-    deletedSubs += subs;
-    deletedUsrs += users;
-  }
-  SQLrmChannel(channelId);
-  return { subs: deletedSubs, users: deletedUsrs };
-};
-
-export const rmGuild = async (guildId) => {
-  const channels = await getGuildChannels(guildId);
-  let deletedSubs = 0;
-  let deletedUsrs = 0;
-  for (let i = 0; i < channels.length; i++) {
-    const { channelId } = channels[i];
-    const { subs, users } = await rmChannel(channelId);
-    deletedSubs += subs;
-    deletedUsrs += users;
-  }
-  return {
-    subs: deletedSubs,
-    users: deletedUsrs,
-    channels: channels.length,
-  };
+  const { channels, users } = await dbSanityCheck();
+  return { subs, channels, users };
 };
