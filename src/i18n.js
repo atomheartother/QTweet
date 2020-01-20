@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { FluentBundle } from 'fluent';
+import log from './log';
 import { supportedLangs } from '../config.json';
 
 const langDir = './lang';
@@ -16,12 +17,12 @@ const langs = {};
       fs.readFileSync(`${langDir}/${lang}.ftl`, 'utf8').toString('utf8'),
     );
     if (errors.length) {
-      console.log(`Errors parsing language: ${lang}`);
-      console.log(errors);
+      log(`Errors parsing language: ${lang}`);
+      log(errors);
       return;
     }
     langs[lang] = b;
-    console.log(`Added language: ${lang}`);
+    log(`i18n - Added language: ${lang}`);
   });
 }
 const i18n = (lang, key, options) => {
@@ -33,15 +34,15 @@ const i18n = (lang, key, options) => {
   const msg = bundle.getMessage(key);
   if (!msg) {
     if (lang !== 'en') return i18n('en', key, options);
-    console.log(`Could not resolve key: ${key}`);
+    log(`i18n - Could not resolve key: ${key}`);
     return `{$${key}}`;
   }
   const errors = [];
   const res = bundle.format(msg, options, errors);
   if (errors.length) {
-    console.log(`Errors with ${key}`);
-    console.log(options);
-    console.log(errors);
+    log(`i18n - Errors with ${key}`);
+    log(options);
+    log(errors);
   }
   return res;
 };

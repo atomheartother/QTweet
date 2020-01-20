@@ -8,7 +8,7 @@ import log from './log';
 
 import { embed as postEmbed, message as postMessage } from './post';
 import Stream from './twitterStream';
-import QChannel from './QChannel.js';
+import QChannel from './QChannel';
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -34,17 +34,21 @@ const reconnectionDelay = new Backup({
 });
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
-const hasMedia = ({ extended_entities, extended_tweet, retweeted_status }) => (extended_entities
-    && extended_entities.media
-    && extended_entities.media.length > 0)
-  || (extended_tweet
-    && extended_tweet.extended_entities
-    && extended_tweet.extended_entities.media
-    && extended_tweet.extended_entities.media.length > 0)
-  || (retweeted_status
-    && retweeted_status.extended_entities
-    && retweeted_status.extended_entities.media
-    && retweeted_status.extended_entities.media.length > 0);
+const hasMedia = ({
+  extended_entities: extendedEntities,
+  extended_tweet: extendedTweet,
+  retweeted_status: retweetedStatus,
+}) => (extendedEntities
+    && extendedEntities.media
+    && extendedEntities.media.length > 0)
+  || (extendedTweet
+    && extendedTweet.extended_entities
+    && extendedTweet.extended_entities.media
+    && extendedTweet.extended_entities.media.length > 0)
+  || (retweetedStatus
+    && retweetedStatus.extended_entities
+    && retweetedStatus.extended_entities.media
+    && retweetedStatus.extended_entities.media.length > 0);
 
 const streamStart = () => {
   log('Stream successfully started');
@@ -59,21 +63,32 @@ export const isValid = (tweet) => !(
       && (!tweet.quoted_status || !tweet.quoted_status.user))
 );
 
+const unfurlUrl = async (url) => {
+  const { expanded_url: expandedUrl, indices } = url;
+  if (!(expandedUrl && indices && indices.length === 2)) return null;
+  try {
+    const unfurledUrl = await unfurl(expandedUrl);
+    return { unfurledUrl, expandedUrl, indices };
+  } catch (e) {
+    return { unfurledUrl: null, expandedUrl, indices };
+  }
+};
+
 const formatTweetText = async (text, entities, isTextTweet) => {
   if (!entities) return text;
-  const { user_mentions, urls, hashtags } = entities;
+  const { user_mentions: userMentions, urls, hashtags } = entities;
   const changes = [];
   const metadata = {};
   let offset = 0;
   // Remove all the @s at the start of the tweet to make it shorter
   let inReplies = true;
   let replyIndex = 0;
-  if (user_mentions) {
-    user_mentions
+  if (userMentions) {
+    userMentions
       .filter(
-        ({ screen_name, indices }) => screen_name && indices && indices.length === 2,
+        ({ screen_name: screenName, indices }) => screenName && indices && indices.length === 2,
       )
-      .forEach(({ screen_name, name, indices }) => {
+      .forEach(({ screen_name: screenName, name, indices }) => {
         const [start, end] = indices;
         if (inReplies && start === replyIndex) {
           changes.push({ start, end: end + 1, newText: '' });
@@ -84,39 +99,45 @@ const formatTweetText = async (text, entities, isTextTweet) => {
             start,
             end,
             newText: `[@${
-              name || screen_name
-            }](https://twitter.com/${screen_name})`,
+              name || screenName
+            }](https://twitter.com/${screenName})`,
           });
         }
       });
   }
   let bestPreview = null;
   if (urls) {
-    for (let i = urls.length - 1; i >= 0; i--) {
-      const { expanded_url, indices } = urls[i];
-      if (!(expanded_url && indices && indices.length === 2)) return;
-      if (isTextTweet && !bestPreview) {
-        try {
-          const { open_graph, twitter_card } = await unfurl(expanded_url);
-          bestPreview = (twitter_card
-              && twitter_card.images
-              && twitter_card.images[0]
-              && twitter_card.images[0].url)
-            || (open_graph
-              && open_graph.images
-              && open_graph.images[0]
-              && open_graph.images[0].url)
+    const unfurledLinks = await Promise.all(urls.map(unfurlUrl));
+    for (let i = unfurledLinks.length - 1; i >= 0; i -= 1) {
+      if (unfurledLinks[i] !== null) {
+        const {
+          expandedUrl, indices,
+        } = unfurledLinks[i];
+        if (isTextTweet && !bestPreview && unfurledLinks[i].unfurledUrl !== null) {
+          const {
+            unfurledUrl: {
+              open_graph: openGraph,
+              twitter_card: twitterCard,
+            },
+          } = unfurledLinks[i];
+          bestPreview = (twitterCard
+              && openGraph.images
+              && openGraph.images[0]
+              && openGraph.images[0].url)
+            || (openGraph
+              && openGraph.images
+              && openGraph.images[0]
+              && openGraph.images[0].url)
             || bestPreview;
-          if (bestPreview && bestPreview.startsWith('//')) bestPreview = `https:${bestPreview}`;
-          else if (bestPreview && !bestPreview.startsWith('http')) {
+          if (bestPreview && bestPreview.startsWith('//')) {
+            bestPreview = `https:${bestPreview}`;
+          } else if (bestPreview && !bestPreview.startsWith('http')) {
             bestPreview = null;
           }
-        } catch (e) {
-          bestPreview = null;
         }
+        const [start, end] = indices;
+        changes.push({ start, end, newText: expandedUrl });
       }
-      const [start, end] = indices;
-      changes.push({ start, end, newText: expanded_url });
     }
   }
   if (bestPreview) {
@@ -124,7 +145,7 @@ const formatTweetText = async (text, entities, isTextTweet) => {
   }
   if (hashtags) {
     hashtags
-      .filter(({ text, indices }) => text && indices && indices.length === 2)
+      .filter(({ text: hashtagTxt, indices }) => hashtagTxt && indices && indices.length === 2)
       .forEach(({ text: hashtagTxt, indices }) => {
         const [start, end] = indices;
         changes.push({
@@ -166,34 +187,36 @@ const formatTweetText = async (text, entities, isTextTweet) => {
 
 // Takes a tweet and formats it for posting.
 export const formatTweet = async (tweet, isQuoted) => {
-  let {
-    id_str,
+  const {
     user,
-    full_text,
+    full_text: fullText,
     text,
-    entities,
-    extended_entities,
-    extended_tweet,
-    retweeted_status,
+    extended_tweet: extendedTweet,
+    retweeted_status: retweetedStatus,
   } = tweet;
-  let txt = full_text || text;
+  let {
+    id_str: idStr,
+    extended_entities: extendedEntities,
+    entities,
+  } = tweet;
+  let txt = fullText || text;
   // Extended_tweet is an API twitter uses for tweets over 140 characters.
-  if (extended_tweet) {
-    ({ extended_entities, entities } = extended_tweet);
-    txt = extended_tweet.full_text || extended_tweet.text;
+  if (extendedTweet) {
+    ({ extendedEntities, entities } = extendedTweet);
+    txt = extendedTweet.full_text || extendedTweet.text;
   }
   let targetScreenName = user.screen_name;
-  if (retweeted_status) {
+  if (retweetedStatus) {
     // Copy over media from retweets
-    extended_entities = extended_entities || retweeted_status.extended_entities;
+    extendedEntities = extendedEntities || retweetedStatus.extended_entities;
     // Use the id_str if there's one
-    id_str = retweeted_status.id_str || id_str;
-    targetScreenName = retweeted_status.user.screen_name || targetScreenName;
+    idStr = retweetedStatus.id_str || idStr;
+    targetScreenName = retweetedStatus.user.screen_name || targetScreenName;
   }
   const embed = {
     author: {
       name: `${isQuoted ? '[QUOTED] ' : ''}${user.name} (@${user.screen_name})`,
-      url: `https://twitter.com/${targetScreenName}/status/${id_str}`,
+      url: `https://twitter.com/${targetScreenName}/status/${idStr}`,
     },
     thumbnail: {
       url: user.profile_image_url_https,
@@ -218,14 +241,15 @@ export const formatTweet = async (tweet, isQuoted) => {
     }
     embed.color = embed.color || colors.text;
   } else if (
-    extended_entities.media[0].type === 'animated_gif'
-    || extended_entities.media[0].type === 'video'
+    extendedEntities.media[0].type === 'animated_gif'
+    || extendedEntities.media[0].type === 'video'
   ) {
     // Gif/video.
-    const vidinfo = extended_entities.media[0].video_info;
+    const vidinfo = extendedEntities.media[0].video_info;
     let vidurl = null;
     let bitrate = null;
-    for (const vid of vidinfo.variants) {
+    for (let i = 0; i < vidinfo.variants.length; i += 1) {
+      const vid = vidinfo.variants[i];
       // Find the best video
       if (vid.content_type === 'video/mp4' && vid.bitrate < 1000000) {
         const paramIdx = vid.url.lastIndexOf('?');
@@ -237,7 +261,7 @@ export const formatTweet = async (tweet, isQuoted) => {
     if (vidurl !== null) {
       if (vidinfo.duration_millis < 20000 || bitrate === 0) files = [vidurl];
       else {
-        embed.image = { url: extended_entities.media[0].media_url_https };
+        embed.image = { url: extendedEntities.media[0].media_url_https };
         txt = `${txt}\n[Link to video](${vidurl})`;
       }
     } else {
@@ -247,7 +271,7 @@ export const formatTweet = async (tweet, isQuoted) => {
     embed.color = embed.color || colors.video;
   } else {
     // Image(s)
-    files = extended_entities.media.map((media) => media.media_url_https);
+    files = extendedEntities.media.map((media) => media.media_url_https);
     if (files.length === 1) {
       embed.image = { url: files[0] };
       files = null;
@@ -273,7 +297,8 @@ const flagsFilter = (flags, tweet) => {
 export const getFilteredSubs = async (tweet) => {
   // Ignore invalid tweets
   if (!isValid(tweet)) return [];
-  // Ignore tweets from people we don't follow, and replies unless they're replies to oneself (threads)
+  // Ignore tweets from people we don't follow
+  // and replies unless they're replies to oneself (threads)
   const subs = await getUserSubs(tweet.user.id_str);
   if (
     !subs
@@ -282,7 +307,7 @@ export const getFilteredSubs = async (tweet) => {
   ) return [];
 
   const targetSubs = [];
-  for (let i = 0; i < subs.length; i++) {
+  for (let i = 0; i < subs.length; i += 1) {
     const { flags, channelId, isDM } = subs[i];
     if (flagsFilter(flags, tweet)) {
       const qChannel = QChannel.unserialize({ channelId, isDM });
@@ -318,6 +343,7 @@ const streamEnd = () => {
   log(
     `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`,
   );
+  // eslint-disable-next-line no-use-before-define
   setTimeout(createStream, reconnectionDelay.value());
   reconnectionDelay.increment();
 };
@@ -335,6 +361,7 @@ const streamError = ({ url, status, statusText }) => {
   log(
     `Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
   );
+  // eslint-disable-next-line no-use-before-define
   setTimeout(createStream, delay);
 };
 
