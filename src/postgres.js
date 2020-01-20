@@ -42,7 +42,7 @@ export const removeSubscription = async (channelId, twitterId) => {
 };
 
 export const getSubscription = async (channelId, twitterId, withName = false) => {
-  const { rows } = await pool.query(withName
+  const { rows: [subscription] } = await pool.query(withName
     ? `SELECT ${getInt('subs."channelId"', '"channelId"')}, ${getInt(
       'subs."twitterId"',
       '"twitterId"',
@@ -50,7 +50,7 @@ export const getSubscription = async (channelId, twitterId, withName = false) =>
     : `SELECT ${getInt('"channelId"')}, ${getInt(
       '"twitterId"',
     )}, "flags", "isDM" FROM subs WHERE "channelId" = $1 AND "twitterId" = $2`);
-  return rows[0];
+  return subscription;
 };
 
 export const getGuildSubs = async (guildId) => {
@@ -130,8 +130,8 @@ export const getUserIds = async () => {
 };
 
 export const getUserInfo = async (twitterId) => {
-  const { rows } = await pool.query('SELECT "name" FROM twitterUsers WHERE "twitterId" = $1', [twitterId]);
-  return rows;
+  const { rows: [info] } = await pool.query('SELECT "name" FROM twitterUsers WHERE "twitterId" = $1', [twitterId]);
+  return info;
 };
 
 export const addUser = async (twitterId, name) => {
@@ -140,8 +140,8 @@ export const addUser = async (twitterId, name) => {
 };
 
 export const getUserFromScreenName = async (name) => {
-  const { rows } = await pool.query(`SELECT ${getInt('"twitterId"')} FROM twitterUsers WHERE "name" = $1`, [name]);
-  return rows;
+  const { rows: [user] } = await pool.query(`SELECT ${getInt('"twitterId"')} FROM twitterUsers WHERE "name" = $1`, [name]);
+  return user;
 };
 
 export const rmUser = async (twitterId) => {
@@ -172,6 +172,6 @@ export const setLang = async (guildId, lang) => {
 };
 
 export const getLang = async (guildId) => {
-  const { rows } = await pool.query('SELECT "lang" FROM guilds WHERE "guildId"=$1', [guildId]);
-  return rows[0];
+  const { rows: [lang] } = await pool.query('SELECT "lang" FROM guilds WHERE "guildId"=$1', [guildId]);
+  return lang;
 };
