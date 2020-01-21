@@ -5,3 +5,6 @@ pw.json.example
 .gitignore
 README.md
 .git/
+db-init/
+script/
+lang/*.o.ftl

@@ -2,7 +2,11 @@ version: "3.7"
 
 services:
   qtweet:
-    build: .
+    build: 
+      context: .
+      args:
+        PREFIX: "${PREFIX}"
+        BOT_NAME: "${BOT_NAME}"
     image: navenn_t/qtweet
     restart: on-failure
     environment:
@@ -18,6 +22,7 @@ services:
       TWITTER_TOKEN_SECRET: ${TWITTER_TOKEN_SECRET}
       DBL_TOKEN: ${DBL_TOKEN}
       PREFIX: ${PREFIX}
+      BOT_NAME: ${BOT_NAME}
     depends_on:
       - postgres
 
