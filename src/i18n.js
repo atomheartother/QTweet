@@ -7,14 +7,14 @@ const langDir = './lang';
 const langs = {};
 {
   const globalConf = fs
-    .readFileSync(`${langDir}/global.ftl`, 'utf8')
+    .readFileSync(`${langDir}/global.o.ftl`, 'utf8')
     .toString('utf8');
 
   supportedLangs.forEach((lang) => {
     const b = new FluentBundle(lang, { useIsolating: false });
     b.addMessages(globalConf);
     const errors = b.addMessages(
-      fs.readFileSync(`${langDir}/${lang}.ftl`, 'utf8').toString('utf8'),
+      fs.readFileSync(`${langDir}/${lang}.o.ftl`, 'utf8').toString('utf8'),
     );
     if (errors.length) {
       log(`Errors parsing language: ${lang}`);
