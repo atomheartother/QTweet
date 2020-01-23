@@ -202,7 +202,7 @@ export const formatTweet = async (tweet, isQuoted) => {
   let txt = fullText || text;
   // Extended_tweet is an API twitter uses for tweets over 140 characters.
   if (extendedTweet) {
-    ({ extendedEntities, entities } = extendedTweet);
+    ({ extended_entities: extendedEntities, entities } = extendedTweet);
     txt = extendedTweet.full_text || extendedTweet.text;
   }
   let targetScreenName = user.screen_name;
