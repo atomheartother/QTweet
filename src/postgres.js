@@ -157,7 +157,7 @@ export const getGuildChannels = async (guildId) => {
 };
 
 export const getUniqueChannels = async () => {
-  const { rows } = await pool.query(`SELECT ${getInt('MIN("channelId")', '"channelId"')}, BOOL_OR("isDM") FROM channels GROUP BY "guildId"`);
+  const { rows } = await pool.query(`SELECT ${getInt('MIN("channelId")', '"channelId"')}, BOOL_OR("isDM") AS "isDM" FROM channels GROUP BY "guildId"`);
   return rows;
 };
 
