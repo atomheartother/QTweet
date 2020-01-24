@@ -521,6 +521,19 @@ const announce = async (args) => {
   announcement(msg, channels);
 };
 
+const membersCount = async (_, qChannel) => {
+  const channels = await getUniqueChannels();
+  let members = 0;
+  for (let i = 0; i < channels.length; i += 1) {
+    const qc = QChannel.unserialize(channels[i]);
+    const g = await qc.getGuild();
+    if (g) {
+      members += g.membersCount;
+    }
+  }
+  postMessage(qChannel, `${members} members across ${channels.length} guilds`);
+};
+
 const help = async (args, qChannel) => {
   const guildLang = await getLang(qChannel.guildId());
   const embed = new RichEmbed()
@@ -617,6 +630,15 @@ export default {
       {
         f: checks.isAdmin,
         badB: 'leaveForAdmin',
+      },
+    ],
+    minArgs: 0,
+  },
+  memberscount: {
+    function: membersCount,
+    checks: [
+      {
+        f: checks.isAdmin,
       },
     ],
     minArgs: 0,
