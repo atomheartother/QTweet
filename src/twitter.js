@@ -121,9 +121,9 @@ const formatTweetText = async (text, entities, isTextTweet) => {
             },
           } = unfurledLinks[i];
           bestPreview = (twitterCard
-              && openGraph.images
-              && openGraph.images[0]
-              && openGraph.images[0].url)
+              && twitterCard.images
+              && twitterCard.images[0]
+              && twitterCard.images[0].url)
             || (openGraph
               && openGraph.images
               && openGraph.images[0]
