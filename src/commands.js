@@ -532,7 +532,8 @@ const memberCount = async (_, qChannel) => {
     if (g && g.available) {
       return acc + g.memberCount;
     }
-    return acc;
+    // If it's a DM, count it as one person
+    return acc + 1;
   }, 0);
   postMessage(qChannel, `${members} members across ${channels.length} guilds`);
 };
