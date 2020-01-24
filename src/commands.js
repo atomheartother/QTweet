@@ -525,17 +525,29 @@ const memberCount = async (_, qChannel) => {
   const channels = await getUniqueChannels();
   const guildPromises = channels.map((c) => {
     const qc = QChannel.unserialize(c);
+    if (qc.type === 'dm') return { dm: true, id: qc.id };
     return qc.guild();
   });
   const guilds = await Promise.all(guildPromises);
-  const members = guilds.reduce((acc, g) => {
-    if (g && g.available) {
-      return acc + g.memberCount;
+  const uniq = {};
+  let totalMembers = 0;
+  for (let i = 0; i < guilds.length; i += 1) {
+    if (guilds[i] && guilds[i].dm === true && uniq[guilds[i].id !== true]) {
+      uniq[guilds[i].id] = true;
+      totalMembers += 1;
     }
-    // If it's a DM, count it as one person
-    return acc + 1;
-  }, 0);
-  postMessage(qChannel, `${members} members across ${channels.length} guilds`);
+    if (guilds[i] && guilds[i].available) {
+      const members = guilds[i].members.array();
+      for (let j = 0; j < members.length; j += 1) {
+        const { user } = members[j];
+        if (uniq[user.id] !== true && user.bot === false) {
+          totalMembers += 1;
+          uniq[user.id] = true;
+        }
+      }
+    }
+  }
+  postMessage(qChannel, `${totalMembers} members across ${channels.length} guilds`);
 };
 
 const help = async (args, qChannel) => {
