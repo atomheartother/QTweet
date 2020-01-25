@@ -390,7 +390,7 @@ export const createStream = async () => {
 };
 
 export const destroyStream = () => {
-  stream.disconnected();
+  if (stream) { stream.disconnected(); }
 };
 
 export const userLookup = (params) => tClient.post('users/lookup', params);

@@ -4,6 +4,7 @@ import log from './log';
 let pool;
 
 export const init = () => {
+  log('Connecting to database');
   pool = new Pool();
 };
 
