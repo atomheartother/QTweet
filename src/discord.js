@@ -56,6 +56,7 @@ export const login = async () => {
     });
   }
   try {
+    log('Logging into Discord');
     await dClient.login(process.env.DISCORD_TOKEN);
     reconnectionDelay.reset();
   } catch (err) {
