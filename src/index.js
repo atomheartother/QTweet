@@ -19,6 +19,7 @@ process.on('exit', close);
 
 const start = async () => {
   await init();
+  log('Connection to database successful');
   // Register discord handles
   getClient()
     .on('message', handleMessage)

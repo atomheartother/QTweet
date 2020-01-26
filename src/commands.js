@@ -521,17 +521,33 @@ const announce = async (args) => {
   announcement(msg, channels);
 };
 
-const membersCount = async (_, qChannel) => {
+const memberCount = async (_, qChannel) => {
   const channels = await getUniqueChannels();
-  let members = 0;
-  for (let i = 0; i < channels.length; i += 1) {
-    const qc = QChannel.unserialize(channels[i]);
-    const g = await qc.getGuild();
-    if (g) {
-      members += g.membersCount;
+  const guildPromises = channels.map((c) => {
+    const qc = QChannel.unserialize(c);
+    if (qc.type === 'dm') return { dm: true, id: qc.id };
+    return qc.guild();
+  });
+  const guilds = await Promise.all(guildPromises);
+  const uniq = {};
+  let totalMembers = 0;
+  for (let i = 0; i < guilds.length; i += 1) {
+    if (guilds[i] && guilds[i].dm === true && uniq[guilds[i].id !== true]) {
+      uniq[guilds[i].id] = true;
+      totalMembers += 1;
+    }
+    if (guilds[i] && guilds[i].available) {
+      const members = guilds[i].members.array();
+      for (let j = 0; j < members.length; j += 1) {
+        const { user } = members[j];
+        if (uniq[user.id] !== true && user.bot === false) {
+          totalMembers += 1;
+          uniq[user.id] = true;
+        }
+      }
     }
   }
-  postMessage(qChannel, `${members} members across ${channels.length} guilds`);
+  postMessage(qChannel, `${totalMembers} members across ${channels.length} guilds`);
 };
 
 const help = async (args, qChannel) => {
@@ -634,8 +650,8 @@ export default {
     ],
     minArgs: 0,
   },
-  memberscount: {
-    function: membersCount,
+  membercount: {
+    function: memberCount,
     checks: [
       {
         f: checks.isAdmin,

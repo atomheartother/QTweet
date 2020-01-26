@@ -74,6 +74,22 @@ const unfurlUrl = async (url) => {
   }
 };
 
+const bestPicture = (twitterCard, openGraph) => {
+  let images = (twitterCard && twitterCard.images) || [];
+  if (openGraph && openGraph.images) {
+    images = images.concat(openGraph.images);
+  }
+  images = images.filter(({ url, width, height }) => {
+    if (!url || !width || !height) return false; // Ignore invalid images
+    if (!url.startsWith('http') && !url.startsWith('//')) return false; // Ignore URLS that aren't valid
+    const idx = url.indexOf('.');
+    return (idx > -1 && idx < url.length - 1); // Ignore if there's no dot
+  });
+  if (images.length < 1) return null;
+  const bestImg = images[0].url;
+  return bestImg.startsWith('//') ? `https:${bestImg}` : bestImg;
+};
+
 const formatTweetText = async (text, entities, isTextTweet) => {
   if (!entities) return text;
   const { user_mentions: userMentions, urls, hashtags } = entities;
@@ -120,20 +136,7 @@ const formatTweetText = async (text, entities, isTextTweet) => {
               twitter_card: twitterCard,
             },
           } = unfurledLinks[i];
-          bestPreview = (twitterCard
-              && twitterCard.images
-              && twitterCard.images[0]
-              && twitterCard.images[0].url)
-            || (openGraph
-              && openGraph.images
-              && openGraph.images[0]
-              && openGraph.images[0].url)
-            || bestPreview;
-          if (bestPreview && bestPreview.startsWith('//')) {
-            bestPreview = `https:${bestPreview}`;
-          } else if (bestPreview && !bestPreview.startsWith('http')) {
-            bestPreview = null;
-          }
+          bestPreview = bestPicture(twitterCard, openGraph);
         }
         const [start, end] = indices;
         changes.push({ start, end, newText: expandedUrl });
@@ -390,7 +393,7 @@ export const createStream = async () => {
 };
 
 export const destroyStream = () => {
-  stream.disconnected();
+  if (stream) { stream.disconnected(); }
 };
 
 export const userLookup = (params) => tClient.post('users/lookup', params);
