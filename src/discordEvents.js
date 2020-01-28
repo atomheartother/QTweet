@@ -11,7 +11,6 @@ import QChannel from './QChannel';
 import log from './log';
 import {
   message as postMessage,
-  dm,
   translated as postTranslatedMessage,
 } from './post';
 import { createStream, destroyStream } from './twitter';
@@ -89,8 +88,8 @@ export const handleGuildCreate = async (guild) => {
 };
 
 export const handleGuildDelete = async ({ id, name }) => {
-  log(`Left guild ${name}`);
   const { users } = await rmGuild(id);
+  log(`Left guild ${name}, ${users} users deleted.`);
   if (users > 0) createStream();
 };
 

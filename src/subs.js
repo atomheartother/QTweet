@@ -103,14 +103,14 @@ export const sanityCheck = async () => {
 
 export const rmChannel = async (channelId) => {
   const channels = await SQLrmChannel(channelId);
-  const { users } = dbSanityCheck();
+  const { users } = await dbSanityCheck();
   return { channels, users };
 };
 
 
-export const rmGuild = (guildId) => {
-  const guilds = SQLrmGuild(guildId);
-  const { channels, users } = dbSanityCheck();
+export const rmGuild = async (guildId) => {
+  const { guilds } = await SQLrmGuild(guildId);
+  const { channels, users } = await dbSanityCheck();
   return { channels, users, guilds };
 };
 
