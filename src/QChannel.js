@@ -65,12 +65,12 @@ class QChannel {
 
   async send(content, options = null) {
     const c = await this.obj();
-    return c.send(content, options);
+    return c && c.send(content, options);
   }
 
   async sendToOwner(content, options = null) {
     const c = await this.owner();
-    return c.send(content, options);
+    return c && c.send(content, options);
   }
 
   // Returns a raw Discord guild object
