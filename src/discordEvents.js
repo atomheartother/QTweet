@@ -86,11 +86,6 @@ export const handleError = ({ message, error }) => {
 export const handleGuildCreate = async (guild) => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
-  const qc = QChannel.unserialize({ channelId: guild.ownerID, isDM: true });
-  if (qc && qc.id) dm(qc, i18n('en', 'welcomeMessage'));
-  else {
-    log(`Could not send welcome message for ${guild.name}`);
-  }
 };
 
 export const handleGuildDelete = async ({ id, name }) => {
@@ -106,9 +101,7 @@ export const handleReady = async () => {
 };
 
 export const handleChannelDelete = async ({ id, name }) => {
-  const { subs, users } = await rmChannel(id);
-  if (subs > 0) {
-    log(`Channel #${name} (${id}) deleted. Removed ${subs} subscriptions, ${users} users.`);
-    if (users > 0) createStream();
-  }
+  const { users } = await rmChannel(id);
+  log(`Channel #${name} (${id}) deleted.`);
+  if (users > 0) createStream();
 };
