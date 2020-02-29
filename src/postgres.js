@@ -196,8 +196,9 @@ export const createGuild = async (guildId) => {
 };
 
 export const rmGuild = async (guildId) => {
-  const { rowCount } = await pool.query('DELETE FROM guilds WHERE "guildId" = $1', [guildId]);
-  return rowCount;
+  let guilds = 0;
+  ({ rowCount: guilds } = await pool.query('DELETE FROM guilds WHERE "guildId" = $1', [guildId]));
+  return { guilds };
 };
 
 export const setLang = async (guildId, lang) => {

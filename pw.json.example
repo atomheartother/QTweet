@@ -1,7 +1,0 @@
-{
-    "dToken" : "Your discord token here",
-    "tId" : "your twitter ID here",
-    "tSecret" : "Your twitter secret here",
-    "tToken" : "Your twitter token ID here",
-    "tTokenS" : "your twitter token secret here"
-}

@@ -16,6 +16,10 @@ class Backup {
     this.val = this.startValue;
   }
 
+  set(val) {
+    this.val = val;
+  }
+
   increment() {
     if (this.maxValue >= 0 && this.val < this.maxValue) {
       switch (this.mode) {
