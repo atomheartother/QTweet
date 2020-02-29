@@ -21,16 +21,16 @@ const colors = Object.freeze({
 });
 
 const tClient = new Twitter({
-  consumer_key: process.env.TWITTER_ID,
-  consumer_secret: process.env.TWITTER_SECRET,
-  access_token_key: process.env.TWITTER_TOKEN,
-  access_token_secret: process.env.TWITTER_TOKEN_SECRET,
+  consumer_key: process.env.TWITTER_API_KEY,
+  consumer_secret: process.env.TWITTER_API_SECRET_KEY,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
 const reconnectionDelay = new Backup({
   mode: 'exponential',
   startValue: 2000,
-  maxValue: 16000,
+  maxValue: 120000,
 });
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
@@ -49,11 +49,6 @@ const hasMedia = ({
     && retweetedStatus.extended_entities
     && retweetedStatus.extended_entities.media
     && retweetedStatus.extended_entities.media.length > 0);
-
-const streamStart = () => {
-  log('Stream successfully started');
-  reconnectionDelay.reset();
-};
 
 // Validation function for tweets
 export const isValid = (tweet) => !(
@@ -320,6 +315,14 @@ export const getFilteredSubs = async (tweet) => {
   return targetSubs;
 };
 
+// Called on stream connection
+// Reset our reconnection delay
+const streamStart = () => {
+  log('Stream successfully started');
+  reconnectionDelay.reset();
+};
+
+// Called when we receive data
 const streamData = async (tweet) => {
   const subs = await getFilteredSubs(tweet);
   if (subs.length === 0) return;
@@ -340,6 +343,7 @@ const streamData = async (tweet) => {
   updateUser(tweet.user);
 };
 
+// Called when twitter ends the connection
 const streamEnd = () => {
   // The backup exponential algorithm will take care of reconnecting
   stream.disconnected();
@@ -351,16 +355,16 @@ const streamEnd = () => {
   reconnectionDelay.increment();
 };
 
+// Called when the stream has an error
 const streamError = ({ url, status, statusText }) => {
   // We simply can't get a stream, don't retry
   stream.disconnected();
-  let delay = 0;
-  if (status === 420) {
-    delay = 30000;
-  } else {
-    delay = reconnectionDelay.value();
-    reconnectionDelay.increment();
+  if (status === 420 && reconnectionDelay.value() < 30000) {
+    // If we're being rate-limited, wait 30s at least, up to 2min
+    reconnectionDelay.set(30000);
   }
+  const delay = reconnectionDelay.value();
+  reconnectionDelay.increment();
   log(
     `Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
   );
@@ -388,7 +392,10 @@ export const createStream = async () => {
   // Get all the user IDs
   const userIds = await getUserIds();
   // If there are none, we can just leave stream at null
-  if (!userIds || userIds.length < 1) return;
+  if (!userIds || userIds.length < 1) {
+    log(`No user IDs, no need to create a stream...`);
+    return;
+  }
   stream.create(userIds.map(({ twitterId }) => twitterId));
 };
 

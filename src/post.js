@@ -55,12 +55,11 @@ const handleDiscordPostError = async (
     channelToPostIn = 'none';
     if (!(await qChannel.obj())) {
       // Channel deleted
-      // The channel was deleted or we don't have access to it, auto-delete it
-      // And notify the user
-      const { subs, users } = await rmChannel(qChannel.id);
+      // The channel was deleted or we don't have access to it
+      // const { subs, users } = await rmChannel(qChannel.id);
       log(error);
       logMsg = `${errCode
-        || 'no qChannel'}: Auto-deleted ${subs} subs, ${users} users. qChannel removed`;
+        || 'no qChannel'}: This channel can't be built anymore, it should be deleted`;
     } else if (error.request.method === 'GET') {
       logMsg = `${errCode}: Discord encountered an error getting ${
         error.request.path
