@@ -1,7 +1,3 @@
-#!/bin/bash
-set -e
-
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
 CREATE TABLE twitterUsers (
     "twitterId" BIGINT PRIMARY KEY,
     "name" text
@@ -26,5 +22,3 @@ CREATE TABLE subs (
     "flags" integer NOT NULL,
     CONSTRAINT sub_key PRIMARY KEY("twitterId", "channelId")
 );
-
-EOSQL
