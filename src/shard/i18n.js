@@ -22,7 +22,7 @@ const langs = {};
       return;
     }
     langs[lang] = b;
-    log(`i18n - Added language: ${lang}`);
+    log(`Loaded language: ${lang}`);
   });
 }
 const i18n = (lang, key, options) => {

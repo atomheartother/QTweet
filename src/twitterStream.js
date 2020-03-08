@@ -40,7 +40,7 @@ class Stream {
   }
 
   doCreate() {
-    log(`Creating a stream with ${this.userIds.length} registered users`);
+    log(`⚙️ Creating a stream with ${this.userIds.length} registered users`);
     this.stream = this.tClient
       .stream('statuses/filter', {
         follow: this.userIds.toString(),
@@ -69,9 +69,9 @@ class Stream {
   // We've been disconnected, discard all info we have,
   // effectively resetting the object until next creation
   disconnected() {
-    log(`Disconnecting stream`);
+    log('Disconnecting stream');
     if (this.stream) {
-      log("Destroying stream");
+      log('Destroying stream');
       this.stream.destroy();
     }
     this.stream = null;
