@@ -13,11 +13,6 @@ const validCommands = {
 };
 
 export default async (shard, { cmd, ...msg }) => {
-  if (!cmd) {
-    log('Master received non-command message:');
-    log(msg);
-    return;
-  }
   const commandFunction = validCommands[cmd];
   if (!commandFunction) {
     log(`Can't dispatch unknwn command: ${cmd}`);

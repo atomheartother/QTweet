@@ -3,7 +3,7 @@ import { fortune } from 'fortune-teller';
 
 // Config file
 import {
-  rmChannel, rmGuild, sanityCheck, getLang,
+  rmChannel, rmGuild, getLang,
 } from '../subs';
 import QChannel from './QChannel';
 
@@ -95,7 +95,6 @@ export const handleGuildDelete = async ({ id, name }) => {
 
 export const handleReady = async () => {
   log('Successfully logged in to Discord');
-  await sanityCheck();
   createStream();
 };
 

@@ -18,12 +18,9 @@ process.on('unhandledRejection', (err) => {
 });
 
 process.on('message', (msg) => {
-  if (!msg.cmd) {
-    log('Slave received non-command msg:');
-    log(msg);
-    return;
+  if (msg.cmd) {
+    handleMasterMsg(msg);
   }
-  handleMasterMsg(msg);
 });
 
 const start = async () => {

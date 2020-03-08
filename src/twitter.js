@@ -397,7 +397,7 @@ export const createStream = async () => {
     log('No user IDs, no need to create a stream...');
     return null;
   }
-  stream.create(userIds.map(({ twitterId }) => twitterId));
+  // stream.create(userIds.map(({ twitterId }) => twitterId));
   return null;
 };
 
