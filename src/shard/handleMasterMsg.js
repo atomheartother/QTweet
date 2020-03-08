@@ -10,8 +10,9 @@ const handlePost = async ({ qc, content, type }) => {
   const qChannel = QChannel.deserialize(qc);
   if (!(await qChannel.obj())) return;
   if (type === 'translated') {
-    const { code: trCode, ...params } = content;
-    translated(qChannel, trCode, params);
+    const { trCode: code, ...params } = content;
+    translated(qChannel, code, params);
+    return;
   }
   post(qChannel, content, type);
 };
