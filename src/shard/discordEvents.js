@@ -4,16 +4,16 @@ import { fortune } from 'fortune-teller';
 // Config file
 import {
   rmChannel, rmGuild, sanityCheck, getLang,
-} from './subs';
+} from '../subs';
 import QChannel from './QChannel';
 
 // logging
-import log from './log';
+import log from '../log';
 import {
   message as postMessage,
   translated as postTranslatedMessage,
 } from './post';
-import { createStream, destroyStream } from './twitter';
+import { createStream, destroyStream } from './shardedTwitter';
 import commands from './commands';
 import { user, login } from './discord';
 import i18n from './i18n';

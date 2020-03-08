@@ -1,10 +1,10 @@
 // A module for formatting data for displaying
 
 import Discord from 'discord.js';
-import * as config from '../config.json';
-import { getUserSubs, getLang } from './subs';
+import * as config from '../../config.json';
+import { getUserSubs, getLang } from '../subs';
 import { embed as postEmbed, translated as postTranslated } from './post';
-import { isSet } from './flags';
+import { isSet } from '../flags';
 import QChannel from './QChannel';
 import i18n from './i18n';
 

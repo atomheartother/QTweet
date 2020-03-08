@@ -25,7 +25,7 @@ import {
 } from './postgres';
 import * as config from '../config.json';
 import log from './log';
-import QChannel from './QChannel';
+import QChannel from './shard/QChannel';
 
 export const init = initDb;
 
@@ -79,26 +79,27 @@ export const addChannelIfNoExists = async (channelId, isDM) => {
 
 // Makes sure everything is consistent
 export const sanityCheck = async () => {
-  const allSubscriptions = await getAllSubs();
-  log(`Starting sanity check on ${allSubscriptions.length} subscriptions`);
-  for (let i = 0; i < allSubscriptions.length; i += 1) {
-    const sub = allSubscriptions[i];
-    const qc = QChannel.unserialize(sub);
-    const obj = await qc.obj();
-    if (!obj) {
-      await SQLrmChannel(qc.id);
-      log(
-        `Found invalid qChannel: ${
-          qc.id
-        } (${
-          qc.isDM
-        }).`,
-      );
-    }
-  }
-  const { channels, users, guilds } = await dbSanityCheck();
-  log(`Removed ${channels} channels, ${guilds} guilds, ${users} users.`);
-  log('Sanity check completed.');
+  log("Sanity check skipped...");
+  // const allSubscriptions = await getAllSubs();
+  // log(`Starting sanity check on ${allSubscriptions.length} subscriptions`);
+  // for (let i = 0; i < allSubscriptions.length; i += 1) {
+  //   const sub = allSubscriptions[i];
+  //   const qc = QChannel.unserialize(sub);
+  //   const obj = await qc.obj();
+  //   if (!obj) {
+  //     await SQLrmChannel(qc.id);
+  //     log(
+  //       `Found invalid qChannel: ${
+  //         qc.id
+  //       } (${
+  //         qc.isDM
+  //       }).`,
+  //     );
+  //   }
+  // }
+  // const { channels, users, guilds } = await dbSanityCheck();
+  // log(`Removed ${channels} channels, ${guilds} guilds, ${users} users.`);
+  // log('Sanity check completed.');
 };
 
 export const rmChannel = async (channelId) => {
