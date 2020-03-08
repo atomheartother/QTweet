@@ -78,7 +78,6 @@ const commands = {
 };
 
 export default ({ cmd, ...msg }) => {
-  log(`Got command: ${cmd}`);
   const f = commands[cmd];
   if (!f) {
     log(`Slave can't exec unknwn command: ${cmd}`);
