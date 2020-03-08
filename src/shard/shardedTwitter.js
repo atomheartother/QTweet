@@ -3,6 +3,10 @@ import log from '../log';
 
 const clientShard = getClient().shard;
 
+export const cmd = (command, args) => {
+  clientShard.send({ ...args, cmd: command });
+};
+
 export const createStream = () => {
   clientShard.send({ cmd: 'createStream' });
 };
@@ -12,7 +16,6 @@ export const destroyStream = () => {
 };
 
 export const userTimeline = (params, qc) => {
-  log('Sending userTimeline msg to master process');
   clientShard.send({
     cmd: 'userTimeline',
     params,

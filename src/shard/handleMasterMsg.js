@@ -1,8 +1,59 @@
+import { getLang } from '../subs';
 import log from '../log';
 import { handleUserTimeline } from './commands';
+import { post, translated } from './post';
+import QChannel from './QChannel';
+import i18n from './i18n';
+
+const handlePost = async ({ qc, content, type }) => {
+  // This command can be broadcast to all shards, we must check that it's valid
+  const qChannel = QChannel.deserialize(qc);
+  if (!(await qChannel.obj())) return;
+  if (type === 'translated') {
+    const { code: trCode, ...params } = content;
+    translated(qChannel, trCode, params);
+  }
+  post(qChannel, content, type);
+};
+
+// This changes screenNames.
+const formatScreenNames = async (qChannel, screenNames, lastName) => i18n(await getLang(qChannel.guildId()), 'formatUserNames', {
+  count: screenNames.length + 1,
+  names: screenNames.toString(),
+  lastName,
+});
+
+const handleStart = async ({ res: { data, results }, msg: { qc, screenNames } }) => {
+  const qChannel = QChannel.deserialize(qc);
+  const screenNamesFinal = data.map(({
+    screen_name: screenName,
+  }) => `@${screenName}`);
+  const nameCount = screenNamesFinal.length;
+  const lastName = screenNamesFinal.pop();
+  const addedObjectName = await formatScreenNames(
+    qChannel,
+    screenNamesFinal,
+    lastName,
+  );
+  if (results.find(({ subs }) => subs !== 0)) {
+    translated(qChannel, 'startSuccess', {
+      addedObjectName,
+      nameCount,
+      firstName: lastName,
+      missedNames: screenNames.length !== nameCount ? 1 : 0,
+    });
+  } else {
+    translated(qChannel, 'startUpdateSuccess', {
+      addedObjectName,
+    });
+  }
+  log(`Added ${addedObjectName}`, qChannel);
+};
 
 const commands = {
   userTimeline: handleUserTimeline,
+  post: handlePost,
+  start: handleStart,
 };
 
 export default ({ cmd, ...msg }) => {
@@ -11,6 +62,5 @@ export default ({ cmd, ...msg }) => {
     log(`Slave can't exec unknwn command: ${cmd}`);
     return;
   }
-  log(msg.qc);
   f(msg);
 };

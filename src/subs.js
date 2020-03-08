@@ -25,7 +25,6 @@ import {
 } from './postgres';
 import * as config from '../config.json';
 import log from './log';
-import QChannel from './shard/QChannel';
 
 export const init = initDb;
 
@@ -57,29 +56,17 @@ export const setLang = SQLsetLang;
 
 export const addUserIfNoExists = async (twitterId, name) => addUser(twitterId, name);
 
-export const addChannelIfNoExists = async (channelId, isDM) => {
-  const c = await getChannel(channelId);
-  if (c !== undefined) return 0;
-  const qc = QChannel.unserialize({ channelId, isDM });
-  const obj = await qc.obj();
-  if (!obj) {
-    log(
-      `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`,
-    );
-    return 0;
-  }
-
-  const guildId = await qc.guildId();
+export const addChannelIfNoExists = async (channelId, guildId, ownerId, isDM) => {
   await createGuild(guildId);
-  if (qc.isDM) {
-    return addChannel(channelId, channelId, channelId, qc.isDM);
+  if (isDM) {
+    return addChannel(channelId, channelId, channelId, isDM);
   }
-  return addChannel(channelId, guildId, qc.ownerId(), qc.isDM);
+  return addChannel(channelId, guildId, ownerId, isDM);
 };
 
 // Makes sure everything is consistent
 export const sanityCheck = async () => {
-  log("Sanity check skipped...");
+  log('Sanity check skipped...');
   // const allSubscriptions = await getAllSubs();
   // log(`Starting sanity check on ${allSubscriptions.length} subscriptions`);
   // for (let i = 0; i < allSubscriptions.length; i += 1) {
@@ -124,9 +111,11 @@ export const updateUser = async (user) => {
 };
 
 // Add a subscription to this userId or update an existing one
-export const add = async (channelId, twitterId, name, flags, isDM) => {
+export const add = async ({
+  id: channelId, isDM, guildId, ownerId,
+}, twitterId, name, flags) => {
   const users = await addUserIfNoExists(twitterId, name);
-  const channels = await addChannelIfNoExists(channelId, isDM);
+  const channels = await addChannelIfNoExists(channelId, guildId, ownerId, isDM);
   const subs = await addSubscription(channelId, twitterId, flags, isDM);
   return { subs, users, channels };
 };
