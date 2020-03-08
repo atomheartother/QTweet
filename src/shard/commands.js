@@ -1,10 +1,6 @@
 import { RichEmbed } from 'discord.js';
 import {
   cmd,
-  createStream,
-  userTimeline,
-  showTweet,
-  userLookup,
 } from './shardedTwitter';
 import log from '../log';
 
@@ -86,10 +82,9 @@ const argParse = (args) => {
 
 export const handleUserTimeline = async ({
   res: tweets, qc,
-
   msg: { params: { screen_name: screenName } },
 }) => {
-  const qChannel = QChannel.deserialize(qc);
+  const qChannel = QChannel.unserialize(qc);
 
   if (tweets.error) {
     if (tweets.error === 'Not authorized.') {
@@ -131,7 +126,9 @@ export const handleUserTimeline = async ({
 };
 
 const postTimeline = async (qChannel, screenName, count) => {
-  userTimeline({ screen_name: screenName, tweet_mode: 'extended', count }, qChannel.serialize());
+  cmd('userTimeline', {
+    screen_name: screenName, tweet_mode: 'extended', count, qc: qChannel.serialize(),
+  });
 };
 
 const tweet = async (args, qChannel, author) => {
@@ -176,34 +173,22 @@ const tweet = async (args, qChannel, author) => {
   screenNames.forEach((screenName) => postTimeline(qChannel, screenName, count));
 };
 
+export const handleTweetId = async ({ res: { formatted, isQuoted, quoted }, msg: { id, qc } }) => {
+  const qChannel = QChannel.unserialize(qc);
+
+  const { embed } = formatted;
+  postEmbed(qChannel, embed);
+  log(`Posting tweet ${id}`, qChannel);
+
+  if (isQuoted) {
+    const { embed: quotedEmbed } = await formatTweet(quoted);
+    postEmbed(qChannel, quotedEmbed);
+  }
+};
+
 const tweetId = (args, qChannel) => {
   const id = args[0];
-  showTweet(id, qChannel.serialize());
-  // .then(async (tweetData, error) => {
-  //   if (error) {
-  //     log(error, qChannel);
-  //     return;
-  //   }
-
-  //   const { embed } = await formatTweet(tweetData);
-  //   postEmbed(qChannel, embed);
-  //   log(`Posting tweet ${id}`, qChannel);
-
-  //   if (tweetData.quoted_status && tweetData.quoted_status.user) {
-  //     const { embed: quotedEmbed } = await formatTweet(tweetData);
-  //     postEmbed(qChannel, quotedEmbed);
-  //   }
-  // })
-  // .catch((response) => {
-  //   const { code, msg } = getError(response);
-  //   if (!code) {
-  //     log('Exception thrown without error', qChannel);
-  //     log(response, qChannel);
-  //     postTranslated(qChannel, 'tweetIdGeneralError', { id });
-  //   } else {
-  //     handleTwitterError(qChannel, code, msg, [id]);
-  //   }
-  // });
+  cmd('tweetId', { id, qc: qChannel.serialize() });
 };
 
 const start = async (args, qChannel) => {
@@ -304,7 +289,7 @@ const channelInfo = async (args, qChannel) => {
   }
   const info = await formatQChannel(qc);
   postMessage(qChannel, info);
-  const subs = await getChannelSubs(qc.id, true);
+  const subs = await getChannelSubs(qc.channelId, true);
   formatSubsList(qChannel, subs);
 };
 
@@ -387,7 +372,7 @@ const memberCount = async (_, qChannel) => {
   const channels = await getUniqueChannels();
   const guildPromises = channels.map((c) => {
     const qc = QChannel.unserialize(c);
-    if (qc.type === 'dm') return { dm: true, id: qc.id };
+    if (qc.type === 'dm') return { dm: true, id: qc.channelId };
     return qc.guild();
   });
   const guilds = await Promise.all(guildPromises);
@@ -502,32 +487,32 @@ export default {
     checks: [],
     minArgs: 0,
   },
-  leaveguild: {
-    function: leaveGuild,
-    checks: [
-      {
-        f: checks.isAdmin,
-        badB: 'leaveForAdmin',
-      },
-    ],
-    minArgs: 0,
-  },
-  membercount: {
-    function: memberCount,
-    checks: [
-      {
-        f: checks.isAdmin,
-      },
-    ],
-    minArgs: 0,
-  },
-  announce: {
-    function: announce,
-    checks: [
-      {
-        f: checks.isAdmin,
-        badB: 'announceForAdmin',
-      },
-    ],
-  },
+  // leaveguild: {
+  //   function: leaveGuild,
+  //   checks: [
+  //     {
+  //       f: checks.isAdmin,
+  //       badB: 'leaveForAdmin',
+  //     },
+  //   ],
+  //   minArgs: 0,
+  // },
+  // membercount: {
+  //   function: memberCount,
+  //   checks: [
+  //     {
+  //       f: checks.isAdmin,
+  //     },
+  //   ],
+  //   minArgs: 0,
+  // },
+  // announce: {
+  //   function: announce,
+  //   checks: [
+  //     {
+  //       f: checks.isAdmin,
+  //       badB: 'announceForAdmin',
+  //     },
+  //   ],
+  // },
 };

@@ -74,10 +74,10 @@ export const sanityCheck = async () => {
   //   const qc = QChannel.unserialize(sub);
   //   const obj = await qc.obj();
   //   if (!obj) {
-  //     await SQLrmChannel(qc.id);
+  //     await SQLrmChannel(qc.channelId);
   //     log(
   //       `Found invalid qChannel: ${
-  //         qc.id
+  //         qc.channelId
   //       } (${
   //         qc.isDM
   //       }).`,
@@ -112,7 +112,7 @@ export const updateUser = async (user) => {
 
 // Add a subscription to this userId or update an existing one
 export const add = async ({
-  id: channelId, isDM, guildId, ownerId,
+  channelId, isDM, guildId, ownerId,
 }, twitterId, name, flags) => {
   const users = await addUserIfNoExists(twitterId, name);
   const channels = await addChannelIfNoExists(channelId, guildId, ownerId, isDM);
@@ -134,6 +134,7 @@ export const getLang = async (guildId) => {
 // Remove a subscription
 // If this user doesn't have any more subs, delete it as well
 export const rm = async (channelId, twitterId) => {
+  log(`Got rm request for ${channelId}, ${twitterId}`);
   const subs = await removeSubscription(channelId, twitterId);
   const { channels, users } = await dbSanityCheck();
   return { subs, channels, users };

@@ -1,5 +1,7 @@
 import log from './log';
-import { userLookup, createStream, getError } from './twitter';
+import {
+  userLookup, createStream, getError, showTweet, formatTweet,
+} from './twitter';
 import { rm, add, getUserIds as getAllSubs } from './subs';
 import { post } from './shardManager';
 
@@ -80,48 +82,55 @@ export const start = async ({ qc, flags, screenNames }) => {
 };
 
 export const stop = async ({ qc, screenNames }) => {
-//   let data = [];
-//   try {
-//     data = await getUserIds(screenNames);
-//   } catch (response) {
-//     const { code, msg } = getError(response);
-//     if (!code) {
-//       log('Exception thrown without error', qChannel);
-//       log(response, qChannel);
-//       post(qChannel, {
-//         trCode: 'getInfoGeneralError',
-//         namesCount: screenNames.length,
-//       }, 'translated');
-//       return;
-//     }
-//     handleTwitterError(qChannel, code, msg, screenNames);
+  let data = null;
+  try {
+    data = await getUserIds(screenNames);
+  } catch (response) {
+    const { code, msg } = getError(response);
+    if (!code) {
+      log(response);
+      post(qc, {
+        trCode: 'getInfoGeneralError',
+        namesCount: screenNames.length,
+      }, 'translated');
+      return null;
+    }
+    handleTwitterError(qc, code, msg, screenNames);
+    return null;
+  }
+  const promises = data.map(({ id_str: userId }) => rm(qc.channelId, userId));
 
-  //     return;
-  //   }
-  //   const promises = data.map(({ id_str: userId }) => rm(qChannel.id, userId));
+  const results = await Promise.all(promises);
+  const { users, subs } = results.reduce(
+    (acc, { subs: removedSubs, users: removedUsers }) => ({
+      subs: acc.subs + removedSubs,
+      users: acc.users + removedUsers,
+    }),
+    { users: 0, subs: 0 },
+  );
+  if (users > 0) createStream();
+  return { data, users, subs };
+};
 
-//   const results = await Promise.all(promises);
-//   const screenNamesFinal = data.map(({ screen_name: screenName }) => `@${screenName}`);
-//   const lastName = screenNamesFinal.pop();
-//   const removedObjectName = await formatScreenNames(
-//     qChannel,
-//     screenNamesFinal,
-//     lastName,
-//   );
-//   const { users, subs } = results.reduce(
-//     (acc, { subs: removedSubs, users: removedUsers }) => ({
-//       subs: acc.subs + removedSubs,
-//       users: acc.users + removedUsers,
-//     }),
-//     { users: 0, subs: 0 },
-//   );
-//   if (subs === 0) {
-//     post(qChannel, { trCode: 'noSuchSubscription', screenNames: removedObjectName }, 'translated');
-//   } else {
-//     post(qChannel, {
-//       trCode: 'stopSuccess',
-//       screenNames: removedObjectName,
-//     }, 'translated');
-//     if (users > 0) createStream();
-//   }
+export const tweetId = async ({ qc, id }) => {
+  let t = null;
+  try {
+    t = await showTweet(id);
+  } catch (response) {
+    const { code, msg } = getError(response);
+    if (!code) {
+      log('Exception thrown without error');
+      post(qc, { trCode: 'tweetIdGeneralError', id }, 'translated');
+    } else {
+      handleTwitterError(qc, code, msg, [id]);
+    }
+    return null;
+  }
+  const formattedPromise = formatTweet(t);
+  const isQuoted = t.quoted_status && t.quoted_status.user;
+  if (isQuoted) {
+    const quotedPromise = formatTweet(t.quoted_status);
+    return { isQuoted, formatted: await formattedPromise, quoted: await quotedPromise };
+  }
+  return { isQuoted, formatted: await formattedPromise };
 };

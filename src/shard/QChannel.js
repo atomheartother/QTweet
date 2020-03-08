@@ -121,13 +121,9 @@ class QChannel {
 
   serialize() {
     return {
-      id: this.id,
+      channelId: this.id,
       isDM: this.isDM,
     };
-  }
-
-  static deserialize({ id, isDM }) {
-    return new QChannel({ id, type: isDM ? 'dm' : 'text' });
   }
 
   static unserialize({ channelId, isDM }) {
