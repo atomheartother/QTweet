@@ -24,10 +24,11 @@ export default async (shard, { cmd, ...msg }) => {
     return;
   }
   log(msg);
-  const res = await commandFunction(msg);
-  if (res) {
+  const commandResult = await commandFunction(msg);
+  if (commandResult) {
+    const { cmd: resCmd, ...res } = commandResult;
     shard.send({
-      cmd, msg, res,
+      cmd: resCmd || cmd, msg, res,
     });
   }
 };
