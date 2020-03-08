@@ -81,8 +81,8 @@ const argParse = (args) => {
 };
 
 export const handleUserTimeline = async ({
-  res: tweets, qc,
-  msg: { params: { screen_name: screenName } },
+  res: tweets,
+  msg: { qc, screen_name: screenName },
 }) => {
   const qChannel = QChannel.unserialize(qc);
 

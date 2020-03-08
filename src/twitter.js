@@ -407,6 +407,6 @@ export const destroyStream = () => {
 
 export const userLookup = (params) => tClient.post('users/lookup', params);
 
-export const userTimeline = ({ params }) => tClient.get('statuses/user_timeline', params);
+export const userTimeline = (params) => tClient.get('statuses/user_timeline', params);
 
 export const showTweet = (id) => tClient.get(`statuses/show/${id}`, { tweet_mode: 'extended' });
