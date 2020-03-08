@@ -1,4 +1,5 @@
 import { login, getClient } from './discord';
+import { init as initDb } from '../subs';
 import log from '../log';
 import {
   handleMessage,
@@ -26,6 +27,8 @@ process.on('message', (msg) => {
 });
 
 const start = async () => {
+  // Init database
+  await initDb();
   // Register discord handles
   getClient()
     .on('message', handleMessage)

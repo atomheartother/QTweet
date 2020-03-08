@@ -6,9 +6,8 @@ import { getUserIds, getUserSubs, updateUser } from './subs';
 import Backup from './backup';
 import log from './log';
 
-import { embed as postEmbed, message as postMessage } from './shard/post';
+import { post } from './shardManager';
 import Stream from './twitterStream';
-import QChannel from './shard/QChannel';
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -306,9 +305,11 @@ export const getFilteredSubs = async (tweet) => {
 
   const targetSubs = [];
   for (let i = 0; i < subs.length; i += 1) {
-    const { flags, channelId, isDM } = subs[i];
+    const {
+      flags, channelId, isDM,
+    } = subs[i];
     if (flagsFilter(flags, tweet)) {
-      const qChannel = QChannel.unserialize({ channelId, isDM });
+      const qChannel = { channelId, isDM };
       targetSubs.push({ flags, qChannel });
     }
   }
@@ -330,14 +331,14 @@ const streamData = async (tweet) => {
   subs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && flags.ping) {
       log('Pinging @everyone', qChannel);
-      postMessage(qChannel, '@everyone');
+      post(qChannel, '@everyone', 'message');
     }
-    postEmbed(qChannel, embed);
+    post(qChannel, embed, 'embed');
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
     subs.forEach(({ flags, qChannel }) => {
-      if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
+      if (!flags.noquote) post(qChannel, quotedEmbed, 'embed');
     });
   }
   updateUser(tweet.user);

@@ -1,33 +1,12 @@
-import {
-  userTimeline, showTweet, createStream,
-} from './twitter';
-import log from './log';
+import { ShardingManager } from 'discord.js';
 
-const validCommands = {
-  userTimeline,
-  showTweet,
-  createStream,
-};
+let manager = null;
 
-export const sendTweetToChannel = () => {
+export default manager = new ShardingManager('src/shard/bot.js', { token: process.env.DISCORD_TOKEN });
 
-};
-
-export const handleMessage = async (shard, { qc, cmd, ...msg }) => {
-  if (!msg.cmd) {
-    log('Master received non-command message:');
-    log(msg);
-    return;
-  }
-  const commandFunction = validCommands[cmd];
-  if (!commandFunction) {
-    log(`Can't dispatch unknwn command: ${cmd}`);
-    return;
-  }
-  const res = await commandFunction(msg);
-  if (res) {
-    shard.send({
-      qc, cmd, msg, res,
-    });
-  }
+// Send a message to shards and let them figure out which shard should get it
+export const post = (qc, content, type) => {
+  manager.broadcast({
+    cmd: 'post', qc, content, type,
+  });
 };
