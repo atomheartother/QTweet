@@ -394,9 +394,10 @@ export const createStream = async () => {
   // If there are none, we can just leave stream at null
   if (!userIds || userIds.length < 1) {
     log('No user IDs, no need to create a stream...');
-    return;
+    return null;
   }
   stream.create(userIds.map(({ twitterId }) => twitterId));
+  return null;
 };
 
 export const destroyStream = () => {
