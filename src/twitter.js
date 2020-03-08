@@ -29,7 +29,7 @@ const tClient = new Twitter({
 const reconnectionDelay = new Backup({
   mode: 'exponential',
   startValue: 2000,
-  maxValue: 120000,
+  maxValue: 240000,
 });
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
