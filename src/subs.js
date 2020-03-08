@@ -4,7 +4,7 @@ import {
   getUniqueChannels as SQLgetUniqueChannels,
   getGuildSubs as SQLgetGuildSubs,
   getChannelSubs as SQLgetChannelSubs,
-  getChannel,
+  getChannels as SQLgetChannels,
   rmChannel as SQLrmChannel,
   getSubscription as SQLgetSub,
   getUserFromScreenName as SQLgetUserFromScreenName,
@@ -25,6 +25,7 @@ import {
 } from './postgres';
 import * as config from '../config.json';
 import log from './log';
+import { someoneHasChannel } from './shardManager';
 
 export const init = initDb;
 
@@ -66,27 +67,21 @@ export const addChannelIfNoExists = async (channelId, guildId, ownerId, isDM) =>
 
 // Makes sure everything is consistent
 export const sanityCheck = async () => {
-  log('Sanity check skipped...');
-  // const allSubscriptions = await getAllSubs();
-  // log(`Starting sanity check on ${allSubscriptions.length} subscriptions`);
-  // for (let i = 0; i < allSubscriptions.length; i += 1) {
-  //   const sub = allSubscriptions[i];
-  //   const qc = QChannel.unserialize(sub);
-  //   const obj = await qc.obj();
-  //   if (!obj) {
-  //     await SQLrmChannel(qc.channelId);
-  //     log(
-  //       `Found invalid qChannel: ${
-  //         qc.channelId
-  //       } (${
-  //         qc.isDM
-  //       }).`,
-  //     );
-  //   }
-  // }
-  // const { channels, users, guilds } = await dbSanityCheck();
-  // log(`Removed ${channels} channels, ${guilds} guilds, ${users} users.`);
-  // log('Sanity check completed.');
+  const allChannels = await SQLgetChannels();
+  log(`Starting sanity check on ${allChannels.length} channels`);
+  const areChannelsValid = await Promise.all(allChannels.map(
+    (c) => someoneHasChannel(c).then((res) => ({ c, res })),
+  ));
+  await Promise.all(areChannelsValid.map(({ c, res }) => {
+    if (res) {
+      return null;
+    }
+    log(`Found invalid channel: ${c.channelId}`);
+    return SQLrmChannel(c.channelId);
+  }));
+  const { channels, users, guilds } = await dbSanityCheck();
+  log(`Removed ${channels} channels, ${guilds} guilds, ${users} users.`);
+  log('Sanity check completed.');
 };
 
 export const rmChannel = async (channelId) => {
