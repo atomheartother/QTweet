@@ -6,9 +6,9 @@ import log from './log';
 const shardReady = async () => {
   if (!manager.shards.every((shard) => shard.ready)) return;
   // All shards are ready, start taking messages
-  manager.on('message', (msg) => {
+  manager.on('message', (shard, msg) => {
     if (msg.cmd) {
-      shardMsgHandler(msg);
+      shardMsgHandler(shard, msg);
     }
   });
   await initDb();
