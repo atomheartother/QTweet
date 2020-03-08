@@ -5,22 +5,37 @@ import {
 import { rm, add, getUserIds as getAllSubs } from './subs';
 import { post } from './shardManager';
 
-const handleTwitterError = (qChannel, code, msg, screenNames) => {
+const handleTwitterError = (qc, code, msg, screenNames) => {
   if (code === 17 || code === 34) {
-    post(qChannel, {
+    return {
+      cmd: 'postTranslated',
+      qc,
       trCode: 'noSuchTwitterUser',
       count: screenNames.length,
       name: screenNames.toString(),
-    }, 'translated');
-  } else if (code === 18) {
+
+    };
+  } if (code === 18) {
     log('Exceeded user lookup limit');
-    post(qChannel, { trCode: 'tooManyUsersRequested' }, 'translated');
-  } else if (code === 144) {
-    post(qChannel, { trCode: 'noSuchTwitterId' }, 'translated');
-  } else {
-    log(`Unknown twitter error: ${code} ${msg}`);
-    post(qChannel, { trCode: 'twitterUnknwnError' }, 'translated');
+    return {
+      cmd: 'postTranslated',
+      qc,
+      trCode: 'tooManyUsersRequested',
+
+    };
+  } if (code === 144) {
+    return {
+      cmd: 'postTranslated',
+      qc,
+      trCode: 'noSuchTwitterId',
+    };
   }
+  log(`Unknown twitter error: ${code} ${msg}`);
+  return {
+    cmd: 'postTranslated',
+    qc,
+    trCode: 'twitterUnknwnError',
+  };
 };
 
 const getUserIds = async (screenNames) => {
@@ -44,14 +59,14 @@ export const start = async ({ qc, flags, screenNames }) => {
     if (!code) {
       log('Exception thrown without error');
       log(res);
-      post(qc, {
+      return {
+        cmd: 'postTranslated',
+        qc,
         trCode: 'startGeneralError',
         namesCount: screenNames.length,
-      }, 'translated');
-    } else {
-      handleTwitterError(qc, code, msg, screenNames);
+      };
     }
-    return null;
+    return handleTwitterError(qc, code, msg, screenNames);
   }
   const allUserIds = await getAllSubs();
   if (allUserIds.length + data.length >= 5000) {
@@ -89,14 +104,14 @@ export const stop = async ({ qc, screenNames }) => {
     const { code, msg } = getError(response);
     if (!code) {
       log(response);
-      post(qc, {
+      return {
+        cmd: 'postTranslated',
+        qc,
         trCode: 'getInfoGeneralError',
         namesCount: screenNames.length,
-      }, 'translated');
-      return null;
+      };
     }
-    handleTwitterError(qc, code, msg, screenNames);
-    return null;
+    return handleTwitterError(qc, code, msg, screenNames);
   }
   const promises = data.map(({ id_str: userId }) => rm(qc.channelId, userId));
 
@@ -120,11 +135,11 @@ export const tweetId = async ({ qc, id }) => {
     const { code, msg } = getError(response);
     if (!code) {
       log('Exception thrown without error');
-      post(qc, { trCode: 'tweetIdGeneralError', id }, 'translated');
-    } else {
-      handleTwitterError(qc, code, msg, [id]);
+      return {
+        cmd: 'postTranslated', qc, trCode: 'tweetIdGeneralError', id,
+      };
     }
-    return null;
+    return handleTwitterError(qc, code, msg, [id]);
   }
   const formattedPromise = formatTweet(t);
   const isQuoted = t.quoted_status && t.quoted_status.user;

@@ -17,6 +17,11 @@ const handlePost = async ({ qc, content, type }) => {
   post(qChannel, content, type);
 };
 
+const handlePostTranslated = ({ res: { qc, trCode, ...params } }) => {
+  const qChannel = QChannel.unserialize(qc);
+  translated(qChannel, trCode, params);
+};
+
 // This changes screenNames.
 const formatScreenNames = async (qChannel, screenNames, lastName) => i18n(await getLang(qChannel.guildId()), 'formatUserNames', {
   count: screenNames.length + 1,
@@ -72,6 +77,7 @@ const handleStop = async ({ res: { data, subs }, msg: { qc } }) => {
 const commands = {
   userTimeline: handleUserTimeline,
   post: handlePost,
+  postTranslated: handlePostTranslated,
   start: handleStart,
   stop: handleStop,
   tweetId: handleTweetId,
@@ -83,5 +89,6 @@ export default ({ cmd, ...msg }) => {
     log(`Slave can't exec unknwn command: ${cmd}`);
     return;
   }
+  log(msg);
   f(msg);
 };
