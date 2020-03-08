@@ -6,9 +6,9 @@ import { getUserIds, getUserSubs, updateUser } from './subs';
 import Backup from './backup';
 import log from './log';
 
-import { embed as postEmbed, message as postMessage } from './post';
+import { embed as postEmbed, message as postMessage } from './shard/post';
 import Stream from './twitterStream';
-import QChannel from './QChannel';
+import QChannel from './shard/QChannel';
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -393,7 +393,7 @@ export const createStream = async () => {
   const userIds = await getUserIds();
   // If there are none, we can just leave stream at null
   if (!userIds || userIds.length < 1) {
-    log(`No user IDs, no need to create a stream...`);
+    log('No user IDs, no need to create a stream...');
     return;
   }
   stream.create(userIds.map(({ twitterId }) => twitterId));
@@ -405,6 +405,6 @@ export const destroyStream = () => {
 
 export const userLookup = (params) => tClient.post('users/lookup', params);
 
-export const userTimeline = (params) => tClient.get('statuses/user_timeline', params);
+export const userTimeline = ({ params }) => tClient.get('statuses/user_timeline', params);
 
-export const showTweet = (id, params) => tClient.get(`statuses/show/${id}`, params);
+export const showTweet = (id) => tClient.get(`statuses/show/${id}`, { tweet_mode: 'extended' });

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { FluentBundle } from 'fluent';
-import log from './log';
-import { supportedLangs } from '../config.json';
+import log from '../log';
+import { supportedLangs } from '../../config.json';
 
 const langDir = './lang';
 const langs = {};

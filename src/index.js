@@ -1,35 +1,23 @@
+import { ShardingManager } from 'discord.js';
 import log from './log';
-import { login, getClient } from './discord';
-import { init, close } from './subs';
-import {
-  handleMessage,
-  handleError,
-  handleGuildCreate,
-  handleGuildDelete,
-  handleReady,
-  handleChannelDelete,
-} from './discordEvents';
+import { init } from './subs';
+import dispatchMessage from './shardManager';
 
-process.on('unhandledRejection', (err) => {
-  log('Unhandled exception:');
-  log(err);
-});
-
-process.on('exit', close);
+const manager = new ShardingManager('src/shard/bot.js', { token: process.env.DISCORD_TOKEN });
 
 const start = async () => {
   await init();
-  log('Connection to database successful');
-  // Register discord handles
-  getClient()
-    .on('message', handleMessage)
-    .on('error', handleError)
-    .on('guildCreate', handleGuildCreate)
-    .on('guildDelete', handleGuildDelete)
-    .on('ready', handleReady)
-    .on('channelDelete', handleChannelDelete);
-  // Login
-  login();
+  manager.spawn();
+  manager.on('launch', (shard) => log(`Launched shard ${shard.id}`));
+  manager.on('message', async (shard, { qc, ...msg }) => {
+    if (!msg.cmd) {
+      log('Master received non-command message:');
+      log(msg);
+      return;
+    }
+    const res = await dispatchMessage(msg);
+    if (res) shard.send({ ...res, qc });
+  });
 };
 
 start();

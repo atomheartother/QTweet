@@ -1,5 +1,5 @@
-import { rmChannel, getLang } from './subs';
-import log from './log';
+import { rmChannel, getLang } from '../subs';
+import log from '../log';
 import QChannel from './QChannel';
 import i18n from './i18n';
 

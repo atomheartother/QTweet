@@ -126,6 +126,10 @@ class QChannel {
     };
   }
 
+  static deserialize({ id, isDM }) {
+    return new QChannel({ id, type: isDM ? 'dm' : 'text' });
+  }
+
   static unserialize({ channelId, isDM }) {
     return new QChannel({ id: channelId, type: isDM ? 'dm' : 'text' });
   }
