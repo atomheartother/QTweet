@@ -18,7 +18,6 @@ export default async (shard, { cmd, ...msg }) => {
     log(`Can't dispatch unknwn command: ${cmd}`);
     return;
   }
-  log(msg);
   const commandResult = await commandFunction(msg);
   if (commandResult) {
     const { cmd: resCmd, ...res } = commandResult;

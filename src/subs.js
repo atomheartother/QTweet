@@ -72,7 +72,7 @@ export const sanityCheck = async () => {
   const areChannelsValid = await Promise.all(allChannels.map(
     (c) => someoneHasChannel(c).then((res) => ({ c, res })),
   ));
-  await Promise.all(areChannelsValid.map(({ c, res }) => {
+  const deletedChannels = await Promise.all(areChannelsValid.map(({ c, res }) => {
     if (res) {
       return null;
     }
@@ -80,7 +80,7 @@ export const sanityCheck = async () => {
     return SQLrmChannel(c.channelId);
   }));
   const { channels, users, guilds } = await dbSanityCheck();
-  log(`Removed ${channels} channels, ${guilds} guilds, ${users} users.`);
+  log(`Removed ${channels + deletedChannels.reduce((prev, del) => prev + del, 0)} channels, ${guilds} guilds, ${users} users.`);
   log('Sanity check completed.');
 };
 

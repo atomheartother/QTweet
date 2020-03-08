@@ -89,6 +89,5 @@ export default ({ cmd, ...msg }) => {
     log(`Slave can't exec unknwn command: ${cmd}`);
     return;
   }
-  log(msg);
   f(msg);
 };
