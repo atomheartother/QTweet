@@ -94,7 +94,7 @@ export const handleGuildDelete = async ({ id, name }) => {
 };
 
 export const handleReady = async () => {
-  log('Successfully logged in to Discord');
+  log('✅ Logged in to Discord');
   createStream();
 };
 

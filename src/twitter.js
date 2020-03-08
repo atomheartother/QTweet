@@ -319,7 +319,7 @@ export const getFilteredSubs = async (tweet) => {
 // Called on stream connection
 // Reset our reconnection delay
 const streamStart = () => {
-  log('Stream successfully started');
+  log('✅ Stream successfully started');
   reconnectionDelay.reset();
 };
 
@@ -397,7 +397,7 @@ export const createStream = async () => {
     log('No user IDs, no need to create a stream...');
     return null;
   }
-  // stream.create(userIds.map(({ twitterId }) => twitterId));
+  stream.create(userIds.map(({ twitterId }) => twitterId));
   return null;
 };
 

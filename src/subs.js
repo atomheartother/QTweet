@@ -68,7 +68,7 @@ export const addChannelIfNoExists = async (channelId, guildId, ownerId, isDM) =>
 // Makes sure everything is consistent
 export const sanityCheck = async () => {
   const allChannels = await SQLgetChannels();
-  log(`Starting sanity check on ${allChannels.length} channels`);
+  log(`⚙️ Starting sanity check on ${allChannels.length} channels`);
   const areChannelsValid = await Promise.all(allChannels.map(
     (c) => someoneHasChannel(c).then((res) => ({ c, res })),
   ));
@@ -80,8 +80,7 @@ export const sanityCheck = async () => {
     return SQLrmChannel(c.channelId);
   }));
   const { channels, users, guilds } = await dbSanityCheck();
-  log(`Removed ${channels + deletedChannels.reduce((prev, del) => prev + del, 0)} channels, ${guilds} guilds, ${users} users.`);
-  log('Sanity check completed.');
+  log(`✅ Sanity check completed!\n${channels + deletedChannels.reduce((prev, del) => prev + del, 0)} channels, ${guilds} guilds, ${users} users removed.`);
 };
 
 export const rmChannel = async (channelId) => {
