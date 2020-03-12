@@ -6,9 +6,8 @@ import { getUserIds, getUserSubs, updateUser } from './subs';
 import Backup from './backup';
 import log from './log';
 
-import { embed as postEmbed, message as postMessage } from './post';
+import { post } from './shardManager';
 import Stream from './twitterStream';
-import QChannel from './QChannel';
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -30,7 +29,7 @@ const tClient = new Twitter({
 const reconnectionDelay = new Backup({
   mode: 'exponential',
   startValue: 2000,
-  maxValue: 120000,
+  maxValue: 240000,
 });
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
@@ -306,9 +305,11 @@ export const getFilteredSubs = async (tweet) => {
 
   const targetSubs = [];
   for (let i = 0; i < subs.length; i += 1) {
-    const { flags, channelId, isDM } = subs[i];
+    const {
+      flags, channelId, isDM,
+    } = subs[i];
     if (flagsFilter(flags, tweet)) {
-      const qChannel = QChannel.unserialize({ channelId, isDM });
+      const qChannel = { channelId, isDM };
       targetSubs.push({ flags, qChannel });
     }
   }
@@ -318,7 +319,7 @@ export const getFilteredSubs = async (tweet) => {
 // Called on stream connection
 // Reset our reconnection delay
 const streamStart = () => {
-  log('Stream successfully started');
+  log('✅ Stream successfully started');
   reconnectionDelay.reset();
 };
 
@@ -330,14 +331,14 @@ const streamData = async (tweet) => {
   subs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && flags.ping) {
       log('Pinging @everyone', qChannel);
-      postMessage(qChannel, '@everyone');
+      post(qChannel, '@everyone', 'message');
     }
-    postEmbed(qChannel, embed);
+    post(qChannel, embed, 'embed');
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
     subs.forEach(({ flags, qChannel }) => {
-      if (!flags.noquote) postEmbed(qChannel, quotedEmbed);
+      if (!flags.noquote) post(qChannel, quotedEmbed, 'embed');
     });
   }
   updateUser(tweet.user);
@@ -393,10 +394,11 @@ export const createStream = async () => {
   const userIds = await getUserIds();
   // If there are none, we can just leave stream at null
   if (!userIds || userIds.length < 1) {
-    log(`No user IDs, no need to create a stream...`);
-    return;
+    log('No user IDs, no need to create a stream...');
+    return null;
   }
   stream.create(userIds.map(({ twitterId }) => twitterId));
+  return null;
 };
 
 export const destroyStream = () => {
@@ -407,4 +409,4 @@ export const userLookup = (params) => tClient.post('users/lookup', params);
 
 export const userTimeline = (params) => tClient.get('statuses/user_timeline', params);
 
-export const showTweet = (id, params) => tClient.get(`statuses/show/${id}`, params);
+export const showTweet = (id) => tClient.get(`statuses/show/${id}`, { tweet_mode: 'extended' });

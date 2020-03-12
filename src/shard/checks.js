@@ -1,5 +1,5 @@
-import * as config from '../config.json';
-import log from './log';
+import * as config from '../../config.json';
+import log from '../log';
 
 // Takes an author and returns whether or not they are an admin
 export const isAdmin = (author) => author.id === config.ownerID;

@@ -4,7 +4,6 @@ import log from './log';
 let pool;
 
 export const init = () => {
-  log('Connecting to database');
   pool = new Pool();
 };
 
@@ -154,6 +153,11 @@ export const rmChannel = async (channelId) => {
 
 export const getGuildChannels = async (guildId) => {
   const { rows } = await pool.query(`SELECT ${getInt('"channelId"')} FROM channels WHERE "guildId" = $1`, [guildId]);
+  return rows;
+};
+
+export const getChannels = async () => {
+  const { rows } = await pool.query('SELECT * FROM channels');
   return rows;
 };
 
