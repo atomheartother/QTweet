@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { FluentBundle } from 'fluent';
-import log from './log';
-import { supportedLangs } from '../config.json';
+import log from '../log';
+import { supportedLangs } from '../../config.json';
 
 const langDir = './lang';
 const langs = {};
@@ -22,7 +22,7 @@ const langs = {};
       return;
     }
     langs[lang] = b;
-    log(`i18n - Added language: ${lang}`);
+    log(`Loaded language: ${lang}`);
   });
 }
 const i18n = (lang, key, options) => {

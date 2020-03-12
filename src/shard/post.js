@@ -1,5 +1,5 @@
-import { rmChannel, getLang } from './subs';
-import log from './log';
+import { rmChannel, getLang } from '../subs';
+import log from '../log';
 import QChannel from './QChannel';
 import i18n from './i18n';
 
@@ -138,23 +138,21 @@ const handleDiscordPostError = async (
   }, delay);
 };
 
-export const embed = async (qChannel, content) => {
+export const post = async (qChannel, content, type) => {
   try {
     await qChannel.send(content);
   } catch (err) {
-    return handleDiscordPostError(err, qChannel, 'embed', content);
+    return handleDiscordPostError(err, qChannel, type, content);
   }
   return 0;
 };
 
-export const message = async (qChannel, content) => {
-  try {
-    await qChannel.send(content);
-  } catch (err) {
-    return handleDiscordPostError(err, qChannel, 'message', content);
-  }
-  return 0;
-};
+export const embed = async (qChannel, content) => post(qChannel, content, 'embed');
+
+export const message = async (qChannel, content) => post(qChannel, content, 'message');
+
+export const translated = async (qChannel, key, options = {}) => message(qChannel,
+  i18n(await getLang(qChannel.guildId()), key, options));
 
 export const announcement = (content, channels) => {
   if (channels.length <= 0) return;
@@ -173,6 +171,3 @@ export const dm = async (qChannel, content) => {
   }
   return 0;
 };
-
-export const translated = async (qChannel, key, options = {}) => message(qChannel,
-  i18n(await getLang(qChannel.guildId()), key, options));

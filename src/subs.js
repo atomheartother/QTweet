@@ -4,7 +4,7 @@ import {
   getUniqueChannels as SQLgetUniqueChannels,
   getGuildSubs as SQLgetGuildSubs,
   getChannelSubs as SQLgetChannelSubs,
-  getChannel,
+  getChannels as SQLgetChannels,
   rmChannel as SQLrmChannel,
   getSubscription as SQLgetSub,
   getUserFromScreenName as SQLgetUserFromScreenName,
@@ -25,7 +25,7 @@ import {
 } from './postgres';
 import * as config from '../config.json';
 import log from './log';
-import QChannel from './QChannel';
+import { someoneHasChannel } from './shardManager';
 
 export const init = initDb;
 
@@ -57,48 +57,30 @@ export const setLang = SQLsetLang;
 
 export const addUserIfNoExists = async (twitterId, name) => addUser(twitterId, name);
 
-export const addChannelIfNoExists = async (channelId, isDM) => {
-  const c = await getChannel(channelId);
-  if (c !== undefined) return 0;
-  const qc = QChannel.unserialize({ channelId, isDM });
-  const obj = await qc.obj();
-  if (!obj) {
-    log(
-      `Somehow got a bad qChannel on a new subscription: ${channelId}, ${isDM}`,
-    );
-    return 0;
-  }
-
-  const guildId = await qc.guildId();
+export const addChannelIfNoExists = async (channelId, guildId, ownerId, isDM) => {
   await createGuild(guildId);
-  if (qc.isDM) {
-    return addChannel(channelId, channelId, channelId, qc.isDM);
+  if (isDM) {
+    return addChannel(channelId, channelId, channelId, isDM);
   }
-  return addChannel(channelId, guildId, qc.ownerId(), qc.isDM);
+  return addChannel(channelId, guildId, ownerId, isDM);
 };
 
 // Makes sure everything is consistent
 export const sanityCheck = async () => {
-  const allSubscriptions = await getAllSubs();
-  log(`Starting sanity check on ${allSubscriptions.length} subscriptions`);
-  for (let i = 0; i < allSubscriptions.length; i += 1) {
-    const sub = allSubscriptions[i];
-    const qc = QChannel.unserialize(sub);
-    const obj = await qc.obj();
-    if (!obj) {
-      await SQLrmChannel(qc.id);
-      log(
-        `Found invalid qChannel: ${
-          qc.id
-        } (${
-          qc.isDM
-        }).`,
-      );
+  const allChannels = await SQLgetChannels();
+  log(`⚙️ Starting sanity check on ${allChannels.length} channels`);
+  const areChannelsValid = await Promise.all(allChannels.map(
+    (c) => someoneHasChannel(c).then((res) => ({ c, res })),
+  ));
+  const deletedChannels = await Promise.all(areChannelsValid.map(({ c, res }) => {
+    if (res) {
+      return null;
     }
-  }
+    log(`Found invalid channel: ${c.channelId}`);
+    return SQLrmChannel(c.channelId);
+  }));
   const { channels, users, guilds } = await dbSanityCheck();
-  log(`Removed ${channels} channels, ${guilds} guilds, ${users} users.`);
-  log('Sanity check completed.');
+  log(`✅ Sanity check completed!\n${channels + deletedChannels.reduce((prev, del) => prev + del, 0)} channels, ${guilds} guilds, ${users} users removed.`);
 };
 
 export const rmChannel = async (channelId) => {
@@ -123,9 +105,11 @@ export const updateUser = async (user) => {
 };
 
 // Add a subscription to this userId or update an existing one
-export const add = async (channelId, twitterId, name, flags, isDM) => {
+export const add = async ({
+  channelId, isDM, guildId, ownerId,
+}, twitterId, name, flags) => {
   const users = await addUserIfNoExists(twitterId, name);
-  const channels = await addChannelIfNoExists(channelId, isDM);
+  const channels = await addChannelIfNoExists(channelId, guildId, ownerId, isDM);
   const subs = await addSubscription(channelId, twitterId, flags, isDM);
   return { subs, users, channels };
 };
@@ -144,6 +128,7 @@ export const getLang = async (guildId) => {
 // Remove a subscription
 // If this user doesn't have any more subs, delete it as well
 export const rm = async (channelId, twitterId) => {
+  log(`Got rm request for ${channelId}, ${twitterId}`);
   const subs = await removeSubscription(channelId, twitterId);
   const { channels, users } = await dbSanityCheck();
   return { subs, channels, users };

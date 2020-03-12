@@ -121,7 +121,7 @@ class QChannel {
 
   serialize() {
     return {
-      id: this.id,
+      channelId: this.id,
       isDM: this.isDM,
     };
   }

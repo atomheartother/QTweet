@@ -1,8 +1,8 @@
 // Direct mappings for discord.js methods
 import Discord from 'discord.js';
-import DBL from 'dblapi.js';
-import log from './log';
-import Backup from './backup';
+// import DBL from 'dblapi.js';
+import log from '../log';
+import Backup from '../backup';
 
 const dClient = new Discord.Client({
   messageCacheMaxSize: 1,
@@ -45,18 +45,18 @@ const reconnectionDelay = new Backup({
   maxValue: 60000,
 });
 
-const dblClient = process.env.DBL_TOKEN !== '' ? new DBL(process.env.DBL_TOKEN, dClient) : null;
+// const dblClient = process.env.DBL_TOKEN !== '' ? new DBL(process.env.DBL_TOKEN, dClient) : null;
 
 export const getClient = () => dClient;
 
 export const login = async () => {
-  if (dblClient) {
-    dblClient.on('error', ({ status }) => {
-      log(`Error with DBL client: ${status}`);
-    });
-  }
+  // if (dblClient) {
+  //   dblClient.on('error', ({ status }) => {
+  //     log(`Error with DBL client: ${status}`);
+  //   });
+  // }
   try {
-    log('Logging into Discord');
+    log('⚙️ Logging into Discord');
     await dClient.login(process.env.DISCORD_TOKEN);
     reconnectionDelay.reset();
   } catch (err) {
