@@ -7,18 +7,18 @@ const shardReady = async () => {
   if (!manager.shards.every((shard) => shard.ready)) return;
   log('✅ All shards are ready!');
   // All shards are ready, start taking messages
-  manager.on('message', (shard, msg) => {
+  manager.shards.every((shard) => shard.on('message', (msg) => {
     if (msg.cmd) {
       shardMsgHandler(shard, msg);
     }
-  });
+  }));
   await initDb();
   log('✅ Connection to database successful');
   await sanityCheck();
 };
 
 const start = async () => {
-  manager.on('launch', (shard) => {
+  manager.on('shardCreate', (shard) => {
     log(`⚙️ Launched shard ${shard.id}...`);
     shard.on('ready', shardReady);
   });
