@@ -2,7 +2,7 @@ import Twitter from 'twitter-lite';
 
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
-import { getUserIds, getUserSubs, updateUser } from './subs';
+import { getUserIds, getUserSubs, updateUser } from './subs.js';
 import Backup from './backup';
 import log from './log';
 
