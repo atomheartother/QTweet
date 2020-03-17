@@ -69,14 +69,14 @@ export const login = async () => {
 
 export const user = () => dClient.user;
 
-export const getChannel = (id) => dClient.channels.get(id);
+export const getChannel = (id) => dClient.channels.resolve(id);
 
-export const getGuild = (id) => dClient.guilds.get(id);
+export const getGuild = (id) => dClient.guilds.resolve(id);
 
-export const getUser = (id) => dClient.users.get(id);
+export const getUser = (id) => dClient.users.resolve(id);
 
 export const getUserDm = async (id) => {
-  const usr = dClient.users.get(id);
+  const usr = dClient.users.resolve(id);
   if (!usr) return null;
   return usr.dmChannel ? usr.dmChannel : usr.createDM();
 };

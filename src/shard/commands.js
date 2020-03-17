@@ -1,4 +1,4 @@
-import { RichEmbed } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import {
   cmd,
 } from './shardedTwitter';
@@ -399,7 +399,7 @@ const memberCount = async (_, qChannel) => {
 
 const help = async (args, qChannel) => {
   const guildLang = await getLang(qChannel.guildId());
-  const embed = new RichEmbed()
+  const embed = new MessageEmbed()
     .setColor(0x0e7675)
     .setTitle(i18n(guildLang, 'helpHeader'))
     .setURL(profileURL)
