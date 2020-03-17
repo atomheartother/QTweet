@@ -4,7 +4,7 @@ import manager from './shardManager';
 import log from './log';
 
 const shardReady = async () => {
-  if (!manager.shards.every((shard) => shard.ready)) return;
+  if (manager.shards.size !== manager.totalShards || !manager.shards.every((shard) => shard.ready)) return;
   log('✅ All shards are ready!');
   // All shards are ready, start taking messages
   manager.on('message', (shard, msg) => {
