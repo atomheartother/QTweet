@@ -22,7 +22,7 @@ const start = async () => {
     log(`⚙️ Launched shard ${shard.id}...`);
     shard.on('ready', shardReady);
   });
-  manager.spawn();
+  manager.spawn('auto', 15000, 60000);
 };
 
 start();
