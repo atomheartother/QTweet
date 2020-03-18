@@ -85,19 +85,18 @@ class QChannel {
     if (!guild) return null;
     const checkFunction = msgType === 'embed' ? canPostEmbedIn : canPostIn;
     // Check the system channel
-    if (guild.systemChannelID) {
-      const sysChan = getChannel(guild.systemChannelID);
-      if (sysChan && checkFunction(sysChan)) return new QChannel(sysChan);
+    if (guild.systemChannel && checkFunction(guild.systemChannel)) {
+      return new QChannel(guild.systemChannel);
     }
 
     // Check #general
-    const genChan = guild.channels.find(
+    const genChan = guild.channels.cache.find(
       (c) => c.type === 'text' && c.name === 'general',
     );
     if (genChan && checkFunction(genChan)) return new QChannel(genChan);
 
     // Iterate over all channels and find the first best one
-    const firstBest = guild.channels.find(
+    const firstBest = guild.channels.cache.find(
       (c) => c.type === 'text' && checkFunction(c),
     );
     if (firstBest) return new QChannel(firstBest);
