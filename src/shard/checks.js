@@ -16,33 +16,25 @@ export const isMod = async (author, qChannel) => {
     log("User isn't an owner and we can't check for more", qChannel);
     return false;
   }
-  return new Promise((resolve) => guild
-    .fetchMember(author)
-    .then((member) => {
-      // Are they an admin or have global management rights? (means they're a moderator)
-      let modRole = member.permissions
-        .toArray()
-        .find(
-          (perm) => perm === 'ADMINISTRATOR'
+  const guildMember = guild.member(author);
+  // Are they an admin or have global management rights? (means they're a moderator)
+  let modRole = guildMember.permissions
+    .toArray()
+    .find(
+      (perm) => perm === 'ADMINISTRATOR'
               || perm === 'MANAGE_GUILD'
               || perm === 'MANAGE_CHANNELS',
-        );
-      log(`User is some mod: ${!!modRole}`, qChannel);
-      // Now we can check if they have the appropriate role
-      if (!modRole) {
-        modRole = member.roles.find((role) => role.name === config.modRole);
-        log(
-          `User has the custom '${config.modRole}' role: ${!!modRole}`,
-          qChannel,
-        );
-      }
-      resolve(!!modRole);
-    })
-    .catch((err) => {
-      log(`Couldn't get info for ${author.username}`, qChannel);
-      log(err);
-      resolve(false);
-    }));
+    );
+  log(`User is some mod: ${!!modRole}`, qChannel);
+  // Now we can check if they have the appropriate role
+  if (!modRole) {
+    modRole = guildMember.roles.find((role) => role.name === config.modRole);
+    log(
+      `User has the custom '${config.modRole}' role: ${!!modRole}`,
+      qChannel,
+    );
+  }
+  return (!!modRole);
 };
 
 export const isDm = (author, qChannel) => qChannel.isDM;
