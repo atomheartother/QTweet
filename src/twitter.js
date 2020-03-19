@@ -2,7 +2,7 @@ import Twitter from 'twitter-lite';
 
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
-import { getUserIds, getUserSubs, updateUser } from './subs.js';
+import { getUserIds, getUserSubs, updateUser } from './subs';
 import Backup from './backup';
 import log from './log';
 
@@ -329,7 +329,7 @@ const streamData = async (tweet) => {
   if (subs.length === 0) return;
   const { embed, metadata } = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel }) => {
-    if (metadata.ping && flags.ping) {
+    if (metadata.ping && isSet(flags, 'ping')) {
       log('Pinging @everyone', qChannel);
       post(qChannel, '@everyone', 'message');
     }
