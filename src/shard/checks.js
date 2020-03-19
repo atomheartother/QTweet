@@ -2,7 +2,7 @@ import * as config from '../../config.json';
 import log from '../log';
 
 // Takes an author and returns whether or not they are an admin
-export const isAdmin = (author) => author.id === config.ownerID;
+export const isOwner = (author) => author.id === config.ownerID;
 
 // Takes an author. checks that they're able to perform mod-level commands
 export const isMod = async (author, qChannel) => {
