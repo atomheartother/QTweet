@@ -1,6 +1,6 @@
 import { getLang } from '../subs';
 import log from '../log';
-import { handleUserTimeline, handleTweetId } from './commands';
+import { handleUserTimeline, handleTweetId, handleAnnounce } from './commands';
 import { post, translated } from './post';
 import QChannel from './QChannel';
 import i18n from './i18n';
@@ -81,6 +81,7 @@ const commands = {
   start: handleStart,
   stop: handleStop,
   tweetId: handleTweetId,
+  announce: handleAnnounce,
 };
 
 export default ({ cmd, ...msg }) => {

@@ -69,6 +69,9 @@ export const login = async () => {
 
 export const user = () => dClient.user;
 
+// Check channel existence on this client
+export const hasChannel = (id) => !!dClient.channels.resolveID(id);
+
 export const getChannel = (id) => dClient.channels.resolve(id);
 
 export const getGuild = (id) => dClient.guilds.resolve(id);

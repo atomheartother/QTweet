@@ -12,8 +12,6 @@ import {
   translated as postTranslated,
 } from './post';
 import {
-  rm,
-  add,
   getUniqueChannels,
   getUserFromScreenName,
   rmChannel,
@@ -40,7 +38,7 @@ import {
 } from '../twitter';
 
 
-import { getGuild, getChannel } from './discord';
+import { hasChannel, getGuild, getChannel } from './discord';
 import i18n from './i18n';
 
 
@@ -361,11 +359,13 @@ const admin = (args, qChannel) => {
   }
 };
 
+export const handleAnnounce = ({ channels, msg }) => {
+  announcement(msg, channels.filter(({ channelId }) => hasChannel(channelId)));
+};
+
 const announce = async (args) => {
   const msg = args.join(' ');
-  const channels = await getUniqueChannels();
-  log(`Posting announcement to ${channels.length} channels`);
-  announcement(msg, channels);
+  cmd('announce', { msg });
 };
 
 const memberCount = async (_, qChannel) => {
@@ -506,13 +506,13 @@ export default {
   //   ],
   //   minArgs: 0,
   // },
-  // announce: {
-  //   function: announce,
-  //   checks: [
-  //     {
-  //       f: checks.isOwner,
-  //       badB: 'announceForAdmin',
-  //     },
-  //   ],
-  // },
+  announce: {
+    function: announce,
+    checks: [
+      {
+        f: checks.isOwner,
+        badB: 'announceForAdmin',
+      },
+    ],
+  },
 };
