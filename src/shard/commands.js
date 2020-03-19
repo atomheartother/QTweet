@@ -418,7 +418,7 @@ export default {
     function: start,
     checks: [
       {
-        f: checks.isMod,
+        f: checks.isChannelMod,
         badB: 'startForMods',
       },
     ],
@@ -428,7 +428,7 @@ export default {
     function: lang,
     checks: [
       {
-        f: checks.isMod,
+        f: checks.isServerMod,
         badB: 'langForMods',
       },
     ],
@@ -438,7 +438,7 @@ export default {
     function: stop,
     checks: [
       {
-        f: checks.isMod,
+        f: checks.isChannelMod,
         badB: 'stopForMods',
       },
     ],
@@ -453,7 +453,7 @@ export default {
   //   function: admin,
   //   checks: [
   //     {
-  //       f: checks.isAdmin,
+  //       f: checks.isOwner,
   //       badB: 'adminForAdmin',
   //     },
   //     {
@@ -477,7 +477,7 @@ export default {
     function: stopchannel,
     checks: [
       {
-        f: checks.isMod,
+        f: checks.isChannelMod,
         badB: 'stopForMods',
       },
     ],
@@ -491,7 +491,7 @@ export default {
   //   function: leaveGuild,
   //   checks: [
   //     {
-  //       f: checks.isAdmin,
+  //       f: checks.isOwner,
   //       badB: 'leaveForAdmin',
   //     },
   //   ],
@@ -501,7 +501,7 @@ export default {
   //   function: memberCount,
   //   checks: [
   //     {
-  //       f: checks.isAdmin,
+  //       f: checks.isOwner,
   //     },
   //   ],
   //   minArgs: 0,
@@ -510,7 +510,7 @@ export default {
   //   function: announce,
   //   checks: [
   //     {
-  //       f: checks.isAdmin,
+  //       f: checks.isOwner,
   //       badB: 'announceForAdmin',
   //     },
   //   ],
