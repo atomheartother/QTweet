@@ -41,7 +41,7 @@ const computeFormattedRow = async (elem, params, formatTitle, formatField) => {
 };
 
 export const formatGenericList = async (
-  qChannel,
+  { qc, lang },
   {
     data = defaults.data,
     formatTitle = defaults.formatTitle,
@@ -53,11 +53,15 @@ export const formatGenericList = async (
     params = {},
   } = {},
 ) => {
-  const lang = await getLang(qChannel.guildId());
   if (data.length === 0) {
-    postTranslated(qChannel, noElements);
+    return {
+      cmd: 'postTranslated',
+      qc,
+      trCode: noElements,
+    };
   }
   let page = 1;
+  const embeds = [];
   let embed = new Discord.MessageEmbed()
     .setColor(color)
     .setTitle(`${i18n(lang, objectName, { count: data.length })}:`)
@@ -80,7 +84,7 @@ export const formatGenericList = async (
     counter += 1;
     if (counter > 20) {
       page += 1;
-      postEmbed(qChannel, { embed });
+      embeds.push({ ...embed });
       embed = new Discord.MessageEmbed()
         .setColor(color)
         .setTitle(
@@ -91,8 +95,13 @@ export const formatGenericList = async (
     }
   }
   if (counter > 0) {
-    postEmbed(qChannel, { embed });
+    embeds.push({ ...embed });
   }
+  return {
+    cmd: 'postList',
+    embeds,
+    qc,
+  };
 };
 
 export const formatTwitterUserShort = (name) => `@${name} (https://twitter.com/${name})`;

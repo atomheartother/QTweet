@@ -17,7 +17,7 @@ const handlePost = async ({ qc, content, type }) => {
   post(qChannel, content, type);
 };
 
-const handlePostTranslated = ({ res: { qc, trCode, ...params } }) => {
+const handlePostTranslated = ({ qc, res: { trCode, ...params } }) => {
   const qChannel = QChannel.unserialize(qc);
   translated(qChannel, trCode, params);
 };
@@ -29,7 +29,7 @@ const formatScreenNames = async (qChannel, screenNames, lastName) => i18n(await 
   lastName,
 });
 
-const handleStart = async ({ res: { data, results }, msg: { qc, screenNames } }) => {
+const handleStart = async ({ qc, res: { data, results }, msg: { screenNames } }) => {
   const qChannel = QChannel.unserialize(qc);
   const screenNamesFinal = data.map(({
     screen_name: screenName,
@@ -56,7 +56,7 @@ const handleStart = async ({ res: { data, results }, msg: { qc, screenNames } })
   log(`Added ${addedObjectName}`, qChannel);
 };
 
-const handleStop = async ({ res: { data, subs }, msg: { qc } }) => {
+const handleStop = async ({ qc, res: { data, subs } }) => {
   const qChannel = QChannel.unserialize(qc);
   const screenNamesFinal = data.map(({ screen_name: screenName }) => `@${screenName}`);
   const lastName = screenNamesFinal.pop();
