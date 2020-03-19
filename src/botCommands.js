@@ -144,8 +144,9 @@ export const tweetId = async ({ qc, id }) => {
   const formattedPromise = formatTweet(t);
   const isQuoted = t.quoted_status && t.quoted_status.user;
   if (isQuoted) {
-    const quotedPromise = formatTweet(t.quoted_status);
-    return { isQuoted, formatted: await formattedPromise, quoted: await quotedPromise };
+    const quotedPromise = formatTweet(t.quoted_status, true);
+    const [formatted, quoted] = await Promise.all([formattedPromise, quotedPromise]);
+    return { isQuoted, formatted, quoted };
   }
   return { isQuoted, formatted: await formattedPromise };
 };
