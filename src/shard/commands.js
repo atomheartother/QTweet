@@ -6,16 +6,13 @@ import log from '../log';
 
 import * as checks from './checks';
 import {
-  message as postMessage,
   embed as postEmbed,
   announcement,
   translated as postTranslated,
 } from './post';
 import {
-  getUserFromScreenName,
   rmChannel,
   getChannelSubs,
-  getGuildSubs,
   setLang,
   getLang,
   rmGuild,
@@ -26,8 +23,6 @@ import { supportedLangs, profileURL } from '../../config.json';
 
 import {
   formatSubsList,
-  formatQChannel,
-  formatTwitterUser,
   formatLanguages,
 } from './format';
 
@@ -36,7 +31,7 @@ import {
 } from '../twitter';
 
 
-import { getGuild, getChannel } from './discord';
+import { getGuild } from './discord';
 import i18n from './i18n';
 
 
@@ -77,8 +72,9 @@ const argParse = (args) => {
 };
 
 export const handleUserTimeline = async ({
+  qc,
   res: tweets,
-  msg: { qc, screen_name: screenName },
+  msg: { screen_name: screenName },
 }) => {
   const qChannel = QChannel.unserialize(qc);
 
@@ -169,7 +165,7 @@ const tweet = async (args, qChannel, author) => {
   screenNames.forEach((screenName) => postTimeline(qChannel, screenName, count));
 };
 
-export const handleTweetId = async ({ res: { formatted, isQuoted, quoted }, msg: { id, qc } }) => {
+export const handleTweetId = async ({ qc, res: { formatted, isQuoted, quoted }, msg: { id } }) => {
   const qChannel = QChannel.unserialize(qc);
 
   const { embed } = formatted;
@@ -267,42 +263,6 @@ const list = async (args, qChannel) => {
   formatSubsList(qChannel, subs);
 };
 
-const channelInfo = async (args, qChannel) => {
-  const channelId = args.shift();
-  if (!channelId) {
-    postTranslated(qChannel, 'usage-admin-channel');
-    return;
-  }
-  let qc = null;
-  if (getChannel(channelId)) {
-    qc = QChannel.unserialize({ channelId, isDM: false });
-  } else {
-    qc = QChannel.unserialize({ channelId, isDM: true });
-  }
-  if (!qc || !(await qc.obj())) {
-    postTranslated(qChannel, 'adminInvalidId', { channelId });
-    return;
-  }
-  const info = await formatQChannel(qc);
-  postMessage(qChannel, info);
-  const subs = await getChannelSubs(qc.channelId, true);
-  formatSubsList(qChannel, subs);
-};
-
-const twitterInfo = async (args, qChannel) => {
-  const screenName = args.shift();
-  if (!screenName) {
-    postTranslated(qChannel, 'usage-admin-twitter');
-    return;
-  }
-  const user = await getUserFromScreenName(screenName);
-  if (!user) {
-    postTranslated(qChannel, 'adminInvalidTwitter', { screenName });
-    return;
-  }
-  formatTwitterUser(qChannel, user.twitterId);
-};
-
 const lang = async (args, qChannel) => {
   const verb = args.shift();
   switch (verb[0]) {
@@ -329,32 +289,8 @@ const lang = async (args, qChannel) => {
   }
 };
 
-const guildInfo = async (args, qChannel) => {
-  const gid = args.shift();
-  if (!gid) {
-    postTranslated(qChannel, 'usage-admin-guild');
-    return;
-  }
-  const subs = await getGuildSubs(gid);
-  formatSubsList(qChannel, subs);
-};
-
 const admin = (args, qChannel) => {
-  const verb = args.shift();
-  switch (verb[0]) {
-    case 'c':
-      channelInfo(args, qChannel);
-      return;
-    case 't':
-      twitterInfo(args, qChannel);
-      return;
-    case 'g':
-      guildInfo(args, qChannel);
-      return;
-    default: {
-      postTranslated(qChannel, 'invalidVerb', { verb });
-    }
-  }
+  cmd('admin', { args, qc: qChannel.serialize() });
 };
 
 export const handleAnnounce = async ({ channels, msg }) => {
@@ -423,20 +359,20 @@ export default {
     checks: [],
     minArgs: 0,
   },
-  // admin: {
-  //   function: admin,
-  //   checks: [
-  //     {
-  //       f: checks.isOwner,
-  //       badB: 'adminForAdmin',
-  //     },
-  //     {
-  //       f: checks.isDm,
-  //       badB: 'cmdInDms',
-  //     },
-  //   ],
-  //   minArgs: 1,
-  // },
+  admin: {
+    function: admin,
+    checks: [
+      {
+        f: checks.isOwner,
+        badB: 'adminForAdmin',
+      },
+      {
+        f: checks.isDm,
+        badB: 'cmdInDms',
+      },
+    ],
+    minArgs: 1,
+  },
   tweet: {
     function: tweet,
     checks: [],

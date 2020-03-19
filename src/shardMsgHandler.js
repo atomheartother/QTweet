@@ -24,7 +24,7 @@ export default async (shard, { cmd, ...msg }) => {
   const res = await commandFunction(msg);
   if (res) {
     shard.send({
-      cmd: res.cmd || cmd, msg, res,
+      cmd: res.cmd || cmd, qc: res.qc || msg.qc, msg, res,
     });
   }
 };
