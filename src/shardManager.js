@@ -5,8 +5,8 @@ let manager = null;
 export default manager = new ShardingManager('src/shard/bot.js', { token: process.env.DISCORD_TOKEN, execArgv: ['-r', 'esm'] });
 
 // Does one of our shard have this channel??? :O
-export const someoneHasChannel = async ({ channelId, isDm }) => {
-  if (!isDm) {
+export const someoneHasChannel = async ({ channelId, isDM }) => {
+  if (!isDM) {
     const res = await manager.broadcastEval(`!!this.channels.resolve("${channelId}")`);
     return res.indexOf(true) !== -1;
   }
