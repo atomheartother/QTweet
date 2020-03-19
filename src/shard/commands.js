@@ -12,7 +12,6 @@ import {
   translated as postTranslated,
 } from './post';
 import {
-  getUniqueChannels,
   getUserFromScreenName,
   rmChannel,
   getChannelSubs,
@@ -372,35 +371,6 @@ const announce = async (args) => {
   cmd('announce', { msg });
 };
 
-const memberCount = async (_, qChannel) => {
-  const channels = await getUniqueChannels();
-  const guildPromises = channels.map((c) => {
-    const qc = QChannel.unserialize(c);
-    if (qc.type === 'dm') return { dm: true, id: qc.channelId };
-    return qc.guild();
-  });
-  const guilds = await Promise.all(guildPromises);
-  const uniq = {};
-  let totalMembers = 0;
-  for (let i = 0; i < guilds.length; i += 1) {
-    if (guilds[i] && guilds[i].dm === true && uniq[guilds[i].id !== true]) {
-      uniq[guilds[i].id] = true;
-      totalMembers += 1;
-    }
-    if (guilds[i] && guilds[i].available) {
-      const members = guilds[i].members.array();
-      for (let j = 0; j < members.length; j += 1) {
-        const { user } = members[j];
-        if (uniq[user.id] !== true && user.bot === false) {
-          totalMembers += 1;
-          uniq[user.id] = true;
-        }
-      }
-    }
-  }
-  postMessage(qChannel, `${totalMembers} members across ${channels.length} guilds`);
-};
-
 const help = async (args, qChannel) => {
   const guildLang = await getLang(qChannel.guildId());
   const embed = new MessageEmbed()
@@ -497,15 +467,6 @@ export default {
   //     {
   //       f: checks.isOwner,
   //       badB: 'leaveForAdmin',
-  //     },
-  //   ],
-  //   minArgs: 0,
-  // },
-  // membercount: {
-  //   function: memberCount,
-  //   checks: [
-  //     {
-  //       f: checks.isOwner,
   //     },
   //   ],
   //   minArgs: 0,
