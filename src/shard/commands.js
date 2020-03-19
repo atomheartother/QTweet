@@ -34,11 +34,10 @@ import {
 
 import {
   formatTweet,
-  getError,
 } from '../twitter';
 
 
-import { hasChannel, getGuild, getChannel } from './discord';
+import { getGuild, getChannel } from './discord';
 import i18n from './i18n';
 
 
@@ -359,8 +358,13 @@ const admin = (args, qChannel) => {
   }
 };
 
-export const handleAnnounce = ({ channels, msg }) => {
-  announcement(msg, channels.filter(({ channelId }) => hasChannel(channelId)));
+export const handleAnnounce = async ({ channels, msg }) => {
+  const qChannelPromises = channels.map((channel) => {
+    const qc = QChannel.unserialize(channel);
+    return qc.obj();
+  });
+  const qChannelsObjs = await Promise.all(qChannelPromises);
+  announcement(msg, channels.filter((c, index) => !!qChannelsObjs[index]));
 };
 
 const announce = async (args) => {
