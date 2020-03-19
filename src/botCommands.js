@@ -2,8 +2,10 @@ import log from './log';
 import {
   userLookup, createStream, getError, showTweet, formatTweet,
 } from './twitter';
-import { rm, add, getUserIds as getAllSubs } from './subs';
-import { post } from './shardManager';
+import {
+  rm, add, getUserIds as getAllSubs, getUniqueChannels,
+} from './subs';
+import { post, postAnnouncement } from './shardManager';
 
 const handleTwitterError = (qc, code, msg, screenNames) => {
   if (code === 17 || code === 34) {
@@ -149,4 +151,9 @@ export const tweetId = async ({ qc, id }) => {
     return { isQuoted, formatted, quoted };
   }
   return { isQuoted, formatted: await formattedPromise };
+};
+
+export const announce = async ({ msg }) => {
+  const channels = await getUniqueChannels();
+  postAnnouncement(msg, channels);
 };

@@ -1,7 +1,9 @@
 import {
   userTimeline, createStream,
 } from './twitter';
-import { start, tweetId, stop } from './botCommands';
+import {
+  start, tweetId, stop, announce,
+} from './botCommands';
 import log from './log';
 
 const validCommands = {
@@ -10,6 +12,7 @@ const validCommands = {
   createStream,
   start,
   stop,
+  announce,
 };
 
 export default async (shard, { cmd, ...msg }) => {
