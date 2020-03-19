@@ -449,20 +449,20 @@ export default {
     checks: [],
     minArgs: 0,
   },
-  admin: {
-    function: admin,
-    checks: [
-      {
-        f: checks.isAdmin,
-        badB: 'adminForAdmin',
-      },
-      {
-        f: checks.isDm,
-        badB: 'cmdInDms',
-      },
-    ],
-    minArgs: 1,
-  },
+  // admin: {
+  //   function: admin,
+  //   checks: [
+  //     {
+  //       f: checks.isAdmin,
+  //       badB: 'adminForAdmin',
+  //     },
+  //     {
+  //       f: checks.isDm,
+  //       badB: 'cmdInDms',
+  //     },
+  //   ],
+  //   minArgs: 1,
+  // },
   tweet: {
     function: tweet,
     checks: [],
