@@ -140,7 +140,7 @@ const tweet = async (args, qChannel, author) => {
   }
   let screenNames = values.map((name) => getScreenName(name));
   if (flags.indexOf('force') !== -1) force = true;
-  const isMod = await checks.isMod(author, qChannel);
+  const isMod = await checks.isServerMod(author, qChannel);
   let count = options.count ? Number(options.count) : 1;
   if (!count || Number.isNaN(count)) {
     postTranslated(qChannel, 'countIsNaN', { count: options.count });
