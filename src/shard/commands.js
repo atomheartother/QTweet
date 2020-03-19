@@ -181,7 +181,7 @@ export const handleTweetId = async ({ res: { formatted, isQuoted, quoted }, msg:
   log(`Posting tweet ${id}`, qChannel);
 
   if (isQuoted) {
-    const { embed: quotedEmbed } = await formatTweet(quoted);
+    const { embed: quotedEmbed } = quoted;
     postEmbed(qChannel, quotedEmbed);
   }
 };
