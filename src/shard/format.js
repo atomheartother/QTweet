@@ -147,12 +147,9 @@ export const formatSubsList = async (qc, subs, lang) => formatGenericList({ qc, 
   objectName: 'subscriptions',
 });
 
-export const formatLanguages = async (qChannel, languagesList) => {
-  const lang = await getLang(qChannel.id);
-  formatGenericList(qChannel, {
-    data: languagesList,
-    formatTitle: (k) => (k === lang ? `[${k}]` : k),
-    formatField: (k) => i18n(k, 'languageCredit'),
-    objectName: 'languages',
-  });
-};
+export const formatLanguages = async (qc, languagesList, lang) => formatGenericList({ qc, lang }, {
+  data: languagesList,
+  formatTitle: (k) => (k === lang ? `[${k}]` : k),
+  formatField: (k) => i18n(k, 'languageCredit'),
+  objectName: 'languages',
+});
