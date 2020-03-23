@@ -3,7 +3,6 @@
 import Discord from 'discord.js';
 import * as config from '../../config.json';
 import { getUserSubs, getLang } from '../subs';
-import { embed as postEmbed, translated as postTranslated } from './post';
 import { isSet } from '../flags';
 import QChannel from './QChannel';
 import i18n from './i18n';
@@ -84,7 +83,7 @@ export const formatGenericList = async (
     counter += 1;
     if (counter > 20) {
       page += 1;
-      embeds.push({ ...embed });
+      embeds.push({ embed: { ...embed } });
       embed = new Discord.MessageEmbed()
         .setColor(color)
         .setTitle(
@@ -95,7 +94,7 @@ export const formatGenericList = async (
     }
   }
   if (counter > 0) {
-    embeds.push({ ...embed });
+    embeds.push({ embed: { ...embed } });
   }
   return {
     cmd: 'postList',
@@ -140,16 +139,13 @@ export const formatTwitterUser = async (qChannel, id) => {
   });
 };
 
-export const formatSubsList = async (qChannel, subs) => {
-  const lang = await getLang(qChannel.guildId());
-  formatGenericList(qChannel, {
-    data: subs,
-    formatTitle: ({ name }) => formatTwitterUserShort(name),
-    formatField: ({ twitterId, flags }) => `**${i18n(lang, 'id')}:** ${twitterId}\n${formatFlags(lang, flags)}`,
-    noElements: 'noSubscriptions',
-    objectName: 'subscriptions',
-  });
-};
+export const formatSubsList = async (qc, subs, lang) => formatGenericList({ qc, lang }, {
+  data: subs,
+  formatTitle: ({ name }) => formatTwitterUserShort(name),
+  formatField: ({ twitterId, flags }) => `**${i18n(lang, 'id')}:** ${twitterId}\n${formatFlags(lang, flags)}`,
+  noElements: 'noSubscriptions',
+  objectName: 'subscriptions',
+});
 
 export const formatLanguages = async (qChannel, languagesList) => {
   const lang = await getLang(qChannel.id);
