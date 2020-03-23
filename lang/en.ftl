@@ -56,11 +56,6 @@ usage-stopchannel =
 
 usage-list = Print a list of this channel's subscriptions.
 
-usage-admin = {-usage}: `{-pr}admin <channel|twitter|guild>`
-usage-admin-channel = {-usage}: `{-pr}admin c <channel_id>`
-usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
-usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
-
 usage-lang = 
   List available languages or change the language.
   Read the docs if you want to help translate me in your language!

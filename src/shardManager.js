@@ -1,4 +1,5 @@
 import { ShardingManager } from 'discord.js';
+import log from './log';
 
 let manager = null;
 
@@ -11,6 +12,15 @@ export const someoneHasChannel = async ({ channelId, isDM }) => {
     return res.indexOf(true) !== -1;
   }
   return true;
+};
+
+// Send a message to all shards, telling them to post it to every channel they can
+export const postAnnouncement = (msg, channels) => {
+  manager.broadcast({
+    cmd: 'announce',
+    msg,
+    channels,
+  });
 };
 
 // Send a message to shards and let them figure out which shard should get it

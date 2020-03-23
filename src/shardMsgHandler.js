@@ -1,7 +1,9 @@
 import {
   userTimeline, createStream,
 } from './twitter';
-import { start, tweetId, stop } from './botCommands';
+import {
+  start, tweetId, stop, announce,
+} from './botCommands';
 import log from './log';
 
 const validCommands = {
@@ -10,6 +12,7 @@ const validCommands = {
   createStream,
   start,
   stop,
+  announce,
 };
 
 export default async (shard, { cmd, ...msg }) => {
@@ -21,7 +24,7 @@ export default async (shard, { cmd, ...msg }) => {
   const res = await commandFunction(msg);
   if (res) {
     shard.send({
-      cmd: res.cmd || cmd, msg, res,
+      cmd: res.cmd || cmd, qc: res.qc || msg.qc, msg, res,
     });
   }
 };
