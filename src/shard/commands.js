@@ -259,8 +259,8 @@ const stopchannel = async (args, qChannel) => {
 
 const list = async (args, qChannel) => {
   const gid = await qChannel.guildId();
-  const [subs, lang] = await Promise.all([getChannelSubs(qChannel.id, true), getLang(gid)]);
-  const { cmd: command, ...data } = await formatSubsList(qChannel.serialize(), subs, lang);
+  const [subs, lan] = await Promise.all([getChannelSubs(qChannel.id, true), getLang(gid)]);
+  const { cmd: command, ...data } = await formatSubsList(qChannel.serialize(), subs, lan);
   if (command === 'postList') {
     const { embeds } = data;
     postEmbeds(qChannel, embeds);
@@ -273,9 +273,13 @@ const list = async (args, qChannel) => {
 const lang = async (args, qChannel) => {
   const verb = args.shift();
   switch (verb[0]) {
-    case 'l':
-      formatLanguages(qChannel, supportedLangs);
+    case 'l': {
+      const gid = await qChannel.guildId();
+      const language = await getLang(gid);
+      const { embeds } = await formatLanguages(qChannel.serialize(), supportedLangs, language);
+      postEmbeds(qChannel, embeds);
       break;
+    }
     case 's': {
       const language = args.shift();
       if (!language) {
