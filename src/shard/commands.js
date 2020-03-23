@@ -7,6 +7,7 @@ import log from '../log';
 import * as checks from './checks';
 import {
   embed as postEmbed,
+  embeds as postEmbeds,
   announcement,
   translated as postTranslated,
 } from './post';
@@ -102,17 +103,15 @@ export const handleUserTimeline = async ({
     log(tweets, qChannel);
     return;
   }
-  const formattedTweets = await Promise.all(validTweets.map(formatTweet));
-  // Ignore errors to get a count of successful posts
-  const results = await Promise.all(formattedTweets.map(({
-    embed,
-  }) => postEmbed(qChannel, embed).catch((err) => err)));
-  const successCount = results.reduce((acc, res) => {
-    if (Number.isNaN(res)) return acc;
-    return res === 0 ? acc + 1 : acc;
-  }, 0);
+  const formattedTweets = await Promise.all(validTweets.map((t) => formatTweet(t, false)));
+  const { successful, err } = await postEmbeds(qChannel, formattedTweets.map(({ embed }) => embed));
+  if (err) {
+    log(`Error posting tweet ${successful + 1} / ${validTweets.length} from ${screenName}`, qChannel);
+    log(err);
+    return;
+  }
   log(
-    `Posted latest ${successCount}/${validTweets.length} tweet(s) from ${screenName}`,
+    `Posted latest ${successful} tweet(s) from ${screenName}`,
     qChannel,
   );
 };
@@ -132,7 +131,7 @@ const tweet = async (args, qChannel, author) => {
   }
   let screenNames = values.map((name) => getScreenName(name));
   if (flags.indexOf('force') !== -1) force = true;
-  const isMod = await checks.isServerMod(author, qChannel);
+  const isMod = await checks.isChannelMod(author, qChannel);
   let count = options.count ? Number(options.count) : 1;
   if (!count || Number.isNaN(count)) {
     postTranslated(qChannel, 'countIsNaN', { count: options.count });
