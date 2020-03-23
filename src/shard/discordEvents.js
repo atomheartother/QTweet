@@ -13,7 +13,7 @@ import {
   message as postMessage,
   translated as postTranslatedMessage,
 } from './post';
-import { createStream, destroyStream } from './shardedTwitter';
+import { createStream, destroyStream } from './master';
 import commands from './commands';
 import { user, login } from './discord';
 import i18n from './i18n';
