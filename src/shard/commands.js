@@ -1,24 +1,19 @@
 import { MessageEmbed } from 'discord.js';
 import {
   cmd,
-} from './shardedTwitter';
+} from './master';
 import log from '../log';
 
 import * as checks from './checks';
 import {
-  message as postMessage,
   embed as postEmbed,
+  embeds as postEmbeds,
   announcement,
   translated as postTranslated,
 } from './post';
 import {
-  rm,
-  add,
-  getUniqueChannels,
-  getUserFromScreenName,
   rmChannel,
   getChannelSubs,
-  getGuildSubs,
   setLang,
   getLang,
   rmGuild,
@@ -29,18 +24,15 @@ import { supportedLangs, profileURL } from '../../config.json';
 
 import {
   formatSubsList,
-  formatQChannel,
-  formatTwitterUser,
   formatLanguages,
 } from './format';
 
 import {
   formatTweet,
-  getError,
 } from '../twitter';
 
 
-import { getGuild, getChannel } from './discord';
+import { getGuild } from './discord';
 import i18n from './i18n';
 
 
@@ -81,8 +73,9 @@ const argParse = (args) => {
 };
 
 export const handleUserTimeline = async ({
+  qc,
   res: tweets,
-  msg: { qc, screen_name: screenName },
+  msg: { screen_name: screenName },
 }) => {
   const qChannel = QChannel.unserialize(qc);
 
@@ -110,17 +103,15 @@ export const handleUserTimeline = async ({
     log(tweets, qChannel);
     return;
   }
-  const formattedTweets = await Promise.all(validTweets.map(formatTweet));
-  // Ignore errors to get a count of successful posts
-  const results = await Promise.all(formattedTweets.map(({
-    embed,
-  }) => postEmbed(qChannel, embed).catch((err) => err)));
-  const successCount = results.reduce((acc, res) => {
-    if (Number.isNaN(res)) return acc;
-    return res === 0 ? acc + 1 : acc;
-  }, 0);
+  const formattedTweets = await Promise.all(validTweets.map((t) => formatTweet(t, false)));
+  const { successful, err } = await postEmbeds(qChannel, formattedTweets.map(({ embed }) => embed));
+  if (err) {
+    log(`Error posting tweet ${successful + 1} / ${validTweets.length} from ${screenName}`, qChannel);
+    log(err);
+    return;
+  }
   log(
-    `Posted latest ${successCount}/${validTweets.length} tweet(s) from ${screenName}`,
+    `Posted latest ${successful} tweet(s) from ${screenName}`,
     qChannel,
   );
 };
@@ -140,7 +131,7 @@ const tweet = async (args, qChannel, author) => {
   }
   let screenNames = values.map((name) => getScreenName(name));
   if (flags.indexOf('force') !== -1) force = true;
-  const isMod = await checks.isServerMod(author, qChannel);
+  const isMod = await checks.isChannelMod(author, qChannel);
   let count = options.count ? Number(options.count) : 1;
   if (!count || Number.isNaN(count)) {
     postTranslated(qChannel, 'countIsNaN', { count: options.count });
@@ -173,7 +164,7 @@ const tweet = async (args, qChannel, author) => {
   screenNames.forEach((screenName) => postTimeline(qChannel, screenName, count));
 };
 
-export const handleTweetId = async ({ res: { formatted, isQuoted, quoted }, msg: { id, qc } }) => {
+export const handleTweetId = async ({ qc, res: { formatted, isQuoted, quoted }, msg: { id } }) => {
   const qChannel = QChannel.unserialize(qc);
 
   const { embed } = formatted;
@@ -267,52 +258,28 @@ const stopchannel = async (args, qChannel) => {
 };
 
 const list = async (args, qChannel) => {
-  const subs = await getChannelSubs(qChannel.id, true);
-  formatSubsList(qChannel, subs);
-};
-
-const channelInfo = async (args, qChannel) => {
-  const channelId = args.shift();
-  if (!channelId) {
-    postTranslated(qChannel, 'usage-admin-channel');
-    return;
-  }
-  let qc = null;
-  if (getChannel(channelId)) {
-    qc = QChannel.unserialize({ channelId, isDM: false });
+  const gid = await qChannel.guildId();
+  const [subs, lan] = await Promise.all([getChannelSubs(qChannel.id, true), getLang(gid)]);
+  const { cmd: command, ...data } = await formatSubsList(qChannel.serialize(), subs, lan);
+  if (command === 'postList') {
+    const { embeds } = data;
+    postEmbeds(qChannel, embeds);
   } else {
-    qc = QChannel.unserialize({ channelId, isDM: true });
+    const { trCode, ...options } = data;
+    postTranslated(qChannel, trCode, options);
   }
-  if (!qc || !(await qc.obj())) {
-    postTranslated(qChannel, 'adminInvalidId', { channelId });
-    return;
-  }
-  const info = await formatQChannel(qc);
-  postMessage(qChannel, info);
-  const subs = await getChannelSubs(qc.channelId, true);
-  formatSubsList(qChannel, subs);
-};
-
-const twitterInfo = async (args, qChannel) => {
-  const screenName = args.shift();
-  if (!screenName) {
-    postTranslated(qChannel, 'usage-admin-twitter');
-    return;
-  }
-  const user = await getUserFromScreenName(screenName);
-  if (!user) {
-    postTranslated(qChannel, 'adminInvalidTwitter', { screenName });
-    return;
-  }
-  formatTwitterUser(qChannel, user.twitterId);
 };
 
 const lang = async (args, qChannel) => {
   const verb = args.shift();
   switch (verb[0]) {
-    case 'l':
-      formatLanguages(qChannel, supportedLangs);
+    case 'l': {
+      const gid = await qChannel.guildId();
+      const language = await getLang(gid);
+      const { embeds } = await formatLanguages(qChannel.serialize(), supportedLangs, language);
+      postEmbeds(qChannel, embeds);
       break;
+    }
     case 's': {
       const language = args.shift();
       if (!language) {
@@ -333,68 +300,18 @@ const lang = async (args, qChannel) => {
   }
 };
 
-const guildInfo = async (args, qChannel) => {
-  const gid = args.shift();
-  if (!gid) {
-    postTranslated(qChannel, 'usage-admin-guild');
-    return;
-  }
-  const subs = await getGuildSubs(gid);
-  formatSubsList(qChannel, subs);
-};
-
-const admin = (args, qChannel) => {
-  const verb = args.shift();
-  switch (verb[0]) {
-    case 'c':
-      channelInfo(args, qChannel);
-      return;
-    case 't':
-      twitterInfo(args, qChannel);
-      return;
-    case 'g':
-      guildInfo(args, qChannel);
-      return;
-    default: {
-      postTranslated(qChannel, 'invalidVerb', { verb });
-    }
-  }
+export const handleAnnounce = async ({ channels, msg }) => {
+  const qChannelPromises = channels.map((channel) => {
+    const qc = QChannel.unserialize(channel);
+    return qc.obj();
+  });
+  const qChannelsObjs = await Promise.all(qChannelPromises);
+  announcement(msg, channels.filter((c, index) => !!qChannelsObjs[index]));
 };
 
 const announce = async (args) => {
   const msg = args.join(' ');
-  const channels = await getUniqueChannels();
-  log(`Posting announcement to ${channels.length} channels`);
-  announcement(msg, channels);
-};
-
-const memberCount = async (_, qChannel) => {
-  const channels = await getUniqueChannels();
-  const guildPromises = channels.map((c) => {
-    const qc = QChannel.unserialize(c);
-    if (qc.type === 'dm') return { dm: true, id: qc.channelId };
-    return qc.guild();
-  });
-  const guilds = await Promise.all(guildPromises);
-  const uniq = {};
-  let totalMembers = 0;
-  for (let i = 0; i < guilds.length; i += 1) {
-    if (guilds[i] && guilds[i].dm === true && uniq[guilds[i].id !== true]) {
-      uniq[guilds[i].id] = true;
-      totalMembers += 1;
-    }
-    if (guilds[i] && guilds[i].available) {
-      const members = guilds[i].members.array();
-      for (let j = 0; j < members.length; j += 1) {
-        const { user } = members[j];
-        if (uniq[user.id] !== true && user.bot === false) {
-          totalMembers += 1;
-          uniq[user.id] = true;
-        }
-      }
-    }
-  }
-  postMessage(qChannel, `${totalMembers} members across ${channels.length} guilds`);
+  cmd('announce', { msg });
 };
 
 const help = async (args, qChannel) => {
@@ -449,20 +366,6 @@ export default {
     checks: [],
     minArgs: 0,
   },
-  // admin: {
-  //   function: admin,
-  //   checks: [
-  //     {
-  //       f: checks.isOwner,
-  //       badB: 'adminForAdmin',
-  //     },
-  //     {
-  //       f: checks.isDm,
-  //       badB: 'cmdInDms',
-  //     },
-  //   ],
-  //   minArgs: 1,
-  // },
   tweet: {
     function: tweet,
     checks: [],
@@ -487,32 +390,13 @@ export default {
     checks: [],
     minArgs: 0,
   },
-  // leaveguild: {
-  //   function: leaveGuild,
-  //   checks: [
-  //     {
-  //       f: checks.isOwner,
-  //       badB: 'leaveForAdmin',
-  //     },
-  //   ],
-  //   minArgs: 0,
-  // },
-  // membercount: {
-  //   function: memberCount,
-  //   checks: [
-  //     {
-  //       f: checks.isOwner,
-  //     },
-  //   ],
-  //   minArgs: 0,
-  // },
-  // announce: {
-  //   function: announce,
-  //   checks: [
-  //     {
-  //       f: checks.isOwner,
-  //       badB: 'announceForAdmin',
-  //     },
-  //   ],
-  // },
+  announce: {
+    function: announce,
+    checks: [
+      {
+        f: checks.isOwner,
+        badB: 'announceForAdmin',
+      },
+    ],
+  },
 };

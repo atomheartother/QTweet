@@ -2,14 +2,15 @@ import log from './log';
 import {
   userLookup, createStream, getError, showTweet, formatTweet,
 } from './twitter';
-import { rm, add, getUserIds as getAllSubs } from './subs';
-import { post } from './shardManager';
+import {
+  rm, add, getUserIds as getAllSubs, getUniqueChannels,
+} from './subs';
+import { post, postAnnouncement } from './shardManager';
 
 const handleTwitterError = (qc, code, msg, screenNames) => {
   if (code === 17 || code === 34) {
     return {
       cmd: 'postTranslated',
-      qc,
       trCode: 'noSuchTwitterUser',
       count: screenNames.length,
       name: screenNames.toString(),
@@ -19,21 +20,18 @@ const handleTwitterError = (qc, code, msg, screenNames) => {
     log('Exceeded user lookup limit');
     return {
       cmd: 'postTranslated',
-      qc,
       trCode: 'tooManyUsersRequested',
 
     };
   } if (code === 144) {
     return {
       cmd: 'postTranslated',
-      qc,
       trCode: 'noSuchTwitterId',
     };
   }
   log(`Unknown twitter error: ${code} ${msg}`);
   return {
     cmd: 'postTranslated',
-    qc,
     trCode: 'twitterUnknwnError',
   };
 };
@@ -61,7 +59,6 @@ export const start = async ({ qc, flags, screenNames }) => {
       log(res);
       return {
         cmd: 'postTranslated',
-        qc,
         trCode: 'startGeneralError',
         namesCount: screenNames.length,
       };
@@ -106,7 +103,6 @@ export const stop = async ({ qc, screenNames }) => {
       log(response);
       return {
         cmd: 'postTranslated',
-        qc,
         trCode: 'getInfoGeneralError',
         namesCount: screenNames.length,
       };
@@ -136,7 +132,7 @@ export const tweetId = async ({ qc, id }) => {
     if (!code) {
       log('Exception thrown without error');
       return {
-        cmd: 'postTranslated', qc, trCode: 'tweetIdGeneralError', id,
+        cmd: 'postTranslated', trCode: 'tweetIdGeneralError', id,
       };
     }
     return handleTwitterError(qc, code, msg, [id]);
@@ -149,4 +145,9 @@ export const tweetId = async ({ qc, id }) => {
     return { isQuoted, formatted, quoted };
   }
   return { isQuoted, formatted: await formattedPromise };
+};
+
+export const announce = async ({ msg }) => {
+  const channels = await getUniqueChannels();
+  postAnnouncement(msg, channels);
 };

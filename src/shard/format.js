@@ -3,7 +3,6 @@
 import Discord from 'discord.js';
 import * as config from '../../config.json';
 import { getUserSubs, getLang } from '../subs';
-import { embed as postEmbed, translated as postTranslated } from './post';
 import { isSet } from '../flags';
 import QChannel from './QChannel';
 import i18n from './i18n';
@@ -41,7 +40,7 @@ const computeFormattedRow = async (elem, params, formatTitle, formatField) => {
 };
 
 export const formatGenericList = async (
-  qChannel,
+  { qc, lang },
   {
     data = defaults.data,
     formatTitle = defaults.formatTitle,
@@ -53,11 +52,15 @@ export const formatGenericList = async (
     params = {},
   } = {},
 ) => {
-  const lang = await getLang(qChannel.guildId());
   if (data.length === 0) {
-    postTranslated(qChannel, noElements);
+    return {
+      cmd: 'postTranslated',
+      qc,
+      trCode: noElements,
+    };
   }
   let page = 1;
+  const embeds = [];
   let embed = new Discord.MessageEmbed()
     .setColor(color)
     .setTitle(`${i18n(lang, objectName, { count: data.length })}:`)
@@ -80,7 +83,7 @@ export const formatGenericList = async (
     counter += 1;
     if (counter > 20) {
       page += 1;
-      postEmbed(qChannel, { embed });
+      embeds.push({ embed: { ...embed } });
       embed = new Discord.MessageEmbed()
         .setColor(color)
         .setTitle(
@@ -91,8 +94,13 @@ export const formatGenericList = async (
     }
   }
   if (counter > 0) {
-    postEmbed(qChannel, { embed });
+    embeds.push({ embed: { ...embed } });
   }
+  return {
+    cmd: 'postList',
+    embeds,
+    qc,
+  };
 };
 
 export const formatTwitterUserShort = (name) => `@${name} (https://twitter.com/${name})`;
@@ -131,23 +139,17 @@ export const formatTwitterUser = async (qChannel, id) => {
   });
 };
 
-export const formatSubsList = async (qChannel, subs) => {
-  const lang = await getLang(qChannel.guildId());
-  formatGenericList(qChannel, {
-    data: subs,
-    formatTitle: ({ name }) => formatTwitterUserShort(name),
-    formatField: ({ twitterId, flags }) => `**${i18n(lang, 'id')}:** ${twitterId}\n${formatFlags(lang, flags)}`,
-    noElements: 'noSubscriptions',
-    objectName: 'subscriptions',
-  });
-};
+export const formatSubsList = async (qc, subs, lang) => formatGenericList({ qc, lang }, {
+  data: subs,
+  formatTitle: ({ name }) => formatTwitterUserShort(name),
+  formatField: ({ twitterId, flags }) => `**${i18n(lang, 'id')}:** ${twitterId}\n${formatFlags(lang, flags)}`,
+  noElements: 'noSubscriptions',
+  objectName: 'subscriptions',
+});
 
-export const formatLanguages = async (qChannel, languagesList) => {
-  const lang = await getLang(qChannel.id);
-  formatGenericList(qChannel, {
-    data: languagesList,
-    formatTitle: (k) => (k === lang ? `[${k}]` : k),
-    formatField: (k) => i18n(k, 'languageCredit'),
-    objectName: 'languages',
-  });
-};
+export const formatLanguages = async (qc, languagesList, lang) => formatGenericList({ qc, lang }, {
+  data: languagesList,
+  formatTitle: (k) => (k === lang ? `[${k}]` : k),
+  formatField: (k) => i18n(k, 'languageCredit'),
+  objectName: 'languages',
+});

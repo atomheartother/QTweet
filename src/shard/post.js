@@ -149,6 +149,19 @@ export const post = async (qChannel, content, type) => {
 
 export const embed = async (qChannel, content) => post(qChannel, content, 'embed');
 
+export const embeds = async (qChannel, arr) => {
+  let successful = 0;
+  for (let i = 0; i < arr.length; i += 1) {
+    const content = arr[i];
+    // We have to do this for embeds to post in order
+    // eslint-disable-next-line no-await-in-loop
+    const errorCode = await embed(qChannel, content);
+    if (errorCode !== 0) return { err: errorCode, successful };
+    successful += 1;
+  }
+  return { err: null, successful };
+};
+
 export const message = async (qChannel, content) => post(qChannel, content, 'message');
 
 export const translated = async (qChannel, key, options = {}) => message(qChannel,

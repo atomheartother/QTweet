@@ -44,11 +44,6 @@ usage-stopchannel =
 
 usage-list = Affiche la liste de vos abonnements pour ce salon.
 
-usage-admin = {-usage}: `{-pr}admin <channel|twitter|guild>`
-usage-admin-channel = {-usage}: `{-pr}admin c <id_salon>`
-usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
-usage-admin-guild = {-usage}: `{-pr}admin g <id_guilde>`
-
 usage-lang = {-usage}: `{-pr}lang [list|set <langage>]`
 usage-lang-set = {-usage}: `{-pr}lang set <langage>`
 
