@@ -54,11 +54,6 @@ usage-stopchannel =
 
 usage-list = Post een lijst van de accounts die je op dit moment in dit channel volgt.
 
-usage-admin = {-usage}: `{-pr}admin <channel|twitter|guild>`
-usage-admin-channel = {-usage}: `{-pr}admin c <channel_id>`
-usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
-usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
-
 usage-lang = {-usage}: `{-pr}lang [list|set <language>]`
 usage-lang-set = {-usage}: `{-pr}lang set <language>`
 

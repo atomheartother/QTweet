@@ -56,11 +56,6 @@ usage-stopchannel =
 
 usage-list = Показать список подписок этого канала.
 
-usage-admin = {-usage}: `{-pr}admin <channel|twitter|guild>`
-usage-admin-channel = {-usage}: `{-pr}admin c <channel_id>`
-usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
-usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
-
 usage-lang = 
   Показывает список доступных языков или изменяет язык.
   Прочитайте документы, если хотите помочь перевести меня на свой язык!

@@ -54,11 +54,6 @@ usage-stopchannel =
 
 usage-list = Afișarea listei cu abonamentele acestui canal.
 
-usage-admin = {-usage}: `{-pr}admin <channel|twitter|guild>`
-usage-admin-channel = {-usage}: `{-pr}admin c <id-ul canalului>`
-usage-admin-twitter = {-usage}: `{-pr}admin t <{-screen-name-variable}>`
-usage-admin-guild = {-usage}: `{-pr}admin g <guild_id>`
-
 usage-lang = {-usage}: `{-pr}lang [list|set <limba>]`
 usage-lang-set = {-usage}: `{-pr}lang set <limba>`
 
