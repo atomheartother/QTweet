@@ -258,8 +258,16 @@ const stopchannel = async (args, qChannel) => {
 };
 
 const list = async (args, qChannel) => {
-  const subs = await getChannelSubs(qChannel.id, true);
-  formatSubsList(qChannel, subs);
+  const gid = await qChannel.guildId();
+  const [subs, lang] = await Promise.all([getChannelSubs(qChannel.id, true), getLang(gid)]);
+  const { cmd: command, ...data } = await formatSubsList(qChannel.serialize(), subs, lang);
+  if (command === 'postList') {
+    const { embeds } = data;
+    postEmbeds(qChannel, embeds);
+  } else {
+    const { trCode, ...options } = data;
+    postTranslated(qChannel, trCode, options);
+  }
 };
 
 const lang = async (args, qChannel) => {
