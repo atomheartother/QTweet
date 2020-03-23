@@ -1,7 +1,7 @@
 import { MessageEmbed } from 'discord.js';
 import {
   cmd,
-} from './shardedTwitter';
+} from './master';
 import log from '../log';
 
 import * as checks from './checks';
