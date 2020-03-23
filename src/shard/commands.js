@@ -300,10 +300,6 @@ const lang = async (args, qChannel) => {
   }
 };
 
-const admin = (args, qChannel) => {
-  cmd('admin', { args, qc: qChannel.serialize() });
-};
-
 export const handleAnnounce = async ({ channels, msg }) => {
   const qChannelPromises = channels.map((channel) => {
     const qc = QChannel.unserialize(channel);
@@ -370,20 +366,6 @@ export default {
     checks: [],
     minArgs: 0,
   },
-  admin: {
-    function: admin,
-    checks: [
-      {
-        f: checks.isOwner,
-        badB: 'adminForAdmin',
-      },
-      {
-        f: checks.isDm,
-        badB: 'cmdInDms',
-      },
-    ],
-    minArgs: 1,
-  },
   tweet: {
     function: tweet,
     checks: [],
@@ -408,16 +390,6 @@ export default {
     checks: [],
     minArgs: 0,
   },
-  // leaveguild: {
-  //   function: leaveGuild,
-  //   checks: [
-  //     {
-  //       f: checks.isOwner,
-  //       badB: 'leaveForAdmin',
-  //     },
-  //   ],
-  //   minArgs: 0,
-  // },
   announce: {
     function: announce,
     checks: [
