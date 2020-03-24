@@ -22,4 +22,4 @@ COPY --from=langbuilder /lang/*.o.ftl lang/
 
 RUN yarn build
 
-CMD [ "node", "-r", "esm", "dist/index.js"]
+CMD [ "yarn", "start" ]

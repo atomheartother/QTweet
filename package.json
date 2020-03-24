@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "tsc",
+    "start": "node -r esm dist/index.js",
     "lint": "yarn eslint src/* --fix"
   },
   "author": "Thomas Navennec",
