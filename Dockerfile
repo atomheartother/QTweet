@@ -20,4 +20,6 @@ COPY . .
 # Copy generated language files
 COPY --from=langbuilder /lang/*.o.ftl lang/
 
-CMD [ "node", "-r", "esm", "src/index.js"]
+RUN yarn build
+
+CMD [ "node", "-r", "esm", "dist/index.js"]
