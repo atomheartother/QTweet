@@ -104,7 +104,7 @@ export const handleUserTimeline = async ({
     return;
   }
   const formattedTweets = await Promise.all(validTweets.map((t) => formatTweet(t, false)));
-  const { successful, err } = await postEmbeds(qChannel, formattedTweets.map(({ embed }) => embed));
+  const { successful, err } = await postEmbeds(qChannel, formattedTweets.map(({ embed }) => embed).reverse());
   if (err) {
     log(`Error posting tweet ${successful + 1} / ${validTweets.length} from ${screenName}`, qChannel);
     log(err);
