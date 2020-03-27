@@ -14,11 +14,9 @@ COPY . .
 
 ARG BOT_NAME
 ARG PREFIX
-RUN echo "Bot name: $BOT_NAME. Prefix: $PREFIX"
 
 # Build the language files
 RUN for file in ./lang/*.ftl; do f=${file%.ftl}; cat $file | envsubst '$BOT_NAME:$PREFIX' > $f.o.ftl; echo "Built $f.o.ftl "; done
 
-EXPOSE 8080
 
-CMD [ "yarn", "start" ]
+CMD [ "node", "-r", "esm", "src/index.js"]
