@@ -16,7 +16,6 @@ import {
   getChannelSubs,
   setLang,
   getLang,
-  rmGuild,
   getGuildInfo,
 } from '../subs';
 import { compute as computeFlags } from '../flags';
@@ -32,8 +31,6 @@ import {
   formatTweet,
 } from '../twitter';
 
-
-import { getGuild } from './discord';
 import i18n from './i18n';
 
 
@@ -105,7 +102,10 @@ export const handleUserTimeline = async ({
     return;
   }
   const formattedTweets = await Promise.all(validTweets.map((t) => formatTweet(t, false)));
-  const { successful, err } = await postEmbeds(qChannel, formattedTweets.map(({ embed }) => embed).reverse());
+  const {
+    successful,
+    err,
+  } = await postEmbeds(qChannel, formattedTweets.map(({ embed }) => embed).reverse());
   if (err) {
     log(`Error posting tweet ${successful + 1} / ${validTweets.length} from ${screenName}`, qChannel);
     log(err);
@@ -194,32 +194,6 @@ const start = async (args, qChannel) => {
   const ownerId = await qChannel.ownerId();
   const guildId = await qChannel.guildId();
   cmd('start', { screenNames, flags, qc: { ...qChannel.serialize(), ownerId, guildId } });
-};
-
-const leaveGuild = async (args, qChannel) => {
-  let guild = null;
-  if (args.length >= 1 && qChannel.isDM) {
-    guild = getGuild(args[0]);
-  } else if (!qChannel.isDM) {
-    guild = await qChannel.guild();
-  } else {
-    postTranslated(qChannel, 'noValidGid');
-    return;
-  }
-  if (guild === undefined) {
-    postTranslated(qChannel, 'guildNotFound', { guild: args[0] });
-    return;
-  }
-  // Leave the guild
-  try {
-    const g = await guild.leave();
-    const { channels, users } = await rmGuild(g.id);
-    log(`Left the guild ${g.name} (${g.id}). Deleted ${channels} channels, ${users} users.`);
-    if (qChannel.isDM) postTranslated(qChannel, 'leaveSuccess', { name: guild.name });
-  } catch (err) {
-    log('Could not leave guild', qChannel);
-    log(err);
-  }
 };
 
 const stop = async (args, qChannel) => {
