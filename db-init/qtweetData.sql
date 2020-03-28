@@ -5,8 +5,8 @@ CREATE TABLE twitterUsers (
 
 CREATE TABLE guilds (
     "guildId"     BIGINT PRIMARY KEY,
-    "prefix"      text NOT NULL DEFAULT '${PREFIX}',
-    "lang"        text NOT NULL DEFAULT '${DEFAULT_LANG}'
+    "prefix"      text DEFAULT NULL,
+    "lang"        text DEFAULT NULL
 );
 
 CREATE TABLE channels (
