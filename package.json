@@ -4,7 +4,6 @@
   "description": "A cute bot who cross-posts twitter posts to Discord",
   "main": "src/index.js",
   "scripts": {
-    "start": "node -r esm src/index.js",
     "lint": "yarn eslint src/* --fix"
   },
   "author": "Thomas Navennec",
