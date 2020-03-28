@@ -37,6 +37,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       DEFAULT_LANG: ${DEFAULT_LANG}
+      PREFIX: ${PREFIX}
 
 volumes:
   pgdata:
