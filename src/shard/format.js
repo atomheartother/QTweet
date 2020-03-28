@@ -2,9 +2,7 @@
 
 import Discord from 'discord.js';
 import * as config from '../../config.json';
-import { getUserSubs, getLang } from '../subs';
 import { isSet } from '../flags';
-import QChannel from './QChannel';
 import i18n from './i18n';
 
 const defaults = {
@@ -15,22 +13,6 @@ const defaults = {
   noElements: 'genericEmptyList',
   objectName: 'genericObjects',
   color: 0x0e7675,
-};
-
-export const formatQChannel = async (qChannel) => {
-  const obj = await qChannel.obj();
-  let res = `**${await qChannel.formattedName()}**\n`;
-  if (qChannel.isDM) {
-    res += `**ID:** ${qChannel.id}\n`;
-    res += `**CID:** ${obj.id}`;
-  } else {
-    const owner = await qChannel.owner();
-    const guild = await qChannel.guild();
-    res += `**ID:** ${qChannel.id}\n`;
-    res += `**Own:** ${owner.recipient.tag} (${owner.recipient.id})\n`;
-    res += `**Gld:** ${guild.name} (${guild.id}), ${guild.memberCount} members`;
-  }
-  return res;
 };
 
 const computeFormattedRow = async (elem, params, formatTitle, formatField) => {
@@ -111,33 +93,6 @@ export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
   noquote: isSet(flags, 'noquote'),
   ping: isSet(flags, 'ping'),
 });
-
-export const formatTwitterUser = async (qChannel, id) => {
-  const subs = await getUserSubs(id);
-  const lang = await getLang(qChannel.guildId());
-  const subsWithQchannels = [];
-  for (let i = 0; i < subs.length; i += 1) {
-    const { channelId, flags, isDM } = subs[i];
-    subsWithQchannels.push({
-      flags,
-      qChannel: QChannel.unserialize({ channelId, isDM }),
-    });
-  }
-  formatGenericList(qChannel, {
-    data: subsWithQchannels,
-    formatTitle: async ({ qChannel: qc }) => qc.name(),
-    formatField: async ({ flags, qChannel: qc }) => `**${i18n(lang, 'id')}:** ${qc.id}\n**${i18n(
-      lang,
-      'type',
-    )}:** ${i18n(lang, qChannel.isDM ? 'dm' : 'serv')}\n${
-      qChannel.isDM
-        ? ''
-        : `**Gld:** ${qChannel.guildId()}\n**Own:** ${qChannel.ownerId()}\n`
-    }${formatFlags(lang, flags)}`,
-    noElements: 'noUserSubscriptions',
-    objectName: 'subscriptions',
-  });
-};
 
 export const formatSubsList = async (qc, subs, lang) => formatGenericList({ qc, lang }, {
   data: subs,
