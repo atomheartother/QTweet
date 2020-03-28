@@ -214,9 +214,6 @@ leaveForAdmin =
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Cette commande n'est autorisée que dans les MPs.
-adminForAdmin = 
-  {-b}{-botOwnerCmd}{-b}
-  Cette commande accède aux données d'autres serveurs donc seul mon propriétaire peut l'utiliser!
 stopForMods = 
   {-b}{-notAuthorized}{-b}
   Seul·e un·e modérateur·trice peut me désabonner d'un compte twitter!

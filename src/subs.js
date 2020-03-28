@@ -22,8 +22,8 @@ import {
   createGuild,
   rmGuild as SQLrmGuild,
   sanityCheck as dbSanityCheck,
+  setPrefix as SQLsetPrefix,
 } from './postgres';
-import * as config from '../config.json';
 import log from './log';
 import { someoneHasChannel } from './shardManager';
 
@@ -54,6 +54,8 @@ export const addUser = SQLaddUser;
 export const getUserInfo = SQLgetUserInfo;
 
 export const setLang = SQLsetLang;
+
+export const setPrefix = SQLsetPrefix;
 
 export const addUserIfNoExists = async (twitterId, name) => addUser(twitterId, name);
 

@@ -17,6 +17,7 @@ import {
   setLang,
   getLang,
   getGuildInfo,
+  setPrefix,
 } from '../subs';
 import { compute as computeFlags } from '../flags';
 import QChannel from './QChannel';
@@ -245,7 +246,7 @@ const list = async (args, qChannel) => {
   }
 };
 
-const lang = async (args, qChannel) => {
+const setLangCmd = async (args, qChannel) => {
   const verb = args.shift();
   switch (verb[0]) {
     case 'l': {
@@ -273,6 +274,12 @@ const lang = async (args, qChannel) => {
     default:
       postTranslated(qChannel, 'invalidVerb', { verb });
   }
+};
+
+const setPrefixCmd = async (args, qChannel) => {
+  const prefix = args.shift();
+  setPrefix(await qChannel.guildId(), prefix);
+  postTranslated(qChannel, 'prefixSuccess', { prefix });
 };
 
 export const handleAnnounce = async ({ channels, msg }) => {
@@ -317,7 +324,7 @@ export default {
     minArgs: 1,
   },
   lang: {
-    function: lang,
+    function: setLangCmd,
     checks: [
       {
         f: checks.isServerMod,
@@ -325,6 +332,15 @@ export default {
       },
     ],
     minArgs: 1,
+  },
+  qtprefix: {
+    function: setPrefixCmd,
+    checks: [
+      {
+        f: checks.isServerMod,
+        badB: 'prefixForMods',
+      },
+    ],
   },
   stop: {
     function: stop,
