@@ -25,6 +25,7 @@ const langs = {};
     log(`Loaded language: ${lang}`);
   });
 }
+
 const i18n = (lang, key, options) => {
   const bundle = langs[lang];
   if (!bundle) {
