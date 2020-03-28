@@ -17,6 +17,10 @@ const shardReady = async () => {
   await sanityCheck();
 };
 
+process.on('beforeExit', (code) => {
+  log(`Main thread exiting with code ${code}`);
+});
+
 const start = async () => {
   manager.on('shardCreate', (shard) => {
     log(`⚙️ Launched shard ${shard.id}...`);
