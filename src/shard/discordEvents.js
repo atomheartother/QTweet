@@ -66,7 +66,7 @@ export const handleMessage = async (message) => {
     return;
   }
   const args = message.content
-    .slice(process.env.PREFIX.length)
+    .slice(prefix.length)
     .trim()
     .split(/ +/g);
 

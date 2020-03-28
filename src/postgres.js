@@ -220,6 +220,16 @@ export const getLang = async (guildId) => {
   return lang;
 };
 
+export const setPrefix = async (guildId, prefix) => {
+  const { rows: [{ case: inserted }] } = await pool.query(`INSERT INTO guilds("guildId", "prefix")
+  VALUES($1, $2)
+  ON CONFLICT("guildId") DO
+    UPDATE SET "prefix"=$2
+  RETURNING case when xmax::text::int > 0 then 0 else 1 end`,
+  [guildId, prefix]);
+  return inserted;
+};
+
 export const getGuildInfo = async (guildId) => {
   const { rows: [data] } = await pool.query('SELECT lang, prefix FROM guilds WHERE "guildId"=$1 LIMIT 1', [guildId]);
   return data;

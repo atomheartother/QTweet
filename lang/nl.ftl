@@ -224,9 +224,6 @@ leaveForAdmin =
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Dit commando werkt alleen in privé gesprekken.
-adminForAdmin = 
-  {-b}{-botOwnerCmd}{-b}
-  Dit commando gebruikt data van andere servers, alleen mijn eigenaar mag het dus gebruiken!
 stopForMods = 
   {-b}{-notAuthorized}{-b}
   Alleen mods kunnen het volgen van een account stopzetten!

@@ -179,6 +179,10 @@ langSuccess =
   {-b}Language changed successfully{-b}
   Welcome to the magical world of english!
 
+prefixSuccess =
+  {-b}Prefix changed successfully{-b}
+  You'll now have to use {$prefix} for me to understand you!
+
 ## !!admin
 adminInvalidId = I couldn't build a valid channel object with id: {$channelId}
 
@@ -230,9 +234,6 @@ leaveForAdmin =
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   This command is only allowed in DMs.
-adminForAdmin = 
-  {-b}{-botOwnerCmd}{-b}
-  This command accesses other servers' data so only my owner can use it!
 stopForMods = 
   {-b}{-notAuthorized}{-b}
   Only moderators can unsubscribe from a twitter account!
@@ -241,8 +242,10 @@ startForMods =
   To subscribe to a twitter account you need to be a moderator or have the proper role!
 langForMods =
   {-b}{-notAuthorized}{-b}
-  Only moderators can perform language commands!
-
+  Only server-level moderators can perform language commands!
+prefixForMods = 
+  {-b}{-notAuthorized}{-b}
+  Only server-level moderators can change the prefix!
 ### Lists
 genericEmptyList = List is empty, nothing to display.
 
