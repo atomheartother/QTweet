@@ -17,6 +17,7 @@ import {
   setLang,
   getLang,
   rmGuild,
+  getGuildInfo,
 } from '../subs';
 import { compute as computeFlags } from '../flags';
 import QChannel from './QChannel';
@@ -315,18 +316,18 @@ const announce = async (args) => {
 };
 
 const help = async (args, qChannel) => {
-  const guildLang = await getLang(qChannel.guildId());
+  const { lang: language, prefix } = await getGuildInfo(qChannel.guildId());
   const embed = new MessageEmbed()
     .setColor(0x0e7675)
-    .setTitle(i18n(guildLang, 'helpHeader'))
+    .setTitle(i18n(language, 'helpHeader'))
     .setURL(profileURL)
-    .setDescription(i18n(guildLang, 'helpIntro'))
-    .addField(`${process.env.PREFIX}tweet`, i18n(guildLang, 'usage-tweet'))
-    .addField(`${process.env.PREFIX}start`, i18n(guildLang, 'usage-start'))
-    .addField(`${process.env.PREFIX}stop`, i18n(guildLang, 'usage-stop'))
-    .addField(`${process.env.PREFIX}lang`, i18n(guildLang, 'usage-lang'))
-    .addField(`${process.env.PREFIX}list`, i18n(guildLang, 'usage-list'))
-    .setFooter(i18n(guildLang, 'helpFooter', { artist: 'ryusukehamamoto' }));
+    .setDescription(i18n(language, 'helpIntro'))
+    .addField(`${prefix}tweet`, i18n(language, 'usage-tweet'))
+    .addField(`${prefix}start`, i18n(language, 'usage-start'))
+    .addField(`${prefix}stop`, i18n(language, 'usage-stop'))
+    .addField(`${prefix}lang`, i18n(language, 'usage-lang'))
+    .addField(`${prefix}list`, i18n(language, 'usage-list'))
+    .setFooter(i18n(language, 'helpFooter', { artist: 'ryusukehamamoto' }));
   postEmbed(qChannel, { embed });
 };
 

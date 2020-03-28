@@ -3,7 +3,7 @@ import { fortune } from 'fortune-teller';
 
 // Config file
 import {
-  rmChannel, rmGuild, getLang,
+  rmChannel, rmGuild, getGuildInfo,
 } from '../subs';
 import QChannel from './QChannel';
 
@@ -49,8 +49,11 @@ export const handleMessage = async (message) => {
   // Ignore bots
   if (message.author.bot) return;
   const { author, channel } = message;
-
-  if (message.content.indexOf(process.env.PREFIX) !== 0) {
+  const qc = new QChannel(channel);
+  const { lang, prefix } = await getGuildInfo(await qc.guildId());
+  console.log(lang, prefix);
+  // In case anything goes wrong with the db prefix, still use the old prefix as backup!
+  if (message.content.indexOf(prefix) !== 0) {
     if (
       !!message.mentions
       && !!message.mentions.members
@@ -58,8 +61,6 @@ export const handleMessage = async (message) => {
     ) {
       message.reply(fortune());
     } else if (message.channel.type === 'dm') {
-      const qc = new QChannel(channel);
-      const lang = await getLang(qc.guildId());
       postMessage(qc, i18n(lang, 'welcomeMessage'));
     }
     return;
@@ -70,7 +71,6 @@ export const handleMessage = async (message) => {
     .split(/ +/g);
 
   const command = args.shift().toLowerCase();
-  const qc = new QChannel(channel);
   handleCommand(command, author, qc, args);
 };
 

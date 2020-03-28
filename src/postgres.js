@@ -219,3 +219,8 @@ export const getLang = async (guildId) => {
   const { rows: [lang] } = await pool.query('SELECT "lang" FROM guilds WHERE "guildId"=$1', [guildId]);
   return lang;
 };
+
+export const getGuildInfo = async (guildId) => {
+  const { rows: [data] } = await pool.query('SELECT lang, prefix FROM guilds WHERE "guildId"=$1 LIMIT 1', [guildId]);
+  return data;
+};

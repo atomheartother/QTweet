@@ -13,7 +13,7 @@ import {
   removeSubscription,
   getUserInfo as SQLgetUserInfo,
   addChannel,
-  getAllSubs,
+  getGuildInfo as SQLgetGuildInfo,
   addUser as SQLaddUser,
   init as initDb,
   close as closeDb,
@@ -120,9 +120,16 @@ export const rmUser = async (twitterId) => {
   return { users, channels };
 };
 
+export const getGuildInfo = async (guildId) => {
+  const data = await SQLgetGuildInfo(guildId);
+  const prefix = (data && data.prefix) || process.env.PREFIX;
+  const lang = (data && data.lang) || process.env.DEFAULT_LANG;
+  return { prefix, lang };
+};
+
 export const getLang = async (guildId) => {
   const guild = await SQLgetLang(guildId);
-  return guild ? guild.lang : config.defaultLang;
+  return guild ? guild.lang : process.env.DEFAULT_LANG;
 };
 
 // Remove a subscription
