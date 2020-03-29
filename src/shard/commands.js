@@ -16,7 +16,8 @@ import {
   getChannelSubs,
   setLang,
   getLang,
-  rmGuild,
+  getGuildInfo,
+  setPrefix,
 } from '../subs';
 import { compute as computeFlags } from '../flags';
 import QChannel from './QChannel';
@@ -31,8 +32,6 @@ import {
   formatTweet,
 } from '../twitter';
 
-
-import { getGuild } from './discord';
 import i18n from './i18n';
 
 
@@ -104,7 +103,10 @@ export const handleUserTimeline = async ({
     return;
   }
   const formattedTweets = await Promise.all(validTweets.map((t) => formatTweet(t, false)));
-  const { successful, err } = await postEmbeds(qChannel, formattedTweets.map(({ embed }) => embed).reverse());
+  const {
+    successful,
+    err,
+  } = await postEmbeds(qChannel, formattedTweets.map(({ embed }) => embed).reverse());
   if (err) {
     log(`Error posting tweet ${successful + 1} / ${validTweets.length} from ${screenName}`, qChannel);
     log(err);
@@ -195,32 +197,6 @@ const start = async (args, qChannel) => {
   cmd('start', { screenNames, flags, qc: { ...qChannel.serialize(), ownerId, guildId } });
 };
 
-const leaveGuild = async (args, qChannel) => {
-  let guild = null;
-  if (args.length >= 1 && qChannel.isDM) {
-    guild = getGuild(args[0]);
-  } else if (!qChannel.isDM) {
-    guild = await qChannel.guild();
-  } else {
-    postTranslated(qChannel, 'noValidGid');
-    return;
-  }
-  if (guild === undefined) {
-    postTranslated(qChannel, 'guildNotFound', { guild: args[0] });
-    return;
-  }
-  // Leave the guild
-  try {
-    const g = await guild.leave();
-    const { channels, users } = await rmGuild(g.id);
-    log(`Left the guild ${g.name} (${g.id}). Deleted ${channels} channels, ${users} users.`);
-    if (qChannel.isDM) postTranslated(qChannel, 'leaveSuccess', { name: guild.name });
-  } catch (err) {
-    log('Could not leave guild', qChannel);
-    log(err);
-  }
-};
-
 const stop = async (args, qChannel) => {
   const { values } = argParse(args);
   const screenNames = values.map(getScreenName);
@@ -270,7 +246,7 @@ const list = async (args, qChannel) => {
   }
 };
 
-const lang = async (args, qChannel) => {
+const setLangCmd = async (args, qChannel) => {
   const verb = args.shift();
   switch (verb[0]) {
     case 'l': {
@@ -300,6 +276,12 @@ const lang = async (args, qChannel) => {
   }
 };
 
+const setPrefixCmd = async (args, qChannel) => {
+  const prefix = args.shift();
+  setPrefix(await qChannel.guildId(), prefix);
+  postTranslated(qChannel, 'prefixSuccess', { prefix });
+};
+
 export const handleAnnounce = async ({ channels, msg }) => {
   const qChannelPromises = channels.map((channel) => {
     const qc = QChannel.unserialize(channel);
@@ -315,18 +297,18 @@ const announce = async (args) => {
 };
 
 const help = async (args, qChannel) => {
-  const guildLang = await getLang(qChannel.guildId());
+  const { lang: language, prefix } = await getGuildInfo(qChannel.guildId());
   const embed = new MessageEmbed()
     .setColor(0x0e7675)
-    .setTitle(i18n(guildLang, 'helpHeader'))
+    .setTitle(i18n(language, 'helpHeader'))
     .setURL(profileURL)
-    .setDescription(i18n(guildLang, 'helpIntro'))
-    .addField(`${process.env.PREFIX}tweet`, i18n(guildLang, 'usage-tweet'))
-    .addField(`${process.env.PREFIX}start`, i18n(guildLang, 'usage-start'))
-    .addField(`${process.env.PREFIX}stop`, i18n(guildLang, 'usage-stop'))
-    .addField(`${process.env.PREFIX}lang`, i18n(guildLang, 'usage-lang'))
-    .addField(`${process.env.PREFIX}list`, i18n(guildLang, 'usage-list'))
-    .setFooter(i18n(guildLang, 'helpFooter', { artist: 'ryusukehamamoto' }));
+    .setDescription(i18n(language, 'helpIntro'))
+    .addField(`${prefix}tweet`, i18n(language, 'usage-tweet'))
+    .addField(`${prefix}start`, i18n(language, 'usage-start'))
+    .addField(`${prefix}stop`, i18n(language, 'usage-stop'))
+    .addField(`${prefix}lang`, i18n(language, 'usage-lang'))
+    .addField(`${prefix}list`, i18n(language, 'usage-list'))
+    .setFooter(i18n(language, 'helpFooter', { artist: 'ryusukehamamoto' }));
   postEmbed(qChannel, { embed });
 };
 
@@ -342,7 +324,7 @@ export default {
     minArgs: 1,
   },
   lang: {
-    function: lang,
+    function: setLangCmd,
     checks: [
       {
         f: checks.isServerMod,
@@ -350,6 +332,15 @@ export default {
       },
     ],
     minArgs: 1,
+  },
+  qtprefix: {
+    function: setPrefixCmd,
+    checks: [
+      {
+        f: checks.isServerMod,
+        badB: 'prefixForMods',
+      },
+    ],
   },
   stop: {
     function: stop,
