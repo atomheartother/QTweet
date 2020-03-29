@@ -341,6 +341,7 @@ export default {
         badB: 'prefixForMods',
       },
     ],
+    minArgs: 1,
   },
   stop: {
     function: stop,
