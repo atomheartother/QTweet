@@ -51,7 +51,6 @@ export const handleMessage = async (message) => {
   const { author, channel } = message;
   const qc = new QChannel(channel);
   const { lang, prefix } = await getGuildInfo(await qc.guildId());
-  console.log(lang, prefix);
   // In case anything goes wrong with the db prefix, still use the old prefix as backup!
   if (message.content.indexOf(prefix) !== 0) {
     if (
