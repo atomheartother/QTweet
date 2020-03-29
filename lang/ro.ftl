@@ -225,9 +225,6 @@ leaveForAdmin =
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Această comandă este permisă doar în DMs.
-adminForAdmin = 
-  {-b}{-botOwnerCmd}{-b}
-  Această comandă accesează datele altor servere, așa că numai proprietarul meu o poate folosi!
 stopForMods = 
   {-b}{-notAuthorized}{-b}
   Doar moderatorii pot anula un abonament!

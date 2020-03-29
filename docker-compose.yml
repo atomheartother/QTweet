@@ -22,6 +22,7 @@ services:
       TWITTER_ACCESS_TOKEN_SECRET: ${TWITTER_ACCESS_TOKEN_SECRET}
       DBL_TOKEN: ${DBL_TOKEN}
       PREFIX: ${PREFIX}
+      DEFAULT_LANG: ${DEFAULT_LANG}
       BOT_NAME: ${BOT_NAME}
     depends_on:
       - postgres
@@ -36,7 +37,6 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      DEFAULT_LANG: ${DEFAULT_LANG}
 
 volumes:
   pgdata:

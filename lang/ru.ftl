@@ -230,9 +230,6 @@ leaveForAdmin =
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Эта команда разрешена только в DMs.
-adminForAdmin = 
-  {-b}{-botOwnerCmd}{-b}
-  Эта команда обращается к данным других серверов, так что только мой владелец может использовать его!
 stopForMods = 
   {-b}{-notAuthorized}{-b}
   Только модераторы могут отказаться от подписки на аккаунт twitter!
