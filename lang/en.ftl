@@ -59,8 +59,13 @@ usage-list = Print a list of this channel's subscriptions.
 usage-lang = 
   List available languages or change the language.
   Read the docs if you want to help translate me in your language!
-  {-usage}: `{-pr}lang [list] [set <language>]`
+  {-b}{-usage}{-b}: `{-pr}lang [list] [set <language>]`
 usage-lang-set = {-usage}: `{-pr}lang set <language>`
+
+usage-qtprefix =
+  Change the prefix to use to interact with me.
+  You need to be a **server-wide** mod to do this!
+  {-b}{-usage}{-b}: `{-pr}qtprefix <new_prefix>`
 
 ### Command feedback
 -error-apology = I'm on it, sorry for the trouble!
