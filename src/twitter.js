@@ -29,9 +29,10 @@ const tClient = new Twitter({
 const reconnectionDelay = new Backup({
   mode: 'exponential',
   startValue: 2000,
-  inc: 4,
   maxValue: Number(process.env.TWITTER_MAX_RECONNECT_DELAY) || 240000,
 });
+
+let reconnectionTimeoutID = null;
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
 const hasMedia = ({
@@ -352,8 +353,11 @@ const streamEnd = () => {
   log(
     `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`,
   );
+  if (reconnectionTimeoutID) {
+    clearTimeout(reconnectionTimeoutID);
+  }
   // eslint-disable-next-line no-use-before-define
-  setTimeout(createStream, reconnectionDelay.value());
+  reconnectionTimeoutID = setTimeout(createStreamClearTimeout, reconnectionDelay.value());
   reconnectionDelay.increment();
 };
 
@@ -370,8 +374,11 @@ const streamError = ({ url, status, statusText }) => {
   log(
     `Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
   );
+  if (reconnectionTimeoutID) {
+    clearTimeout(reconnectionTimeoutID);
+  }
   // eslint-disable-next-line no-use-before-define
-  setTimeout(createStream, delay);
+  reconnectionTimeoutID = setTimeout(createStreamClearTimeout, delay);
 };
 
 export const getError = (response) => {
@@ -382,6 +389,10 @@ export const getError = (response) => {
 // Register the stream with twitter, unregistering the previous stream if there was one
 // Uses the users variable
 export const createStream = async () => {
+  if (reconnectionTimeoutID) {
+    log('Got a new stream request but we\'re already waiting for a reconnection...');
+    return null;
+  }
   if (!stream) {
     stream = new Stream(
       tClient,
@@ -400,6 +411,11 @@ export const createStream = async () => {
   }
   stream.create(userIds.map(({ twitterId }) => twitterId));
   return null;
+};
+
+const createStreamClearTimeout = () => {
+  reconnectionTimeoutID = null;
+  createStream();
 };
 
 export const destroyStream = () => {
