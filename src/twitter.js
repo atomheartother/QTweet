@@ -29,6 +29,7 @@ const tClient = new Twitter({
 const reconnectionDelay = new Backup({
   mode: 'exponential',
   startValue: 2000,
+  inc: 4,
   maxValue: Number(process.env.TWITTER_MAX_RECONNECT_DELAY) || 240000,
 });
 

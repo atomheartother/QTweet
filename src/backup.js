@@ -3,7 +3,7 @@ class Backup {
     mode = 'exponential',
     inc = 2,
     startValue = 0,
-    maxValue = -1,
+    maxValue = 0,
   } = {}) {
     this.mode = mode;
     this.inc = inc;
@@ -21,17 +21,15 @@ class Backup {
   }
 
   increment() {
-    if (this.maxValue >= 0 && this.val < this.maxValue) {
-      switch (this.mode) {
-        case 'linear':
-          this.val += this.inc;
-          break;
-        default:
-          this.val *= this.inc;
-      }
-      if (this.val > this.maxValue) {
-        this.val = this.maxValue;
-      }
+    switch (this.mode) {
+      case 'linear':
+        this.val += this.inc;
+        break;
+      default:
+        this.val *= this.inc;
+    }
+    if (this.maxValue > 0 && this.val > this.maxValue) {
+      this.val = this.maxValue;
     }
   }
 
