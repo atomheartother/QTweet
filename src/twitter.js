@@ -14,19 +14,6 @@ let stream = null;
 let twitterTimeout = null;
 const twitterTimeoutDelay = Number(process.env.TWEETS_TIMEOUT);
 
-function resetTwitterTimeout() {
-  if (twitterTimeoutDelay <= 0) return;
-  if (twitterTimeout !== null) {
-    clearTimeout(twitterTimeout);
-  }
-  twitterTimeout = setTimeout(() => {
-    log(`${twitterTimeoutDelay}min without tweets, resetting stream...`);
-    twitterTimeout = null;
-    // eslint-disable-next-line no-use-before-define
-    createStream();
-  }, twitterTimeoutDelay * 60 * 1000);
-}
-
 const colors = Object.freeze({
   text: 0x69b2d6,
   video: 0x67d67d,
@@ -48,6 +35,25 @@ const reconnectionDelay = new Backup({
 });
 
 let reconnectionTimeoutID = null;
+
+function resetTwitterTimeout() {
+  if (twitterTimeoutDelay <= 0) return;
+  if (twitterTimeout !== null) {
+    clearTimeout(twitterTimeout);
+  }
+  log(`Setting timeout for ${twitterTimeoutDelay * 60 * 1000}ms`);
+  twitterTimeout = setTimeout(() => {
+    twitterTimeout = null;
+    log(`❌ ${twitterTimeoutDelay}min without tweets, resetting stream...`);
+    if (reconnectionTimeoutID) {
+      log('❌ We\'re already in reconnection mode, abort timeout system');
+      return;
+    }
+    stream.disconnected();
+    // eslint-disable-next-line no-use-before-define
+    createStream();
+  }, twitterTimeoutDelay * 60 * 1000);
+}
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
 const hasMedia = ({
@@ -371,7 +377,7 @@ const streamEnd = () => {
   // The backup exponential algorithm will take care of reconnecting
   stream.disconnected();
   log(
-    `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`,
+    `❌ We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`,
   );
   if (reconnectionTimeoutID) {
     clearTimeout(reconnectionTimeoutID);
@@ -392,7 +398,7 @@ const streamError = ({ url, status, statusText }) => {
   const delay = reconnectionDelay.value();
   reconnectionDelay.increment();
   log(
-    `Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
+    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
   );
   if (reconnectionTimeoutID) {
     clearTimeout(reconnectionTimeoutID);
