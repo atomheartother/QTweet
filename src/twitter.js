@@ -41,7 +41,6 @@ function resetTwitterTimeout() {
   if (twitterTimeout !== null) {
     clearTimeout(twitterTimeout);
   }
-  log(`Setting timeout for ${twitterTimeoutDelay * 1000}ms`);
   twitterTimeout = setTimeout(() => {
     twitterTimeout = null;
     log(`❌ ${twitterTimeoutDelay}min without tweets, resetting stream...`);
