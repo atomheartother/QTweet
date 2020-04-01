@@ -41,7 +41,7 @@ function resetTwitterTimeout() {
   if (twitterTimeout !== null) {
     clearTimeout(twitterTimeout);
   }
-  log(`Setting timeout for ${twitterTimeoutDelay * 60 * 1000}ms`);
+  log(`Setting timeout for ${twitterTimeoutDelay * 1000}ms`);
   twitterTimeout = setTimeout(() => {
     twitterTimeout = null;
     log(`❌ ${twitterTimeoutDelay}min without tweets, resetting stream...`);
@@ -52,7 +52,7 @@ function resetTwitterTimeout() {
     stream.disconnected();
     // eslint-disable-next-line no-use-before-define
     createStream();
-  }, twitterTimeoutDelay * 60 * 1000);
+  }, twitterTimeoutDelay * 1000);
 }
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
@@ -344,7 +344,7 @@ export const getFilteredSubs = async (tweet) => {
 const streamStart = () => {
   log('✅ Stream successfully started');
   if (twitterTimeoutDelay > 0) {
-    log(`Will reconnect if inactive for ${twitterTimeoutDelay}min`);
+    log(`Will reconnect if inactive for ${twitterTimeoutDelay}s`);
   }
   resetTwitterTimeout();
   reconnectionDelay.reset();
