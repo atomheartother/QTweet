@@ -217,7 +217,7 @@ const stopchannel = async (args, qChannel) => {
     }
     const guild = await qChannel.guild();
     [targetChannel] = args;
-    const channelObj = guild.channels.find((c) => c.id === targetChannel);
+    const channelObj = guild.channels.cache.find((c) => c.id === targetChannel);
     if (!channelObj) {
       postTranslated(qChannel, 'noSuchChannel', { targetChannel });
       return;
