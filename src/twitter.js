@@ -21,6 +21,7 @@ function resetTwitterTimeout() {
   }
   twitterTimeout = setTimeout(() => {
     log(`${twitterTimeoutDelay}min without tweets, resetting stream...`);
+    twitterTimeout = null;
     // eslint-disable-next-line no-use-before-define
     createStream();
   }, twitterTimeoutDelay * 60 * 1000);
