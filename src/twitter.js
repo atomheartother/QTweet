@@ -11,6 +11,20 @@ import Stream from './twitterStream';
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
+let twitterTimeout = null;
+const twitterTimeoutDelay = Number(process.env.TWEETS_TIMEOUT);
+
+function resetTwitterTimeout() {
+  if (twitterTimeoutDelay <= 0) return;
+  if (twitterTimeout !== null) {
+    clearTimeout(twitterTimeout);
+  }
+  twitterTimeout = setTimeout(() => {
+    log(`${twitterTimeoutDelay}min without tweets, resetting stream...`);
+    // eslint-disable-next-line no-use-before-define
+    createStream();
+  }, twitterTimeoutDelay * 60 * 1000);
+}
 
 const colors = Object.freeze({
   text: 0x69b2d6,
@@ -322,11 +336,16 @@ export const getFilteredSubs = async (tweet) => {
 // Reset our reconnection delay
 const streamStart = () => {
   log('✅ Stream successfully started');
+  if (twitterTimeoutDelay > 0) {
+    log(`Will reconnect if inactive for ${twitterTimeoutDelay}min`);
+  }
+  resetTwitterTimeout();
   reconnectionDelay.reset();
 };
 
 // Called when we receive data
 const streamData = async (tweet) => {
+  resetTwitterTimeout();
   const subs = await getFilteredSubs(tweet);
   if (subs.length === 0) return;
   const { embed, metadata } = await formatTweet(tweet);
