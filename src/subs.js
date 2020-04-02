@@ -137,7 +137,6 @@ export const getLang = async (guildId) => {
 // Remove a subscription
 // If this user doesn't have any more subs, delete it as well
 export const rm = async (channelId, twitterId) => {
-  log(`Got rm request for ${channelId}, ${twitterId}`);
   const subs = await removeSubscription(channelId, twitterId);
   const { channels, users } = await dbSanityCheck();
   return { subs, channels, users };

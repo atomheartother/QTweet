@@ -11,6 +11,8 @@ import Stream from './twitterStream';
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
+let twitterTimeout = null;
+const twitterTimeoutDelay = Number(process.env.TWEETS_TIMEOUT);
 
 const colors = Object.freeze({
   text: 0x69b2d6,
@@ -33,6 +35,24 @@ const reconnectionDelay = new Backup({
 });
 
 let reconnectionTimeoutID = null;
+
+function resetTwitterTimeout() {
+  if (twitterTimeoutDelay <= 0) return;
+  if (twitterTimeout !== null) {
+    clearTimeout(twitterTimeout);
+  }
+  twitterTimeout = setTimeout(() => {
+    twitterTimeout = null;
+    log(`❌ ${twitterTimeoutDelay}s without tweets, resetting stream...`);
+    if (reconnectionTimeoutID) {
+      log('❌ We\'re already in reconnection mode, abort timeout system');
+      return;
+    }
+    stream.disconnected();
+    // eslint-disable-next-line no-use-before-define
+    createStream();
+  }, twitterTimeoutDelay * 1000);
+}
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
 const hasMedia = ({
@@ -322,11 +342,16 @@ export const getFilteredSubs = async (tweet) => {
 // Reset our reconnection delay
 const streamStart = () => {
   log('✅ Stream successfully started');
+  if (twitterTimeoutDelay > 0) {
+    log(`Will reconnect if inactive for ${twitterTimeoutDelay}s`);
+  }
+  resetTwitterTimeout();
   reconnectionDelay.reset();
 };
 
 // Called when we receive data
 const streamData = async (tweet) => {
+  resetTwitterTimeout();
   const subs = await getFilteredSubs(tweet);
   if (subs.length === 0) return;
   const { embed, metadata } = await formatTweet(tweet);
@@ -351,7 +376,7 @@ const streamEnd = () => {
   // The backup exponential algorithm will take care of reconnecting
   stream.disconnected();
   log(
-    `: We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`,
+    `❌ We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`,
   );
   if (reconnectionTimeoutID) {
     clearTimeout(reconnectionTimeoutID);
@@ -372,7 +397,7 @@ const streamError = ({ url, status, statusText }) => {
   const delay = reconnectionDelay.value();
   reconnectionDelay.increment();
   log(
-    `Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
+    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
   );
   if (reconnectionTimeoutID) {
     clearTimeout(reconnectionTimeoutID);
