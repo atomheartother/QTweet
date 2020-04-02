@@ -43,7 +43,7 @@ function resetTwitterTimeout() {
   }
   twitterTimeout = setTimeout(() => {
     twitterTimeout = null;
-    log(`❌ ${twitterTimeoutDelay}min without tweets, resetting stream...`);
+    log(`❌ ${twitterTimeoutDelay}s without tweets, resetting stream...`);
     if (reconnectionTimeoutID) {
       log('❌ We\'re already in reconnection mode, abort timeout system');
       return;
