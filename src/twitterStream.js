@@ -3,7 +3,7 @@ import log from './log';
 // Idle delay
 const shortDelay = 1000 * 60 * 5;
 // Long delay, when we just created a stream, we put this in before we create the next one
-const longDelay = 1000 * 60 * 15;
+const longDelay = 1000 * 60 * 30;
 // Destroying delay, delay between stream destruction and stream re-creation
 const destroyDelay = 1000 * 1;
 
