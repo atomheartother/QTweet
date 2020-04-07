@@ -60,7 +60,7 @@ const handleDiscordPostError = async (
       log(error);
       logMsg = `${errCode
         || 'no qChannel'}: This channel can't be built anymore, it should be deleted`;
-    } else if (error.request.method === 'GET') {
+    } else if (error.request && error.request.method === 'GET') {
       logMsg = `${errCode}: Discord encountered an error getting ${
         error.request.path
       }`;
