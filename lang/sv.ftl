@@ -10,7 +10,7 @@ helpHeader = {-bot-name} är här!
 
 # The main help message body, followed by usage
 helpIntro =
-  Hej, jag är { -bot-name }, jag är en väldigt simpel bot som vidarebefordrar Tweets till Discord!
+  Hej, jag är { -bot-name }, jag är en väldigt simpel bot som vidarebefordrar tweets till Discord!
   {-b}Du borde läsa min [kompletta dokumentation]({ -docs-url }){-b}
   {-b}Vill du bjuda in mig till din server?{-b} [Klicka Här]({ -invite-url })!
   {-b}Problem, frågor?{-b} [Vi har en hjälp server!]({ -support-server })
@@ -19,7 +19,7 @@ helpIntro =
   Här är en kort lista med kommandon till att börja med:
 
 # Footer giving credit to the artist
-helpFooter = Profile picture art by {$artist}
+helpFooter = Profilbild gjord av {$artist}
 
 # The welcome msg sent to server owners & her generic response when DM'd
 welcomeMessage = 
@@ -32,7 +32,7 @@ welcomeMessage =
 ### Command usage
 
 # The word "usage"
--usage = användning
+-usage = Användning
 # The word used to describe a twitter screen name, in a variable
 -screen-name-variable = twitter_screen_name
 
@@ -44,10 +44,10 @@ usage-tweet =
 usage-start =
   Följ ett twitter-konto och skicka deras tweets i realtid.
   {-b}{-usage}{-b}: `{-pr}start <{-screen-name-variable}> [flags]`
-  Stödjer flera användare, retweets, filtrerar text, inlägg och mer! Kolla in dokumentationen!
+  Stöder flera användare, retweets, filtrerad text, inlägg och mer! Kolla in dokumentationen!
 
 usage-stop = 
-  Avprenumerera från den givna användaren.
+  Avbryt prenumerationen från den givna användaren.
   {-b}{-usage}{-b}: `{-pr}stop <{-screen-name-variable}>`
 
 usage-stopchannel =
@@ -89,7 +89,7 @@ tweetCountHighConfirm =
   `{-pr}tweet {$screenName} --count={$count} --force`
 
 tweetNotAuthorized =
-  {-b}Jag försökte hämta ett tweet från {$screenName} men Twitter säger att hen är oauktoriserad.{-b}
+  {-b}Jag försökte hämta {$screenName} tweets från men Twitter säger att hen är oauktoriserad.{-b}
   Det här är ofta orsakat av ett blockat konto.
 
 tweetUnknwnError =
@@ -156,7 +156,7 @@ noSuchSubscription =
   Använd `{-pr}list` för en lista med prenumerationer!
 
 stopSuccess =
-  {-b}Jag har avprenumererat dig från {$screenNames}{-b}
+  {-b}Jag har avbrutit prenumerationen från {$screenNames}{-b}
   Du borde inte få några tweets från dem.
 
 ## !!stopchannel
@@ -182,7 +182,7 @@ noSuchLang =
 
 langSuccess =
   {-b}Ändringen av språk lyckades{-b}
-  Välkommen till den magiska världen av svenska!
+  Välkommen till den magiska världen av det svenska språket!
 
 prefixSuccess =
   {-b}Ändringen av prefixen lyckades{-b}
@@ -263,9 +263,9 @@ noSubscriptions =
   Använd `{-pr}start <{-screen-name-variable}>` för att starta!
 
 # Flag formatting is on one line, in plain text
-formatFlags = With {$notext -> 
+formatFlags = Med {$notext -> 
     *[0] text inlägg
-    [1] inga text inlägg
+    [1] inga textinlägg
   }, {$retweet ->
     *[0] no retweets
     [1] retweets
