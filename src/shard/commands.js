@@ -119,7 +119,7 @@ export const handleUserTimeline = async ({
 };
 
 const postTimeline = async (qChannel, screenName, count) => {
-  cmd('userTimeline', {
+  cmd('tweet', {
     screen_name: screenName, tweet_mode: 'extended', count, qc: qChannel.serialize(),
   });
 };

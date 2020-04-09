@@ -1,13 +1,13 @@
 import {
-  userTimeline, createStream,
+  createStream,
 } from './twitter';
 import {
-  start, tweetId, stop, announce,
+  start, tweet, tweetId, stop, announce,
 } from './botCommands';
 import log from './log';
 
 const validCommands = {
-  userTimeline,
+  tweet,
   tweetId,
   createStream,
   start,
