@@ -1,13 +1,13 @@
 import log from './log';
 import {
-  userLookup, createStream, getError, showTweet, formatTweet,
+  userTimeline, userLookup, createStream, getError, showTweet, formatTweet,
 } from './twitter';
 import {
   rm, add, getUserIds as getAllSubs, getUniqueChannels,
 } from './subs';
 import { post, postAnnouncement } from './shardManager';
 
-const handleTwitterError = (qc, code, msg, screenNames) => {
+const handleTwitterError = (code, msg, screenNames) => {
   if (code === 17 || code === 34) {
     return {
       cmd: 'postTranslated',
@@ -63,7 +63,7 @@ export const start = async ({ qc, flags, screenNames }) => {
         namesCount: screenNames.length,
       };
     }
-    return handleTwitterError(qc, code, msg, screenNames);
+    return handleTwitterError(code, msg, screenNames);
   }
   const allUserIds = await getAllSubs();
   if (allUserIds.length + data.length >= 5000) {
@@ -107,7 +107,7 @@ export const stop = async ({ qc, screenNames }) => {
         namesCount: screenNames.length,
       };
     }
-    return handleTwitterError(qc, code, msg, screenNames);
+    return handleTwitterError(code, msg, screenNames);
   }
   const promises = data.map(({ id_str: userId }) => rm(qc.channelId, userId));
 
@@ -123,7 +123,23 @@ export const stop = async ({ qc, screenNames }) => {
   return { data, users, subs };
 };
 
-export const tweetId = async ({ qc, id }) => {
+export const tweet = async (params) => {
+  try {
+    return await userTimeline(params);
+  } catch (response) {
+    const { screen_name: screenName } = params;
+    const { code, msg } = getError(response);
+    if (!code) {
+      log('Exception thrown without error');
+      return {
+        cmd: 'postTranslated', trCode: 'tweetIdGeneralError', screenName,
+      };
+    }
+    return handleTwitterError(code, msg, [screenName]);
+  }
+};
+
+export const tweetId = async ({ id }) => {
   let t = null;
   try {
     t = await showTweet(id);
@@ -135,7 +151,7 @@ export const tweetId = async ({ qc, id }) => {
         cmd: 'postTranslated', trCode: 'tweetIdGeneralError', id,
       };
     }
-    return handleTwitterError(qc, code, msg, [id]);
+    return handleTwitterError(code, msg, [id]);
   }
   const formattedPromise = formatTweet(t);
   const isQuoted = t.quoted_status && t.quoted_status.user;
