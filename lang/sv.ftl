@@ -191,7 +191,7 @@ prefixSuccess =
 ## !!admin
 adminInvalidId = Jag kunde inte bygga ett giltigt kanals objekt med ID: {$channelId}
 
-adminInvalidTwitter = Jag följer inte någon användare som kallas `@{$screenName}`
+adminInvalidTwitter = Jag följer inte någon användare som heter `@{$screenName}`
 
 ## General
 invalidVerb = 
@@ -201,15 +201,15 @@ invalidVerb =
 ### General twitter errors
 noSuchTwitterUser =
   {-b}Jag kunde inte hitta {$count ->
-    [1] en twitter användare som kallas
+    [1] en twitter användare som heter
     *[other] någon av dessa användare:
   } {$name}.{-b}
   Du har antagligen försökt använda deras display {$count ->
     [1] namn
     *[other] namn
   } och inte deras twitter {$count -> 
-    [1] hantera
-    *[other] hanteras
+    [1] användarnamn
+    *[other] användarnamn
   }.
 
 tooManyUsersRequested =
@@ -267,7 +267,7 @@ formatFlags = Med {$notext ->
     *[0] text inlägg
     [1] inga textinlägg
   }, {$retweet ->
-    *[0] no retweets
+    *[0] inga retweets
     [1] retweets
   }, {$noquote ->
     *[0] citat
