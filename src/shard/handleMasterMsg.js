@@ -75,7 +75,7 @@ const handleStop = async ({ qc, res: { data, subs } }) => {
 };
 
 const commands = {
-  userTimeline: handleUserTimeline,
+  tweet: handleUserTimeline,
   post: handlePost,
   postTranslated: handlePostTranslated,
   start: handleStart,
