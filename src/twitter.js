@@ -333,8 +333,7 @@ export const getFilteredSubs = async (tweet) => {
     if (isDM) log(`Should we post ${tweet.id_str} in channel ${channelId}?`);
     if (flagsFilter(flags, tweet)) {
       if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`);
-      const qChannel = { channelId, isDM };
-      targetSubs.push({ flags, qChannel });
+      targetSubs.push({ flags, qChannel: { channelId, isDM } });
     }
   }
   return targetSubs;
@@ -365,6 +364,7 @@ const streamData = async (tweet) => {
     if (metadata.ping && isSet(flags, 'ping')) {
       post(qChannel, '@everyone', 'message');
     }
+    if (qChannel.isDM) log(`Posting ${tweet.id_str} to ${qChannel.channelId}.`);
     post(qChannel, embed, 'embed');
   });
   if (tweet.is_quote_status) {
