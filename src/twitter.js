@@ -330,7 +330,9 @@ export const getFilteredSubs = async (tweet) => {
     const {
       flags, channelId, isDM,
     } = subs[i];
+    if (isDM) log(`Should we post ${tweet.id_str} in channel ${channelId}?`);
     if (flagsFilter(flags, tweet)) {
+      if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`);
       const qChannel = { channelId, isDM };
       targetSubs.push({ flags, qChannel });
     }
@@ -354,7 +356,7 @@ const streamData = async (tweet) => {
   resetTwitterTimeout();
   const subs = await getFilteredSubs(tweet);
   if (subs.length === 0) {
-    log(`Discarded a tweet intended for no one (${tweet.id_str} from @${tweet.user.screen_name})`, null, true);
+    log('✅ Discarded a tweet', null, true);
     return;
   }
   log(`✅ Received valid tweet: ${tweet.id_str}, forwarding to ${subs.length} Discord subscriptions`, null, true);
