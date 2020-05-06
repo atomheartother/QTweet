@@ -361,7 +361,6 @@ const streamData = async (tweet) => {
   const { embed, metadata } = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && isSet(flags, 'ping')) {
-      log(`Pinging @everyone about tweet ${tweet.id_str}`, qChannel);
       post(qChannel, '@everyone', 'message');
     }
     post(qChannel, embed, 'embed');
@@ -370,7 +369,6 @@ const streamData = async (tweet) => {
     const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
     subs.forEach(({ flags, qChannel }) => {
       if (!flags.noquote) {
-        log(`Posting quoted tweet for ${tweet.id_str}`, qChannel, true);
         post(qChannel, quotedEmbed, 'embed');
       }
     });
