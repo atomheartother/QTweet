@@ -21,10 +21,14 @@ class Stream {
   }
 
   checkNewUsers() {
+    log('⚙️ Checking for new stream users...', null, true);
     if (this.newUserIds === true) {
+      log('⚙️ New users found!', null, true);
       this.newUserIds = false;
       if (this.stream) {
         this.stream.destroy();
+        this.stream = null;
+        log(`⚙️ Destroying stream for re-creation in ${destroyDelay}ms`, null, true);
         setTimeout(() => {
           this.doCreate();
         }, destroyDelay);
@@ -33,6 +37,7 @@ class Stream {
       }
       return;
     }
+    log(`⚙️ No new users, scheduling next check in ${shortDelay}ms`, null, true);
     this.timeout = setTimeout(() => {
       this.timeout = null;
       this.checkNewUsers();
@@ -50,6 +55,7 @@ class Stream {
       .on('data', this.streamData)
       .on('error', this.streamError)
       .on('end', this.streamEnd);
+    log(`⚙️ Scheduling next check in ${longDelay}ms`, null, true);
     this.timeout = setTimeout(() => {
       this.timeout = null;
       this.checkNewUsers();

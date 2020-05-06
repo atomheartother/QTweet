@@ -1,4 +1,6 @@
-export default async (message, qChannel = null) => {
+export default async (message, qChannel = null, verbose = false) => {
+  // Only let through verbose messages in verbose mode
+  if (verbose === true && Number(process.env.VERBOSE) !== 1) return;
   const dateString = new Date().toLocaleString('en-GB');
   if (qChannel) {
     const obj = await qChannel.obj();
