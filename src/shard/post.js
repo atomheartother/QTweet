@@ -147,7 +147,7 @@ export const post = async (qChannel, content, type) => {
   return 0;
 };
 
-export const embed = async (qChannel, content) => post(qChannel, content, 'embed');
+export const embed = (qChannel, content) => post(qChannel, content, 'embed');
 
 export const embeds = async (qChannel, arr) => {
   let successful = 0;
@@ -162,7 +162,7 @@ export const embeds = async (qChannel, arr) => {
   return { err: null, successful };
 };
 
-export const message = async (qChannel, content) => post(qChannel, content, 'message');
+export const message = (qChannel, content) => post(qChannel, content, 'message');
 
 export const translated = async (qChannel, key, options = {}) => message(qChannel,
   i18n(await getLang(qChannel.guildId()), key, options));
