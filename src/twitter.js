@@ -353,11 +353,15 @@ const streamStart = () => {
 const streamData = async (tweet) => {
   resetTwitterTimeout();
   const subs = await getFilteredSubs(tweet);
-  if (subs.length === 0) return;
+  if (subs.length === 0) {
+    log(`Discarded a tweet intended for no one (${tweet.id_str} from @${tweet.user.screen_name})`, null, true);
+    return;
+  }
+  log(`✅ Received valid tweet: ${tweet.id_str}, forwarding to ${subs.length} Discord subscriptions`, null, true);
   const { embed, metadata } = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel }) => {
     if (metadata.ping && isSet(flags, 'ping')) {
-      log('Pinging @everyone', qChannel);
+      log(`Pinging @everyone about tweet ${tweet.id_str}`, qChannel);
       post(qChannel, '@everyone', 'message');
     }
     post(qChannel, embed, 'embed');
@@ -365,7 +369,10 @@ const streamData = async (tweet) => {
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
     subs.forEach(({ flags, qChannel }) => {
-      if (!flags.noquote) post(qChannel, quotedEmbed, 'embed');
+      if (!flags.noquote) {
+        log(`Posting quoted tweet for ${tweet.id_str}`, qChannel, true);
+        post(qChannel, quotedEmbed, 'embed');
+      }
     });
   }
   updateUser(tweet.user);
@@ -391,7 +398,8 @@ const streamError = ({ url, status, statusText }) => {
   // We simply can't get a stream, don't retry
   stream.disconnected();
   if (status === 420 && reconnectionDelay.value() < 30000) {
-    // If we're being rate-limited, wait 30s at least, up to 2min
+    log('⚙️ 420 status code detected, jumping to 30s delay immediately', null, true);
+    // If we're being rate-limited, wait 30s at least, up to max
     reconnectionDelay.set(30000);
   }
   const delay = reconnectionDelay.value();
