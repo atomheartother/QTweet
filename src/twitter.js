@@ -1,4 +1,4 @@
-import Twitter from 'twitter-lite';
+import { Twitter } from 'twitter-lite';
 
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
