@@ -19,7 +19,7 @@
     "esm": "^3.2.25",
     "fluent": "^0.12.0",
     "fortune-teller": "latest",
-    "pg": "^7.17.0",
+    "pg": "^8.2.1",
     "twitter-lite": "latest",
     "unfurl.js": "^3.0.1"
   }
