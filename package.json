@@ -18,7 +18,6 @@
     "discord.js": "^12.0.2",
     "esm": "^3.2.25",
     "fluent": "^0.12.0",
-    "fortune-teller": "latest",
     "pg": "^8.2.1",
     "twitter-lite": "latest",
     "unfurl.js": "^3.0.1"
