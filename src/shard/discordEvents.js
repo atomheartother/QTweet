@@ -1,6 +1,3 @@
-// A module registering discord events and reacting to them
-import { fortune } from 'fortune-teller';
-
 // Config file
 import {
   rmChannel, rmGuild, getGuildInfo,
@@ -58,7 +55,7 @@ export const handleMessage = async (message) => {
       && !!message.mentions.members
       && message.mentions.members.find((item) => item.user.id === user().id)
     ) {
-      message.reply(fortune());
+      message.reply(`it's pride month! Trans rights!\nMy prefix on this server is \`${prefix}\``);
     } else if (message.channel.type === 'dm') {
       postMessage(qc, i18n(lang, 'welcomeMessage'));
     }
