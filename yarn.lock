@@ -648,11 +648,6 @@ fluent@^0.12.0:
   resolved "https://registry.yarnpkg.com/fluent/-/fluent-0.12.0.tgz#c5a5fcf042817abb1f786a700aff9dc068b5fb0d"
   integrity sha512-rE5FSBv/1LoJ91suQy+dJm8vGhfq2fnzURgbC6/cfJQG/xVZn0TBeh3NVoZD9mlpryLJ37NKCKnX2u5gB4s2BQ==
 
-fortune-teller@latest:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/fortune-teller/-/fortune-teller-0.1.2.tgz#e9ae756de8de4c3f31f3411573743cd60bfaa136"
-  integrity sha1-6a51bejeTD8x80EVc3Q81gv6oTY=
-
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
