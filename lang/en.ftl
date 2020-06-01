@@ -320,4 +320,4 @@ userLimit =
   - {-b}Find an alternative to QTweet{-b}: Yup, that's it, if those options don't work for you I'm afraid I can't do anything else for you!
 
 ### Credit
-languageCredit = English, made by `Tom'#4242`
+languageCredit = English, made by `Booyah!#4242`
