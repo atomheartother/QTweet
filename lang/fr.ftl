@@ -273,4 +273,4 @@ postPermissionError =
   Si vous pensez avoir tout bien fait mais que je continue de vous envoyer ce message, rejoinez notre serveur de support, il est lié dans `{-pr}help`.
 
 ## Credit
-languageCredit = Français, traduit par `Tom'#4242`
+languageCredit = Français, traduit par `Booyah!#4242`
