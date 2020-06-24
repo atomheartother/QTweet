@@ -91,6 +91,7 @@ const handleDiscordPostError = async (
     errCode === 'ECONNRESET'
     || errCode === 'read ECONNRESET'
     || errCode === 504
+    || errCode === 500
   ) {
     // There was an error
     logMsg = `${errCode}: Discord servers failed when I tried to send ${type}`;
