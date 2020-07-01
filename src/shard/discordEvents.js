@@ -3,6 +3,7 @@ import {
   rmChannel, rmGuild, getGuildInfo,
 } from '../subs';
 import QChannel from './QChannel';
+import fortune from 'fortune-teller'
 
 // logging
 import log from '../log';
@@ -55,7 +56,7 @@ export const handleMessage = async (message) => {
       && !!message.mentions.members
       && message.mentions.members.find((item) => item.user.id === user().id)
     ) {
-      message.reply(`it's pride month! Trans rights!\nMy prefix on this server is \`${prefix}\``);
+      message.reply(`My prefix on this server is \`${prefix}\`\n\n${fortune.fortune()}`);
     } else if (message.channel.type === 'dm') {
       postMessage(qc, i18n(lang, 'welcomeMessage'));
     }
