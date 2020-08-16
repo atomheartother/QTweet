@@ -2,8 +2,8 @@ FROM alpine:3.7 AS langbuilder
 RUN apk add --no-cache gettext
 COPY lang/ lang/
 
-ARG BOT_NAME
-ARG PREFIX
+ARG BOT_NAME=QTweet
+ARG PREFIX=!!
 
 RUN for file in ./lang/*.ftl; do f=${file%.ftl}; cat $file | envsubst '$BOT_NAME:$PREFIX' > $f.o.ftl; echo "Built $f.o.ftl "; done
 
