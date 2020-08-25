@@ -513,7 +513,7 @@ export const sanityCheck = async () => {
     const timeout = Number(process.env.USERS_CHECK_TIMEOUT);
     if (!(Number.isNaN(limit) || Number.isNaN(timeout))) {
       const cursor = 0;
-      const deleted = await usersSanityCheck(limit, cursor, timeout);
+      const deleted = await usersSanityCheck(limit, cursor, timeout * 3600);
       log(`✅ Users sanity check completed! ${deleted} invalid users removed.`);
     } else {
       log('❌ USERS_BATCH_SIZE or USERS_CHECK_TIMEOUT is not set to a valid number, sanity check aborted');
