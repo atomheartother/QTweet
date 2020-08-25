@@ -1,4 +1,5 @@
-import { init as initDb, sanityCheck } from './subs';
+import { init as initDb } from './subs';
+import { sanityCheck } from './twitter';
 import shardMsgHandler from './shardMsgHandler';
 import manager from './shardManager';
 import log from './log';
@@ -15,7 +16,7 @@ const shardReady = async () => {
   }));
   await initDb();
   log('✅ Connection to database successful');
-  await sanityCheck();
+  sanityCheck();
 };
 
 process.on('beforeExit', (code) => {
