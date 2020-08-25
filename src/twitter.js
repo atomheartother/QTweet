@@ -513,7 +513,6 @@ export const sanityCheck = async () => {
     log('⚙️ Starting users sanity check, this could take a while if you have lots of users. You can disable this in .env');
     const limit = Number(process.env.USERS_BATCH_SIZE);
     const timeout = Number(process.env.USERS_CHECK_TIMEOUT);
-    log(`Timeout: ${timeout}`);
     if (!(Number.isNaN(limit) || Number.isNaN(timeout))) {
       const cursor = 0;
       const deleted = await usersSanityCheck(limit, cursor, timeout * 3600);
