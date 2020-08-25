@@ -471,6 +471,7 @@ const sleep = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout)
 export const usersSanityCheck = async (limit, cursor, timeout) => {
   log(`⚙️ User sanity check: Checking users ${cursor * limit} to ${cursor * limit + limit}`);
   const ids = (await getUsersForSanityCheck(limit, cursor)).map(({ twitterId }) => twitterId);
+  if (ids.length < 1) return 0;
   // deleted is an array of booleans. True means the account was deleted
   const deleted = Promise.all(ids.map((id) => new Promise((resolve) => {
     try {
@@ -484,9 +485,10 @@ export const usersSanityCheck = async (limit, cursor, timeout) => {
 
   const idsToDelete = ids.filter((id, idx) => deleted[idx]);
   const deletedUsers = idsToDelete.length > 0 ? await bulkDeleteUsers(idsToDelete) : 0;
+  log(`⚙️ User sanity check: ${cursor * limit} -> ${cursor * limit + limit}, removed ${deletedUsers} invalid users`);
   if (ids.length < limit) return deletedUsers;
   await sleep(timeout);
-  return deletedUsers + usersSanityCheck(limit, cursor + 1, timeout);
+  return deletedUsers + await usersSanityCheck(limit, cursor + 1, timeout);
 };
 
 // Makes sure everything is consistent
@@ -511,6 +513,7 @@ export const sanityCheck = async () => {
     log('⚙️ Starting users sanity check, this could take a while if you have lots of users. You can disable this in .env');
     const limit = Number(process.env.USERS_BATCH_SIZE);
     const timeout = Number(process.env.USERS_CHECK_TIMEOUT);
+    log(`Timeout: ${timeout}`);
     if (!(Number.isNaN(limit) || Number.isNaN(timeout))) {
       const cursor = 0;
       const deleted = await usersSanityCheck(limit, cursor, timeout * 3600);
