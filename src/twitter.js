@@ -233,6 +233,7 @@ export const formatTweet = async (tweet, isQuoted) => {
     targetScreenName = retweetedStatus.user.screen_name || targetScreenName;
   }
   const embed = {
+    url: `https://twitter.com/${targetScreenName}/status/${idStr}`,
     author: {
       name: `${isQuoted ? '[QUOTED] ' : ''}${user.name} (@${user.screen_name})`,
       url: `https://twitter.com/${targetScreenName}/status/${idStr}`,
