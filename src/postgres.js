@@ -179,7 +179,7 @@ export const getUsersForSanityCheck = async (limit, cursor) => {
 
 export const bulkDeleteUsers = async (userIds) => {
   // Create a temporary table
-  const tableName = 'temp_sanityCheck';
+  const tableName = 'usersanitycheck';
   await pool.query(`CREATE TEMP TABLE IF NOT EXISTS ${tableName} (id BIGINT PRIMARY KEY)`);
   await pool.query('BEGIN');
   try {
