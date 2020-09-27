@@ -32,6 +32,8 @@ const tClient = new Twitter({
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
+const DISABLE_STREAMS = !!Number(process.env.DISABLE_STREAMS);
+
 const reconnectionDelay = new Backup({
   mode: 'exponential',
   startValue: 2000,
@@ -447,7 +449,11 @@ export const createStream = async () => {
     log('No user IDs, no need to create a stream...');
     return null;
   }
-  stream.create(userIds.map(({ twitterId }) => twitterId));
+  if (!DISABLE_STREAMS) {
+    stream.create(userIds.map(({ twitterId }) => twitterId));
+  } else {
+    log('ATTENTION: the DISABLE_STREAMS variable is set, meaning streams are currently not being created!');
+  }
   return null;
 };
 
@@ -474,22 +480,25 @@ export const usersSanityCheck = async (limit, cursor, timeout) => {
   const ids = (await getUsersForSanityCheck(limit, cursor)).map(({ twitterId }) => twitterId);
   if (ids.length < 1) return 0;
   // deleted is an array of booleans. True means the account was deleted
-  const deleted = Promise.all(ids.map((id) => new Promise((resolve) => {
-    try {
-      userLookup({ user_id: id }).then(() => {
-        resolve(false);
-      });
-    } catch (e) {
+  const deleted = await Promise.all(ids.map((id) => new Promise((resolve) => {
+    userLookup({ user_id: id }).then(() => {
+      resolve(false);
+    }).catch(() => {
       resolve(true);
-    }
+    });
   })));
-
   const idsToDelete = ids.filter((id, idx) => deleted[idx]);
-  const deletedUsers = idsToDelete.length > 0 ? await bulkDeleteUsers(idsToDelete) : 0;
-  log(`⚙️ User sanity check: ${cursor * limit} -> ${cursor * limit + limit}, removed ${deletedUsers} invalid users`);
-  if (ids.length < limit) return deletedUsers;
-  await sleep(timeout);
-  return deletedUsers + await usersSanityCheck(limit, cursor + 1, timeout);
+  try {
+    const deletedUsers = idsToDelete.length > 0 ? await bulkDeleteUsers(idsToDelete) : 0;
+    log(`⚙️ User sanity check: ${cursor * limit} -> ${cursor * limit + limit}, removed ${deletedUsers} invalid users`);
+    if (ids.length < limit) return deletedUsers;
+    await sleep(timeout);
+    return deletedUsers + await usersSanityCheck(limit, cursor + 1, timeout);
+  } catch (e) {
+    console.error('Error during bulk deletion, sanity check aborted');
+    console.error(e);
+  }
+  return 0;
 };
 
 // Makes sure everything is consistent
