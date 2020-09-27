@@ -2,12 +2,16 @@ import Twitter from 'twitter-lite';
 
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
-import { getUserIds, getUserSubs, updateUser } from './subs';
+import {
+  getUserIds, getUserSubs, updateUser, getUsersForSanityCheck, bulkDeleteUsers, databaseSanityCheck,
+} from './subs';
 import Backup from './backup';
 import log from './log';
 
-import { post } from './shardManager';
+import { post, someoneHasChannel } from './shardManager';
 import Stream from './twitterStream';
+import { getChannels, rmChannel } from './postgres';
+
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -461,3 +465,61 @@ export const userLookup = (params) => tClient.post('users/lookup', params);
 export const userTimeline = (params) => tClient.get('statuses/user_timeline', params);
 
 export const showTweet = (id) => tClient.get(`statuses/show/${id}`, { tweet_mode: 'extended' });
+
+// Small helper function to timeout in async
+const sleep = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
+
+export const usersSanityCheck = async (limit, cursor, timeout) => {
+  log(`⚙️ User sanity check: Checking users ${cursor * limit} to ${cursor * limit + limit}`);
+  const ids = (await getUsersForSanityCheck(limit, cursor)).map(({ twitterId }) => twitterId);
+  if (ids.length < 1) return 0;
+  // deleted is an array of booleans. True means the account was deleted
+  const deleted = Promise.all(ids.map((id) => new Promise((resolve) => {
+    try {
+      userLookup({ user_id: id }).then(() => {
+        resolve(false);
+      });
+    } catch (e) {
+      resolve(true);
+    }
+  })));
+
+  const idsToDelete = ids.filter((id, idx) => deleted[idx]);
+  const deletedUsers = idsToDelete.length > 0 ? await bulkDeleteUsers(idsToDelete) : 0;
+  log(`⚙️ User sanity check: ${cursor * limit} -> ${cursor * limit + limit}, removed ${deletedUsers} invalid users`);
+  if (ids.length < limit) return deletedUsers;
+  await sleep(timeout);
+  return deletedUsers + await usersSanityCheck(limit, cursor + 1, timeout);
+};
+
+// Makes sure everything is consistent
+export const sanityCheck = async () => {
+  const allChannels = await getChannels();
+  log(`⚙️ Starting sanity check on ${allChannels.length} channels`);
+  const areChannelsValid = await Promise.all(allChannels.map(
+    (c) => someoneHasChannel(c).then((res) => ({ c, res })),
+  ));
+  const deletedChannels = await Promise.all(areChannelsValid.map(({ c, res }) => {
+    if (res) {
+      return null;
+    }
+    log(`Found invalid channel: ${c.channelId}`);
+    return rmChannel(c.channelId);
+  }));
+  const { channels, users, guilds } = await databaseSanityCheck();
+  log(`✅ DB sanity check completed!\n${channels + deletedChannels.reduce((prev, del) => prev + del, 0)} channels, ${guilds} guilds, ${users} users removed.`);
+
+  const disableSanityCheck = !!Number(process.env.DISABLE_SANITY_CHECK);
+  if (!disableSanityCheck) {
+    log('⚙️ Starting users sanity check, this could take a while if you have lots of users. You can disable this in .env');
+    const limit = Number(process.env.USERS_BATCH_SIZE);
+    const timeout = Number(process.env.USERS_CHECK_TIMEOUT);
+    if (Number.isNaN(limit) || Number.isNaN(timeout)) {
+      log('❌ USERS_BATCH_SIZE or USERS_CHECK_TIMEOUT is not set to a valid number, sanity check aborted');
+      return;
+    }
+    const cursor = 0;
+    const deleted = await usersSanityCheck(limit, cursor, timeout * 3600);
+    log(`✅ Users sanity check completed! ${deleted} invalid users removed.`);
+  }
+};
