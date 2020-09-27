@@ -135,6 +135,7 @@ export const tweet = async ({ count, flags, ...params }) => {
       ...params,
       count: TWEETS_MAX,
     };
+    const noRetweet = flags.indexOf('noretweet') !== -1;
     while (tweets.length < count && !doneWithTimeline) {
       // We can't really avoid await-ing inside of a loop here
       // as we don't know how often we need to await until we've read the result.
@@ -150,7 +151,7 @@ export const tweet = async ({ count, flags, ...params }) => {
       }
       // Filter out retweets if the user asked us to
       tweets.push(
-        ...(flags.noretweet
+        ...(noRetweet
           ? res.filter(({
             retweeted_status: retweetedStatus,
           }) => !retweetedStatus)

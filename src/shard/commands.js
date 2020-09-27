@@ -104,12 +104,13 @@ export const handleUserTimeline = async ({
   }
   const formattedTweets = await Promise.all(validTweets.map((t) => formatTweet(t, false)));
   const embeds = formattedTweets.map(({ embed }) => embed);
+  const reverseOrder = flags.indexOf('reverse') !== -1;
   const {
     successful,
     err,
     // So I know this is weird but we originally got tweets in the WRONG order, from most recent to oldest
     // If we get the reverse flag, we therefore DON'T reverse, we just leave it in the wrong order
-  } = await postEmbeds(qChannel, flags.reverse ? embeds : embeds.reverse());
+  } = await postEmbeds(qChannel, reverseOrder ? embeds : embeds.reverse());
   if (err) {
     log(`Error posting tweet ${successful + 1} / ${validTweets.length} from ${screenName}`, qChannel);
     log(err);
