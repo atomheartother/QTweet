@@ -1,6 +1,6 @@
 import log from './log';
 import {
-  userTimeline, userLookup, createStream, getError, showTweet, formatTweet,
+  userTimeline, userLookup, createStream, getError, showTweet, formatTweet, hasMedia,
 } from './twitter';
 import {
   rm, add, getUserIds as getAllSubs, getUniqueChannels,
@@ -123,9 +123,42 @@ export const stop = async ({ qc, screenNames }) => {
   return { data, users, subs };
 };
 
-export const tweet = async (params) => {
+export const tweet = async ({ count, flags, ...params }) => {
+  const TWEETS_MAX = 200;
+  // Get tweets 200 by 200 until we have count tweets
+  // or until we run out of tweets
   try {
-    return await userTimeline(params);
+    const tweets = [];
+    let doneWithTimeline = false;
+    let sinceId;
+    const p = {
+      ...params,
+      count: TWEETS_MAX,
+    };
+    const noRetweet = flags.indexOf('noretweet') !== -1;
+    const noText = flags.indexOf('notext') !== -1;
+    while (tweets.length < count && !doneWithTimeline) {
+      // We can't really avoid await-ing inside of a loop here
+      // as we don't know how often we need to await until we've read the result.
+      // eslint-disable-next-line no-await-in-loop
+      const res = await userTimeline(sinceId ? {
+        ...p,
+        since_id: sinceId,
+      } : p);
+      if (res.length === 0) {
+        doneWithTimeline = true;
+      } else {
+        sinceId = res[res.length - 1];
+      }
+      // Filter out retweets if the user asked us to
+      tweets.push(
+        ...res.filter((t) => (
+          (!noText || hasMedia(t))
+          && (!noRetweet || !t.retweeted_status)
+        )),
+      );
+    }
+    return tweets.slice(0, count);
   } catch (response) {
     const { screen_name: screenName } = params;
     const { code, msg } = getError(response);
