@@ -172,6 +172,34 @@ export const getUserIds = async () => {
   return rows;
 };
 
+export const getUsersForSanityCheck = async (limit, cursor) => {
+  const { rows } = await pool.query(`SELECT ${getInt('"twitterId"')} FROM twitterUsers LIMIT $1 OFFSET $2`, [limit, cursor * limit]);
+  return rows;
+};
+
+export const bulkDeleteUsers = async (userIds) => {
+  await pool.query('BEGIN');
+  try {
+    // Create a temporary table
+    const tableName = 'temp_sanityCheck';
+    await pool.query(`CREATE TABLE IF NOT EXISTS ${tableName} (id BIGINT PRIMARY KEY)`);
+    // Put all our values into it
+    await Promise.all(userIds.map((id) => pool.query(`INSERT INTO ${tableName} VALUES($1)`, [id])));
+    // Join both tables to remove the matching IDs from twitterUsers
+    const { rowCount } = await pool.query(`DELETE FROM twitterUsers WHERE "twitterId" IN (select id from ${tableName})`);
+    // Remove the temp table
+    await pool.query(`DROP TABLE ${tableName}`);
+    await pool.query('COMMIT');
+    return rowCount;
+  } catch (e) {
+    // if something fails, roll back
+    await pool.query('ROLLBACK');
+    log(`❌ A FATAL ERROR occurred while deleting ${userIds.length} user IDs. No changes were committed to the db. Error was:`);
+    log(e);
+  }
+  return 0;
+};
+
 export const getUserInfo = async (twitterId) => {
   const { rows: [info] } = await pool.query('SELECT "name" FROM twitterUsers WHERE "twitterId" = $1', [twitterId]);
   return info;

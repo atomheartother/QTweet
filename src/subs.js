@@ -23,9 +23,9 @@ import {
   rmGuild as SQLrmGuild,
   sanityCheck as dbSanityCheck,
   setPrefix as SQLsetPrefix,
+  getUsersForSanityCheck as SQLgetUsersForSanityCheck,
+  bulkDeleteUsers as SQLbulkDeleteUsers,
 } from './postgres';
-import log from './log';
-import { someoneHasChannel } from './shardManager';
 
 export const init = initDb;
 
@@ -40,6 +40,10 @@ export const getUserSubs = SQLgetUserSubs;
 // Returns a list of channel objects, each in an unique guild
 // DMs are also returned, as DMs are considered one-channel guilds
 export const getUniqueChannels = SQLgetUniqueChannels;
+
+export const getUsersForSanityCheck = SQLgetUsersForSanityCheck;
+
+export const bulkDeleteUsers = SQLbulkDeleteUsers;
 
 // Returns a list of subscriptions matching this guild
 export const getGuildSubs = SQLgetGuildSubs;
@@ -67,23 +71,7 @@ export const addChannelIfNoExists = async (channelId, guildId, ownerId, isDM) =>
   return addChannel(channelId, guildId, ownerId, isDM);
 };
 
-// Makes sure everything is consistent
-export const sanityCheck = async () => {
-  const allChannels = await SQLgetChannels();
-  log(`⚙️ Starting sanity check on ${allChannels.length} channels`);
-  const areChannelsValid = await Promise.all(allChannels.map(
-    (c) => someoneHasChannel(c).then((res) => ({ c, res })),
-  ));
-  const deletedChannels = await Promise.all(areChannelsValid.map(({ c, res }) => {
-    if (res) {
-      return null;
-    }
-    log(`Found invalid channel: ${c.channelId}`);
-    return SQLrmChannel(c.channelId);
-  }));
-  const { channels, users, guilds } = await dbSanityCheck();
-  log(`✅ Sanity check completed!\n${channels + deletedChannels.reduce((prev, del) => prev + del, 0)} channels, ${guilds} guilds, ${users} users removed.`);
-};
+export const databaseSanityCheck = dbSanityCheck;
 
 export const rmChannel = async (channelId) => {
   const channels = await SQLrmChannel(channelId);
