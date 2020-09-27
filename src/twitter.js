@@ -480,16 +480,13 @@ export const usersSanityCheck = async (limit, cursor, timeout) => {
   const ids = (await getUsersForSanityCheck(limit, cursor)).map(({ twitterId }) => twitterId);
   if (ids.length < 1) return 0;
   // deleted is an array of booleans. True means the account was deleted
-  const deleted = Promise.all(ids.map((id) => new Promise((resolve) => {
-    try {
-      userLookup({ user_id: id }).then(() => {
-        resolve(false);
-      });
-    } catch (e) {
+  const deleted = await Promise.all(ids.map((id) => new Promise((resolve) => {
+    userLookup({ user_id: id }).then(() => {
+      resolve(false);
+    }).catch(() => {
       resolve(true);
-    }
+    });
   })));
-
   const idsToDelete = ids.filter((id, idx) => deleted[idx]);
   try {
     const deletedUsers = idsToDelete.length > 0 ? await bulkDeleteUsers(idsToDelete) : 0;
