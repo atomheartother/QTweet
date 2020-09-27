@@ -123,9 +123,41 @@ export const stop = async ({ qc, screenNames }) => {
   return { data, users, subs };
 };
 
-export const tweet = async (params) => {
+export const tweet = async ({ count, flags, ...params }) => {
+  const TWEETS_MAX = 200;
+  // Get tweets 200 by 200 until we have count tweets
+  // or until we run out of tweets
   try {
-    return await userTimeline(params);
+    const tweets = [];
+    let doneWithTimeline = false;
+    let sinceId;
+    const p = {
+      ...params,
+      count: TWEETS_MAX,
+    };
+    while (tweets.length < count && !doneWithTimeline) {
+      // We can't really avoid await-ing inside of a loop here
+      // as we don't know how often we need to await until we've read the result.
+      // eslint-disable-next-line no-await-in-loop
+      const res = await userTimeline(sinceId ? {
+        ...p,
+        since_id: sinceId,
+      } : p);
+      if (res.length === 0) {
+        doneWithTimeline = true;
+      } else {
+        sinceId = res[res.length - 1];
+      }
+      // Filter out retweets if the user asked us to
+      tweets.push(
+        ...(flags.noretweet
+          ? res.filter(({
+            retweeted_status: retweetedStatus,
+          }) => !retweetedStatus)
+          : res),
+      );
+    }
+    return tweets.slice(0, count);
   } catch (response) {
     const { screen_name: screenName } = params;
     const { code, msg } = getError(response);
