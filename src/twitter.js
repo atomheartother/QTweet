@@ -485,11 +485,17 @@ export const usersSanityCheck = async (limit, cursor, timeout) => {
   })));
 
   const idsToDelete = ids.filter((id, idx) => deleted[idx]);
-  const deletedUsers = idsToDelete.length > 0 ? await bulkDeleteUsers(idsToDelete) : 0;
-  log(`⚙️ User sanity check: ${cursor * limit} -> ${cursor * limit + limit}, removed ${deletedUsers} invalid users`);
-  if (ids.length < limit) return deletedUsers;
-  await sleep(timeout);
-  return deletedUsers + await usersSanityCheck(limit, cursor + 1, timeout);
+  try {
+    const deletedUsers = idsToDelete.length > 0 ? await bulkDeleteUsers(idsToDelete) : 0;
+    log(`⚙️ User sanity check: ${cursor * limit} -> ${cursor * limit + limit}, removed ${deletedUsers} invalid users`);
+    if (ids.length < limit) return deletedUsers;
+    await sleep(timeout);
+    return deletedUsers + await usersSanityCheck(limit, cursor + 1, timeout);
+  } catch (e) {
+    console.error('Error during bulk deletion, sanity check aborted');
+    console.error(e);
+  }
+  return 0;
 };
 
 // Makes sure everything is consistent
