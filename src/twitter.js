@@ -32,6 +32,8 @@ const tClient = new Twitter({
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
+const DISABLE_STREAMS = !!Number(process.env.DISABLE_STREAMS);
+
 const reconnectionDelay = new Backup({
   mode: 'exponential',
   startValue: 2000,
@@ -447,7 +449,11 @@ export const createStream = async () => {
     log('No user IDs, no need to create a stream...');
     return null;
   }
-  stream.create(userIds.map(({ twitterId }) => twitterId));
+  if (!DISABLE_STREAMS) {
+    stream.create(userIds.map(({ twitterId }) => twitterId));
+  } else {
+    log('ATTENTION: the DISABLE_STREAMS variable is set, meaning streams are currently not being created!');
+  }
   return null;
 };
 
