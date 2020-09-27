@@ -55,7 +55,7 @@ function resetTwitterTimeout() {
 }
 
 // Checks if a tweet has any media attached. If false, it's a text tweet
-const hasMedia = ({
+export const hasMedia = ({
   extended_entities: extendedEntities,
   extended_tweet: extendedTweet,
   retweeted_status: retweetedStatus,

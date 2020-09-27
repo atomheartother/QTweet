@@ -1,6 +1,6 @@
 import log from './log';
 import {
-  userTimeline, userLookup, createStream, getError, showTweet, formatTweet,
+  userTimeline, userLookup, createStream, getError, showTweet, formatTweet, hasMedia,
 } from './twitter';
 import {
   rm, add, getUserIds as getAllSubs, getUniqueChannels,
@@ -136,6 +136,7 @@ export const tweet = async ({ count, flags, ...params }) => {
       count: TWEETS_MAX,
     };
     const noRetweet = flags.indexOf('noretweet') !== -1;
+    const noText = flags.indexOf('notext') !== -1;
     while (tweets.length < count && !doneWithTimeline) {
       // We can't really avoid await-ing inside of a loop here
       // as we don't know how often we need to await until we've read the result.
@@ -151,11 +152,10 @@ export const tweet = async ({ count, flags, ...params }) => {
       }
       // Filter out retweets if the user asked us to
       tweets.push(
-        ...(noRetweet
-          ? res.filter(({
-            retweeted_status: retweetedStatus,
-          }) => !retweetedStatus)
-          : res),
+        ...res.filter((t) => (
+          (!noText || hasMedia(t))
+          && (!noRetweet || !t.retweeted_status)
+        )),
       );
     }
     return tweets.slice(0, count);
