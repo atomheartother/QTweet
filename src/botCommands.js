@@ -130,7 +130,7 @@ export const tweet = async ({ count, flags, ...params }) => {
   try {
     const tweets = [];
     let doneWithTimeline = false;
-    let sinceId;
+    let maxId;
     const p = {
       ...params,
       count: TWEETS_MAX,
@@ -141,14 +141,14 @@ export const tweet = async ({ count, flags, ...params }) => {
       // We can't really avoid await-ing inside of a loop here
       // as we don't know how often we need to await until we've read the result.
       // eslint-disable-next-line no-await-in-loop
-      const res = await userTimeline(sinceId ? {
+      const res = await userTimeline(maxId ? {
         ...p,
-        since_id: sinceId,
+        max_id: maxId,
       } : p);
       if (res.length === 0) {
         doneWithTimeline = true;
       } else {
-        sinceId = res[res.length - 1];
+        maxId = res[res.length - 1].id_str;
       }
       // Filter out retweets if the user asked us to
       tweets.push(
