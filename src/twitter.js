@@ -54,9 +54,10 @@ function resetTwitterTimeout() {
       log('❌ We\'re already in reconnection mode, abort timeout system');
       return;
     }
+    // Destroy the stream, then wait 1s to re-create it
     stream.disconnected();
     // eslint-disable-next-line no-use-before-define
-    createStream();
+    setTimeout(createStream, 1000);
   }, twitterTimeoutDelay * 1000);
 }
 
