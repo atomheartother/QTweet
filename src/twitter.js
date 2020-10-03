@@ -80,8 +80,11 @@ export const hasMedia = ({
 
 // Validation function for tweets
 export const isValid = (tweet) => !(
+  // Ignore undefined or null tweets
   !tweet
+    // Ignore tweets without a user object
     || !tweet.user
+    // Ignore tweets where there is a quote status and not a quoted_status or a user for it.
     || (tweet.is_quote_status
       && (!tweet.quoted_status || !tweet.quoted_status.user))
 );
@@ -318,6 +321,7 @@ const flagsFilter = (flags, tweet) => {
     return false;
   }
   if (isSet(flags, 'noquote') && tweet.is_quote_status) return false;
+  if (!isSet(flags, 'replies') && tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id) return false;
   return true;
 };
 
@@ -330,7 +334,6 @@ export const getFilteredSubs = async (tweet) => {
   if (
     !subs
     || subs.length === 0
-    || (tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id)
   ) return [];
 
   const targetSubs = [];
@@ -338,9 +341,9 @@ export const getFilteredSubs = async (tweet) => {
     const {
       flags, channelId, isDM,
     } = subs[i];
-    if (isDM) log(`Should we post ${tweet.id_str} in channel ${channelId}?`);
+    if (isDM) log(`Should we post ${tweet.id_str} in channel ${channelId}?`, true);
     if (flagsFilter(flags, tweet)) {
-      if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`);
+      if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`, true);
       targetSubs.push({ flags, qChannel: { channelId, isDM } });
     }
   }

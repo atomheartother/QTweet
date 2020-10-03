@@ -275,7 +275,10 @@ formatFlags = With {$notext ->
   }, pings {$ping -> 
     *[0] off
     [1] on
-  }
+  } and {$replies -> 
+    *[0] no replies
+    [1] replies
+  } being posted.
 
 genericObjects = {$count} {$count -> 
     [one] object
