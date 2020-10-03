@@ -5,6 +5,7 @@ const FlagsEnum = Object.freeze({
   retweet: 2,
   noquote: 4,
   ping: 8,
+  replies: 16,
 });
 
 export class Flags {
