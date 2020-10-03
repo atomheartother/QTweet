@@ -92,6 +92,7 @@ export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
   retweet: isSet(flags, 'retweet'),
   noquote: isSet(flags, 'noquote'),
   ping: isSet(flags, 'ping'),
+  replies: isSet(flags, 'replies'),
 });
 
 export const formatSubsList = async (qc, subs, lang) => formatGenericList({ qc, lang }, {
