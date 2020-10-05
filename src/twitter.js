@@ -406,13 +406,13 @@ const streamEnd = () => {
 
 // Called when the stream has an error
 const streamError = ({ url, status, statusText }) => {
-  // We simply can't get a stream, don't retry
-  stream.disconnected();
   if (status === 420 && reconnectionDelay.value() < 30000) {
     log('⚙️ 420 status code detected, jumping to 30s delay immediately', null, true);
     // If we're being rate-limited, wait 30s at least, up to max
     reconnectionDelay.set(30000);
   }
+  // We simply can't get a stream, don't retry
+  stream.disconnected();
   const delay = reconnectionDelay.value();
   reconnectionDelay.increment();
   log(
