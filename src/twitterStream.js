@@ -78,7 +78,14 @@ class Stream {
     log('Disconnecting stream');
     if (this.stream) {
       log('Destroying stream');
-      this.stream.destroy();
+      try {
+        this.stream.destroy();
+      } catch (e) {
+        console.error('Tried to destroy a stream but ran into error:');
+        console.error(e);
+        console.error('Stream object:');
+        console.error(this.stream);
+      }
     }
     this.stream = null;
     this.userIds = [];
