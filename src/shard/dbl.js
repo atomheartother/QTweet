@@ -33,7 +33,7 @@ export default () => {
     ? new DBL(process.env.DBL_TOKEN, getClient())
     : null;
   if (dblClient) {
-    console.log('✅ DBL client initialized');
+    log('✅ DBL client initialized');
     dblClient.on('error', ({ status }) => {
       log(`❌ DBL: Error with status ${status}`);
     });
