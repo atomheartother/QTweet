@@ -1,6 +1,6 @@
 // Direct mappings for discord.js methods
 import Discord from 'discord.js';
-// import DBL from 'dblapi.js';
+import DBL from 'dblapi.js';
 import log from '../log';
 import Backup from '../backup';
 
@@ -45,16 +45,40 @@ const reconnectionDelay = new Backup({
   maxValue: 60000,
 });
 
-// const dblClient = process.env.DBL_TOKEN !== '' ? new DBL(process.env.DBL_TOKEN, dClient) : null;
-
+let dblClient;
 export const getClient = () => dClient;
 
+const postDblStats = async () => {
+  if (!dClient.shard) {
+    console.error('DBL: Tried to post stats but we don\'t have a shard object');
+    return;
+  }
+  if (dClient.shard.ids.length < 1) {
+    console.error('DBL: 0 shards in dClient.shard.ids');
+    return;
+  }
+
+  if (dClient.shard.ids.length > 1) {
+    console.log('DBL: We have more than 1 ID in this shard...');
+    console.log(dClient.shard.ids);
+  }
+  dblClient.postStats(
+    dClient.guilds.cache.array().length,
+    dClient.shard.ids[0],
+    dClient.shard.count,
+  );
+};
+
 export const login = async () => {
-  // if (dblClient) {
-  //   dblClient.on('error', ({ status }) => {
-  //     log(`Error with DBL client: ${status}`);
-  //   });
-  // }
+  dblClient = process.env.DBL_TOKEN !== ''
+    ? new DBL(process.env.DBL_TOKEN, dClient)
+    : null;
+  if (dblClient) {
+    dblClient.on('error', ({ status }) => {
+      log(`Error with DBL client: ${status}`);
+    });
+    setInterval(postDblStats, 1800000);
+  }
   try {
     log('⚙️ Logging into Discord');
     await dClient.login(process.env.DISCORD_TOKEN);
