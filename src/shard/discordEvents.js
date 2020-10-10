@@ -1,9 +1,9 @@
 // Config file
+import fortune from 'fortune-teller';
 import {
   rmChannel, rmGuild, getGuildInfo,
 } from '../subs';
 import QChannel from './QChannel';
-import fortune from 'fortune-teller'
 
 // logging
 import log from '../log';

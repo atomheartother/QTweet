@@ -341,9 +341,9 @@ export const getFilteredSubs = async (tweet) => {
     const {
       flags, channelId, isDM,
     } = subs[i];
-    if (isDM) log(`Should we post ${tweet.id_str} in channel ${channelId}?`, true);
+    if (isDM) log(`Should we post ${tweet.id_str} in channel ${channelId}?`, null, true);
     if (flagsFilter(flags, tweet)) {
-      if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`, true);
+      if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`, null, true);
       targetSubs.push({ flags, qChannel: { channelId, isDM } });
     }
   }
