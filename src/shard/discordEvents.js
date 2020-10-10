@@ -15,6 +15,7 @@ import { createStream, destroyStream } from './master';
 import commands from './commands';
 import { user, login } from './discord';
 import i18n from './i18n';
+import dbl from './dbl';
 
 const handleCommand = async (commandName, author, qChannel, args) => {
   const command = commands[commandName];
@@ -92,6 +93,8 @@ export const handleGuildDelete = async ({ id, name }) => {
 
 export const handleReady = async () => {
   log('✅ Logged in to Discord');
+  // If we're using DBL, init it here
+  dbl();
   createStream();
 };
 
