@@ -4,7 +4,6 @@ import {
   getUniqueChannels as SQLgetUniqueChannels,
   getGuildSubs as SQLgetGuildSubs,
   getChannelSubs as SQLgetChannelSubs,
-  getChannels as SQLgetChannels,
   rmChannel as SQLrmChannel,
   getSubscription as SQLgetSub,
   getUserFromScreenName as SQLgetUserFromScreenName,
