@@ -17,10 +17,11 @@ import { user, login } from './discord';
 import i18n from './i18n';
 import dbl from './dbl';
 
-const handleCommand = async (commandName, author, qChannel, args) => {
+const handleCommand = async (commandName, author, qChannel, parsedArgs) => {
   const command = commands[commandName];
   // Check that the command exists
   if (command) {
+    const { args } = parsedArgs;
     // Check that there's the right number of args
     if (args.length < command.minArgs) {
       postTranslatedMessage(qChannel, `usage-${commandName}`);
@@ -40,8 +41,31 @@ const handleCommand = async (commandName, author, qChannel, args) => {
         return;
       }
     }
-    command.function(args, qChannel, author);
+    command.function(parsedArgs, qChannel, author);
   }
+};
+
+// Input: str
+// Ouput: { args: string[], options: {[key:string]: string}, flags: string[]}
+const parseWords = (line) => {
+  const regxp = /--(\w+)(="(.*?)"|=(\S+))?|"(.*?)"|(\S+)/g;
+  const args = [];
+  const flags = [];
+  const options = [];
+  let match = regxp.exec(line);
+  while (match) {
+    if (match[6] || match[5]) { // Single word or multiple word arg
+      args.push(match[6] || match[5]);
+    } else if (match[1] && !match[2]) { // Option with no equal
+      flags.push(match[1]);
+    } else {
+      const key = match[1];
+      const value = match[3] || match[4]; // Multiple word value or simple value
+      options[key] = value;
+    }
+    match = regxp.exec(line);
+  }
+  return { args, flags, options };
 };
 
 export const handleMessage = async (message) => {
@@ -63,13 +87,14 @@ export const handleMessage = async (message) => {
     }
     return;
   }
-  const args = message.content
+
+  const [command, ...words] = message.content
     .slice(prefix.length)
     .trim()
     .split(/ +/g);
 
-  const command = args.shift().toLowerCase();
-  handleCommand(command, author, qc, args);
+  const parsedCmd = parseWords(words.join(' '));
+  handleCommand(command.toLowerCase(), author, qc, parsedCmd);
 };
 
 export const handleError = ({ message, error }) => {

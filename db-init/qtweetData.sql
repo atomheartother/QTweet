@@ -21,5 +21,6 @@ CREATE TABLE subs (
     "channelId" BIGINT REFERENCES channels ON DELETE CASCADE,
     "isDM" boolean NOT NULL,
     "flags" integer NOT NULL,
+    "msg" text DEFAULT NULL,
     CONSTRAINT sub_key PRIMARY KEY("twitterId", "channelId")
 );

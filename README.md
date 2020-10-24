@@ -15,7 +15,7 @@ You never have to use Twitter again, just get the good stuff posted to your Disc
 - Get the latest **text, image, album and video** tweet(s) from any twitter user, formatted for Discord.
 - Cross-post tweets from Twitter to Discord in **real time**.
 - Supports **retweets and quotes**, highlights hashtags and user mentions...
-- Ping your Discord server members directly from twitter with the `--ping` option!
+- Ping your Discord server members directly from twitter with the `--msg` option!
 - **Can post to DMs** directly!
 
 # Documentation, commands, etc

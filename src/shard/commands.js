@@ -50,27 +50,6 @@ const getScreenName = (word) => {
   return word;
 };
 
-const argParse = (args) => {
-  const values = [];
-  const flags = [];
-  const options = {};
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
-    if (arg.substring(0, 2) === '--') {
-      const optStr = arg.substring(2);
-      const equalIdx = optStr.indexOf('=');
-      if (equalIdx === -1) flags.push(arg.substring(2));
-      // flag
-      else if (equalIdx > 0) {
-        options[optStr.substring(0, equalIdx)] = optStr.substring(equalIdx + 1);
-      }
-    } else {
-      values.push(arg);
-    }
-  }
-  return { values, flags, options };
-};
-
 export const handleUserTimeline = async ({
   qc,
   res: tweets,
@@ -108,7 +87,8 @@ export const handleUserTimeline = async ({
   const {
     successful,
     err,
-    // So I know this is weird but we originally got tweets in the WRONG order, from most recent to oldest
+    // So I know this is weird but we originally got tweets in the WRONG order,
+    // from most recent to oldest
     // If we get the reverse flag, we therefore DON'T reverse, we just leave it in the wrong order
   } = await postEmbeds(qChannel, reverseOrder ? embeds : embeds.reverse());
   if (err) {
@@ -128,14 +108,9 @@ const postTimeline = async (qChannel, screenName, count, flags) => {
   });
 };
 
-const tweet = async (args, qChannel, author) => {
-  const { values, flags, options } = argParse(args);
+const tweet = async ({ args, flags, options }, qChannel, author) => {
   let force = false;
-  if (values.length < 1) {
-    postTranslated(qChannel, 'usage-tweet');
-    return;
-  }
-  let screenNames = values.map((name) => getScreenName(name));
+  let screenNames = args.map((name) => getScreenName(name));
   if (flags.indexOf('force') !== -1) force = true;
   const isMod = await checks.isChannelMod(author, qChannel);
   let count = options.count ? Number(options.count) : 1;
@@ -183,27 +158,25 @@ export const handleTweetId = async ({ qc, res: { formatted, isQuoted, quoted }, 
   }
 };
 
-const tweetId = (args, qChannel) => {
-  const id = args[0];
+const tweetId = ({ args: [id] }, qChannel) => {
   cmd('tweetId', { id, qc: qChannel.serialize() });
 };
 
-const start = async (args, qChannel) => {
-  const { values, flags: strFlags } = argParse(args);
+const start = async ({ args, flags: strFlags, options }, qChannel) => {
   const flags = computeFlags(strFlags);
-  const screenNames = values.map(getScreenName);
+  const screenNames = args.map(getScreenName);
   if (screenNames.length < 1) {
     postTranslated(qChannel, 'usage-start');
     return;
   }
-  const ownerId = await qChannel.ownerId();
-  const guildId = await qChannel.guildId();
-  cmd('start', { screenNames, flags, qc: { ...qChannel.serialize(), ownerId, guildId } });
+  const [ownerId, guildId] = await Promise.all([qChannel.ownerId(), qChannel.guildId()]);
+  cmd('start', {
+    screenNames, flags, qc: { ...qChannel.serialize(), ownerId, guildId }, msg: options.msg,
+  });
 };
 
-const stop = async (args, qChannel) => {
-  const { values } = argParse(args);
-  const screenNames = values.map(getScreenName);
+const stop = async ({ args }, qChannel) => {
+  const screenNames = args.map(getScreenName);
   if (screenNames.length < 1) {
     postTranslated(qChannel, 'usage-stop');
     return;
@@ -211,7 +184,7 @@ const stop = async (args, qChannel) => {
   cmd('stop', { screenNames, qc: qChannel.serialize() });
 };
 
-const stopchannel = async (args, qChannel) => {
+const stopchannel = async ({ args }, qChannel) => {
   let targetChannel = qChannel.id;
   let channelName = await qChannel.name();
   if (args.length > 0) {
@@ -237,7 +210,7 @@ const stopchannel = async (args, qChannel) => {
   postTranslated(qChannel, 'stopChannelSuccess', { subs: subs.length, channelName });
 };
 
-const list = async (args, qChannel) => {
+const list = async (_, qChannel) => {
   const gid = await qChannel.guildId();
   const [subs, lan] = await Promise.all([getChannelSubs(qChannel.id, true), getLang(gid)]);
   const { cmd: command, ...data } = await formatSubsList(qChannel.serialize(), subs, lan);
@@ -250,7 +223,7 @@ const list = async (args, qChannel) => {
   }
 };
 
-const setLangCmd = async (args, qChannel) => {
+const setLangCmd = async ({ args }, qChannel) => {
   const verb = args.shift();
   switch (verb[0]) {
     case 'l': {
@@ -280,7 +253,7 @@ const setLangCmd = async (args, qChannel) => {
   }
 };
 
-const setPrefixCmd = async (args, qChannel) => {
+const setPrefixCmd = async ({ args }, qChannel) => {
   const prefix = args.shift();
   setPrefix(await qChannel.guildId(), prefix);
   postTranslated(qChannel, 'prefixSuccess', { prefix });
@@ -295,12 +268,12 @@ export const handleAnnounce = async ({ channels, msg }) => {
   announcement(msg, channels.filter((c, index) => !!qChannelsObjs[index]));
 };
 
-const announce = async (args) => {
+const announce = async ({ args }) => {
   const msg = args.join(' ');
   cmd('announce', { msg });
 };
 
-const help = async (args, qChannel) => {
+const help = async (_, qChannel) => {
   const { lang: language, prefix } = await getGuildInfo(qChannel.guildId());
   const embed = new MessageEmbed()
     .setColor(0x0e7675)
