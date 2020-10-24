@@ -162,7 +162,7 @@ const tweetId = ({ args: [id] }, qChannel) => {
   cmd('tweetId', { id, qc: qChannel.serialize() });
 };
 
-const start = async ({ args, flags: strFlags }, qChannel) => {
+const start = async ({ args, flags: strFlags, options }, qChannel) => {
   const flags = computeFlags(strFlags);
   const screenNames = args.map(getScreenName);
   if (screenNames.length < 1) {
@@ -170,7 +170,9 @@ const start = async ({ args, flags: strFlags }, qChannel) => {
     return;
   }
   const [ownerId, guildId] = await Promise.all([qChannel.ownerId(), qChannel.guildId()]);
-  cmd('start', { screenNames, flags, qc: { ...qChannel.serialize(), ownerId, guildId } });
+  cmd('start', {
+    screenNames, flags, qc: { ...qChannel.serialize(), ownerId, guildId }, msg: options.msg,
+  });
 };
 
 const stop = async ({ args }, qChannel) => {

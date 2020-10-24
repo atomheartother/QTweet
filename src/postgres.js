@@ -57,15 +57,15 @@ export const sanityCheck = async () => {
 };
 
 // Subscription management
-export const addSubscription = async (channelId, twitterId, flags, isDM) => {
+export const addSubscription = async (channelId, twitterId, flags, isDM, msg) => {
   const { rows: [{ case: inserted }] } = await pool.query(`
   INSERT INTO 
-    subs("channelId", "twitterId", "flags", "isDM")
-  VALUES($1, $2, $3, $4)
+    subs("channelId", "twitterId", "flags", "isDM", "msg")
+  VALUES($1, $2, $3, $4, $5)
     ON CONFLICT ON CONSTRAINT sub_key
-  DO UPDATE SET "flags"=$3
+  DO UPDATE SET "flags"=$3, "msg"=$5
   RETURNING case when xmax::text::int > 0 then 0 else 1 end`,
-  [channelId, twitterId, flags, isDM]);
+  [channelId, twitterId, flags, isDM, msg || null]);
   return inserted;
 };
 
@@ -128,7 +128,7 @@ export const getUserSubs = async (twitterId, withInfo = false) => {
       )}, "subs."isDM"" AS "isDM" FROM subs INNER JOIN channels ON subs."channelId" = channels."channelId" WHERE subs."twitterId"=$1;`
       : `SELECT ${getInt(
         '"channelId"',
-      )}, "flags", "isDM" FROM subs WHERE "twitterId"=$1`, [twitterId],
+      )}, "flags", "isDM", "msg" FROM subs WHERE "twitterId"=$1`, [twitterId],
   );
   return rows;
 };

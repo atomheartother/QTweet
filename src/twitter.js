@@ -339,12 +339,12 @@ export const getFilteredSubs = async (tweet) => {
   const targetSubs = [];
   for (let i = 0; i < subs.length; i += 1) {
     const {
-      flags, channelId, isDM,
+      flags, channelId, isDM, msg,
     } = subs[i];
     if (isDM) log(`Should we post ${tweet.id_str} in channel ${channelId}?`, null, true);
     if (flagsFilter(flags, tweet)) {
       if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`, null, true);
-      targetSubs.push({ flags, qChannel: { channelId, isDM } });
+      targetSubs.push({ flags, qChannel: { channelId, isDM }, msg });
     }
   }
   return targetSubs;
@@ -371,9 +371,12 @@ const streamData = async (tweet) => {
   }
   log(`✅ Received valid tweet: ${tweet.id_str}, forwarding to ${subs.length} Discord subscriptions`, null, true);
   const { embed, metadata } = await formatTweet(tweet);
-  subs.forEach(({ flags, qChannel }) => {
+  subs.forEach(({ flags, qChannel, msg }) => {
     if (metadata.ping && isSet(flags, 'ping')) {
       post(qChannel, '@everyone', 'message');
+    }
+    if (msg) {
+      post(qChannel, msg, 'message');
     }
     if (qChannel.isDM) log(`Posting ${tweet.id_str} to ${qChannel.channelId}.`);
     post(qChannel, embed, 'embed');

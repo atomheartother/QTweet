@@ -96,10 +96,10 @@ export const updateUser = async (user) => {
 // Add a subscription to this userId or update an existing one
 export const add = async ({
   channelId, isDM, guildId, ownerId,
-}, twitterId, name, flags) => {
+}, twitterId, name, flags, msg) => {
   const users = await addUserIfNoExists(twitterId, name);
   const channels = await addChannelIfNoExists(channelId, guildId, ownerId, isDM);
-  const subs = await addSubscription(channelId, twitterId, flags, isDM);
+  const subs = await addSubscription(channelId, twitterId, flags, isDM, msg);
   return { subs, users, channels };
 };
 

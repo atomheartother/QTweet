@@ -48,7 +48,9 @@ const getUserIds = async (screenNames) => {
   return [].concat(...arrays);
 };
 
-export const start = async ({ qc, flags, screenNames }) => {
+export const start = async ({
+  qc, flags, screenNames, msg: tweetMessage,
+}) => {
   let data = [];
   try {
     data = await getUserIds(screenNames);
@@ -86,7 +88,7 @@ export const start = async ({ qc, flags, screenNames }) => {
   const promises = data.map(({
     id_str: userId,
     screen_name: name,
-  }) => add(qc, userId, name, flags));
+  }) => add(qc, userId, name, flags, tweetMessage));
   const results = await Promise.all(promises);
   const redoStream = !!results.find(({ users }) => users !== 0);
   if (redoStream) createStream();
