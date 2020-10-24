@@ -87,6 +87,11 @@ export const formatGenericList = async (
 
 export const formatTwitterUserShort = (name) => `@${name} (https://twitter.com/${name})`;
 
+const formatSubMsg = (msg) => {
+  if (!msg) return '';
+  return `\nWith message: \`${msg}\``;
+};
+
 export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
   notext: isSet(flags, 'notext'),
   retweet: isSet(flags, 'retweet'),
@@ -98,7 +103,7 @@ export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
 export const formatSubsList = async (qc, subs, lang) => formatGenericList({ qc, lang }, {
   data: subs,
   formatTitle: ({ name }) => formatTwitterUserShort(name),
-  formatField: ({ twitterId, flags }) => `**${i18n(lang, 'id')}:** ${twitterId}\n${formatFlags(lang, flags)}`,
+  formatField: ({ twitterId, flags, msg }) => `**${i18n(lang, 'id')}:** ${twitterId}\n${formatFlags(lang, flags)}${formatSubMsg(msg)}`,
   noElements: 'noSubscriptions',
   objectName: 'subscriptions',
 });

@@ -108,7 +108,8 @@ export const getChannelSubs = async (channelId, withName = false) => {
       '"twitterId"',
     )},
     "name",
-    "flags"
+    "flags",
+    "msg" 
     FROM subs INNER JOIN twitterUsers ON subs."twitterId" = twitterUsers."twitterId"
     WHERE subs."channelId"=$1`
     : `SELECT ${getInt(
