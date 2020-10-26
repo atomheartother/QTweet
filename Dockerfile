@@ -7,7 +7,7 @@ ARG PREFIX=!!
 
 RUN for file in ./lang/*.ftl; do f=${file%.ftl}; cat $file | envsubst '$BOT_NAME:$PREFIX' > $f.o.ftl; echo "Built $f.o.ftl "; done
 
-FROM node:14.3.0-slim
+FROM node:15.0.1-slim
 WORKDIR /usr/src/app
 
 # Copy build files and install using yarn
