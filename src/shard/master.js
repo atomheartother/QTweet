@@ -1,4 +1,4 @@
-import { getClient } from './discord';
+import { getClient } from './discord/discord';
 
 const clientShard = getClient().shard;
 

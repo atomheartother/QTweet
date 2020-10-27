@@ -14,7 +14,7 @@
       }
     },
     "include": [
-      "src/**/*.js"
+      "src/**/*.js", "src/shard/discordEvents.ts", "src/shard/discord.ts", "src/shard/QChannel.ts", "src/shardManager.ts"
     ],
     "exclude": [
       "node_modules"

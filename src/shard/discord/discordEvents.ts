@@ -2,22 +2,23 @@
 import fortune from 'fortune-teller';
 import {
   rmChannel, rmGuild, getGuildInfo,
-} from '../subs';
-import QChannel from './QChannel';
-
+} from '../../subs';
+import QChannel from '../QChannel/QChannel';
+import { CmdOptions, ParsedCmd} from './type'
 // logging
-import log from '../log';
+import log from '../../log';
 import {
   message as postMessage,
   translated as postTranslatedMessage,
-} from './post';
-import { createStream, destroyStream } from './master';
-import commands from './commands';
-import { user, login } from './discord';
-import i18n from './i18n';
-import dbl from './dbl';
+} from '../post';
+import { createStream, destroyStream } from '../master';
+import commands from '../commands';
+import { user, login, isNewsChannel, isTextChannel } from './discord';
+import i18n from '../i18n';
+import dbl from '../dbl';
+import { Channel, Guild, Message, User } from 'discord.js';
 
-const handleCommand = async (commandName, author, qChannel, parsedArgs) => {
+const handleCommand = async (commandName: string, author: User, qChannel: QChannel, parsedArgs: ParsedCmd) => {
   const command = commands[commandName];
   // Check that the command exists
   if (command) {
@@ -46,12 +47,11 @@ const handleCommand = async (commandName, author, qChannel, parsedArgs) => {
 };
 
 // Input: str
-// Ouput: { args: string[], options: {[key:string]: string}, flags: string[]}
-const parseWords = (line) => {
+const parseWords = (line: string): ParsedCmd => {
   const regxp = /--(\w+)(="(.*?)"|=(\S+))?|"(.*?)"|(\S+)/g;
   const args = [];
   const flags = [];
-  const options = [];
+  const options: CmdOptions = {}
   let match = regxp.exec(line);
   while (match) {
     if (match[6] || match[5]) { // Single word or multiple word arg
@@ -68,12 +68,13 @@ const parseWords = (line) => {
   return { args, flags, options };
 };
 
-export const handleMessage = async (message) => {
+export const handleMessage = async (message: Message) => {
   // Ignore bots
   if (message.author.bot) return;
   const { author, channel } = message;
+  if (isNewsChannel(channel)) return;
   const qc = new QChannel(channel);
-  const { lang, prefix } = await getGuildInfo(await qc.guildId());
+  const { lang, prefix } = await getGuildInfo(qc.guildId());
   // In case anything goes wrong with the db prefix, still use the old prefix as backup!
   if (message.content.indexOf(prefix) !== 0) {
     if (
@@ -105,12 +106,12 @@ export const handleError = ({ message, error }) => {
   login();
 };
 
-export const handleGuildCreate = async (guild) => {
+export const handleGuildCreate = async (guild: Guild) => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
 };
 
-export const handleGuildDelete = async ({ id, name }) => {
+export const handleGuildDelete = async ({ id, name }: Guild) => {
   const { users } = await rmGuild(id);
   log(`Left guild ${name}, ${users} users deleted.`);
   if (users > 0) createStream();
@@ -123,7 +124,9 @@ export const handleReady = async () => {
   createStream();
 };
 
-export const handleChannelDelete = async ({ id, name }) => {
+export const handleChannelDelete = async (c: Channel) => {
+  if (!isTextChannel(c)) return;
+  const {id, name} = c;
   const { users } = await rmChannel(id);
   log(`Channel #${name} (${id}) deleted.`);
   if (users > 0) createStream();

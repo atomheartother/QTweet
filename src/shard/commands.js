@@ -20,7 +20,7 @@ import {
   setPrefix,
 } from '../subs';
 import { compute as computeFlags } from '../flags';
-import QChannel from './QChannel';
+import QChannel from './QChannel/QChannel';
 import { supportedLangs, profileURL } from '../../config.json';
 
 import {

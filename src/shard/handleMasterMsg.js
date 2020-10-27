@@ -2,7 +2,7 @@ import { getLang } from '../subs';
 import log from '../log';
 import { handleUserTimeline, handleTweetId, handleAnnounce } from './commands';
 import { post, translated } from './post';
-import QChannel from './QChannel';
+import QChannel from './QChannel/QChannel';
 import i18n from './i18n';
 
 const handlePost = async ({ qc, content, type }) => {

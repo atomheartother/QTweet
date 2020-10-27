@@ -1,4 +1,4 @@
-import { login, getClient } from './discord';
+import { login, getClient } from './discord/discord';
 import { init as initDb } from '../subs';
 import log from '../log';
 import {

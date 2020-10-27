@@ -1,5 +1,5 @@
 import DBL from 'dblapi.js';
-import { getClient } from './discord';
+import { getClient } from './discord/discord';
 import log from '../log';
 
 let dblClient = null;

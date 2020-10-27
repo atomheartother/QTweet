@@ -1,6 +1,6 @@
-import { rmChannel, getLang } from '../subs';
+import { getLang } from '../subs';
 import log from '../log';
-import QChannel from './QChannel';
+import QChannel from './QChannel/QChannel.ts';
 import i18n from './i18n';
 
 // Return values for post functions:
@@ -88,8 +88,8 @@ const handleDiscordPostError = async (
     });
     newType = 'permission message';
   } else if (
-    ( 
-      Number(errCode) !== NaN 
+    (
+      !Number.isNaN(errCode)
       && Number(errCode) >= 500
       && Number(errCode) < 600
     )
