@@ -7,6 +7,11 @@ const langDir = './lang';
 const langs : {
   [key:string]: FluentBundle
 } = {};
+
+export type i18nOptions = {
+  [key:string]: string;
+}
+
 {
   const globalConf = readFileSync(`${langDir}/global.o.ftl`, 'utf8')
     .toString();
@@ -27,7 +32,7 @@ const langs : {
   });
 }
 
-const i18n = (lang: string, key: string, options: {[key:string]: string}) => {
+const i18n = (lang: string, key: string, options: i18nOptions) => {
   const bundle = langs[lang];
   if (!bundle) {
     if (lang !== 'en') return i18n('en', key, options);
