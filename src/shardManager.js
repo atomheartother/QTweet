@@ -1,5 +1,4 @@
 import { ShardingManager } from 'discord.js';
-import log from './log';
 
 let manager = null;
 

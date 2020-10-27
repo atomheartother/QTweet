@@ -23,8 +23,8 @@
     "fluent": "^0.12.0",
     "fortune-teller": "^0.1.2",
     "pg": "^8.2.1",
-    "twitter-lite": "latest",
-    "unfurl.js": "^3.0.1",
-    "typescript": "^3.8.3"
+    "twitter-lite": "^0.14.0",
+    "typescript": "^3.8.3",
+    "unfurl.js": "^3.0.1"
   }
 }
