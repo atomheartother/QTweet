@@ -6,6 +6,7 @@
       "sourceMap": true,
       "allowJs": true,
       "moduleResolution": "node",
+      "resolveJsonModule": true,
       "baseUrl": ".",
       "paths": {
         "*": [
@@ -14,7 +15,7 @@
       }
     },
     "include": [
-      "src/**/*.js", "src/shard/discordEvents.ts", "src/shard/discord.ts", "src/shard/QChannel.ts", "src/shardManager.ts"
+      "src/**/*.js", "src/shard/discordEvents.ts", "src/shard/discord.ts", "src/shard/QChannel.ts", "src/shardManager.ts", "src/shard/i18n.ts", "src/backup.ts"
     ],
     "exclude": [
       "node_modules"
