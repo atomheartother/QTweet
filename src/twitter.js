@@ -5,10 +5,10 @@ import { isSet } from './flags';
 import {
   getUserIds, getUserSubs, updateUser, getUsersForSanityCheck, bulkDeleteUsers, databaseSanityCheck,
 } from './subs';
-import Backup from './backup';
+import Backup from './backup.ts';
 import log from './log';
 
-import { post, someoneHasChannel } from './shardManager';
+import { post, someoneHasChannel } from './shardManager.ts';
 import Stream from './twitterStream';
 import { getChannels, rmChannel } from './postgres';
 
