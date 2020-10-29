@@ -1,3 +1,7 @@
+import { getLang } from "../../subs";
+import i18n from "../i18n";
+import QChannel from "../QChannel/QChannel";
+
 export const getScreenName = (word: string): string => {
     if (word.startsWith('@')) {
         return word.substring(1);
@@ -12,4 +16,9 @@ export const getScreenName = (word: string): string => {
     }
     return word;
 };
-  
+
+export const formatScreenNames = async (qChannel: QChannel, screenNames: string[], lastName: string) => i18n(await getLang(qChannel.guildId()), 'formatUserNames', {
+    count: screenNames.length + 1,
+    names: screenNames.toString(),
+    lastName,
+});

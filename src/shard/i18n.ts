@@ -32,7 +32,7 @@ export type i18nOptions = {
   });
 }
 
-const i18n = (lang: string, key: string, options: i18nOptions = {}) => {
+const i18n = (lang: string, key: string, options: i18nOptions = {}): string => {
   const bundle = langs[lang];
   if (!bundle) {
     if (lang !== 'en') return i18n('en', key, options);
