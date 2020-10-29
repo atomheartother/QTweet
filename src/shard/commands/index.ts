@@ -1,7 +1,7 @@
 import QChannel from "../QChannel/QChannel";
 import { ParsedCmd } from '../discord'
 import { User } from "discord.js";
-import * as checks from '../checks';
+import * as checks from './checks';
 import start from './start'
 import lang from './lang'
 import qtprefix from './qtprefix'

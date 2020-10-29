@@ -3,7 +3,7 @@ import {
     translated,
     embeds
   } from '../post';
-import * as checks from '../checks';
+import * as checks from './checks';
 import {
     cmd,
   } from '../master';

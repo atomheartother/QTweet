@@ -16,7 +16,7 @@
       }
     },
     "include": [
-      "src/**/*.js", "src/shard/discordEvents.ts", "src/shard/discord.ts", "src/shard/QChannel.ts", "src/shardManager.ts", "src/shard/i18n.ts", "src/backup.ts", "src/shard/dbl.ts", "src/shard/master.ts", "src/shard/post.ts", "src/shard/commands/commands.ts"
+      "src/**/*.js", "src/shard/discordEvents.ts", "src/shard/discord.ts", "src/shard/QChannel.ts", "src/shardManager.ts", "src/shard/i18n.ts", "src/backup.ts", "src/shard/dbl.ts", "src/shard/master.ts", "src/shard/post.ts", "src/shard/commands/com, "src/shard/discord/checks.ts", "src/shard/bot.ts"mands.ts"
     ],
     "exclude": [
       "node_modules"
