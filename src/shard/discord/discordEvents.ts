@@ -4,7 +4,7 @@ import {
   rmChannel, rmGuild, getGuildInfo,
 } from '../../subs';
 import QChannel from '../QChannel/QChannel';
-import { CmdOptions, ParsedCmd} from './type'
+import { CmdOptions, ParsedCmd} from '.'
 // logging
 import log from '../../log';
 import {
@@ -17,36 +17,8 @@ import { user, login, isNewsChannel, isTextChannel } from './discord';
 import i18n from '../i18n';
 import dbl from '../dbl';
 import { Channel, Guild, Message, User } from 'discord.js';
+import handleCommand from '../commands';
 
-const handleCommand = async (commandName: string, author: User, qChannel: QChannel, parsedArgs: ParsedCmd) => {
-  const command = commands[commandName];
-  // Check that the command exists
-  if (command) {
-    const { args } = parsedArgs;
-    // Check that there's the right number of args
-    if (args.length < command.minArgs) {
-      postTranslatedMessage(qChannel, `usage-${commandName}`);
-      return;
-    }
-    log(
-      `Executing command: "${commandName} ${args}" from ${author.tag}`,
-      qChannel,
-    );
-    const passedArray = await Promise.all(command.checks.map(({ f }) => f(author, qChannel)));
-    for (let i = 0; i < command.checks.length; i += 1) {
-      const { badB } = command.checks[i];
-      if (!passedArray[i]) {
-        // If it's not met and we were given a bad boy, post it
-        if (badB) postTranslatedMessage(qChannel, badB);
-        log(`Rejected command "${commandName} ${args}" with reason: ${badB}`);
-        return;
-      }
-    }
-    command.function(parsedArgs, qChannel, author);
-  }
-};
-
-// Input: str
 const parseWords = (line: string): ParsedCmd => {
   const regxp = /--(\w+)(="(.*?)"|=(\S+))?|"(.*?)"|(\S+)/g;
   const args = [];

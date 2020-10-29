@@ -11,6 +11,8 @@ import {
 } from '../discord/discord';
 import { QCConstructor, QCSerialized, QCSupportedChannel } from './type'
 
+export const isQCSupportedChannel = (c: Channel): c is QCSupportedChannel  => isTextChannel(c) || isDmChannel(c);
+
 const getChannelName = (c: Channel) => {
   if (isDmChannel(c)) {
     return `${c.recipient.tag}`;

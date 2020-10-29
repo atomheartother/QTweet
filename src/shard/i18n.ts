@@ -9,7 +9,7 @@ const langs : {
 } = {};
 
 export type i18nOptions = {
-  [key:string]: string;
+  [key:string]: string | number;
 }
 
 {
