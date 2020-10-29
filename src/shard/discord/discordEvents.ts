@@ -70,9 +70,8 @@ export const handleMessage = async (message: Message) => {
   handleCommand(command.toLowerCase(), author, qc, parsedCmd);
 };
 
-export const handleError = ({ message, error }) => {
+export const handleError = ({ message }: Error) => {
   log(`Discord client encountered an error: ${message}`);
-  log(error);
   // Destroy the twitter stream cleanly, we will re-intantiate it sooner that way
   destroyStream();
   login();

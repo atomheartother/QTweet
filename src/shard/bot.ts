@@ -8,7 +8,7 @@ import {
   handleGuildDelete,
   handleReady,
   handleChannelDelete,
-} from './discordEvents';
+} from './discord/discordEvents';
 
 import handleMasterMsg from './handleMasterMsg';
 
