@@ -8,6 +8,7 @@ import qtprefix from './qtprefix'
 import list from './list'
 import tweet from './tweet'
 import tweetId from './tweetId'
+import stop from './stop';
 import stopchannel from './stopchannel'
 import help from './help'
 import announce from './announce'

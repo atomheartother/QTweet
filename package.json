@@ -12,13 +12,13 @@
   "license": "AGPL-3.0",
   "devDependencies": {
     "@types/fluent": "^0.11.3",
-    "@types/node": "^14.14.7",
     "@types/pg": "^7.14.5",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.0"
   },
   "dependencies": {
+    "@types/node": "^14.14.7",
     "dblapi.js": "^2.3.0",
     "discord.js": "^12.0.2",
     "esm": "^3.2.25",

@@ -35,6 +35,6 @@ RUN yarn install --production
 # Copy generated language files
 COPY --from=langbuilder /lang/*.o.ftl lang/
 # Copy dist files over
-COPY --from=compiler /app/dist ./src
+COPY --from=compiler /app/dist ./dist
 
-CMD [ "node", "-r", "esm", "src/index.js" ]
+CMD [ "node", "-r", "esm", "dist/src/index.js" ]
