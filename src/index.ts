@@ -1,7 +1,7 @@
 import { init as initDb } from './subs';
 import { sanityCheck } from './twitter';
-import shardMsgHandler from './shardMsgHandler';
-import manager from './shardManager';
+import shardMsgHandler from './shardMgr/shardMsgHandler';
+import manager from './shardMgr/shardManager';
 import log from './log';
 
 const shardReady = async () => {
@@ -9,12 +9,12 @@ const shardReady = async () => {
     || !manager.shards.every((shard) => shard.ready)) return;
   log('✅ All shards are ready!');
   // All shards are ready, start taking messages
-  manager.shards.every((shard) => shard.on('message', (msg) => {
+  manager.shards.each((shard) => shard.on('message', (msg) => {
     if (msg.cmd) {
       shardMsgHandler(shard, msg);
     }
   }));
-  await initDb();
+  initDb();
   log('✅ Connection to database successful');
   sanityCheck();
 };

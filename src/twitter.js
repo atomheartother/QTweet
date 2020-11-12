@@ -1,14 +1,14 @@
 import Twitter from 'twitter-lite';
 
 import unfurl from 'unfurl.js';
-import { isSet } from './flags';
+import { isSet } from './flags.ts';
 import {
   getUserIds, getUserSubs, updateUser, getUsersForSanityCheck, bulkDeleteUsers, databaseSanityCheck,
 } from './subs';
 import Backup from './backup.ts';
 import log from './log';
 
-import { post, someoneHasChannel } from './shardManager.ts';
+import { post, someoneHasChannel } from './shardMgr/shardManager.ts';
 import Stream from './twitterStream';
 import { getChannels, rmChannel } from './postgres';
 

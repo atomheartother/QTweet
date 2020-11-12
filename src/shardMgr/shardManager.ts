@@ -1,5 +1,5 @@
 import { ShardingManager } from 'discord.js';
-import { QCSerialized } from './shard/QChannel/type';
+import { QCSerialized } from '../shard/QChannel/type';
 
 let manager: ShardingManager = new ShardingManager('src/shard/bot.js', { token: process.env.DISCORD_TOKEN, execArgv: ['-r', 'esm'] });
 
