@@ -20,7 +20,7 @@ import { Channel, Guild, Message, User } from 'discord.js';
 import handleCommand from '../commands';
 
 const parseWords = (line: string): ParsedCmd => {
-  const regxp = /(?:--|—)(\w+)(="(.*?)"|=(\S+))?|"(.*?)"|(\S+)/g;
+  const regxp = /(?:--|—)(\w+)(=(?:"|”)(.*?)(?:"|”)|=(\S+))?|(?:"|”)(.*?)(?:"|”)|(\S+)/g;
   const args = [];
   const flags = [];
   const options: CmdOptions = {}
