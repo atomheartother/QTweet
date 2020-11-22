@@ -1,6 +1,7 @@
+import { getChannelSubs } from "../../db/subs";
 import { CmdFn } from ".";
-import { getChannelSubs, getLang } from "../../subs";
-import { formatSubsList, FORMAT_POST_EMBEDS, FORMAT_POST_TRANSLATED } from "../format";
+import { getLang } from "../../db/guilds";
+import { formatSubsList, FORMAT_POST_EMBEDS } from "../format";
 import { embeds, translated } from "../post";
 
 const list: CmdFn = async (_, qChannel) => {

@@ -2,11 +2,10 @@ import log from '../log';
 import {
   userTimeline, userLookup, createStream, getError, showTweet, formatTweet, hasMedia,
 } from '../twitter';
-import {
-  rm, add, getUserIds as getAllSubs, getUniqueChannels,
-} from '../subs';
 import { post, postAnnouncement } from './shardManager';
 import { DbModificationsInfo, ShardMsgHandlerFunction } from '.';
+import { add, getAllSubs, rm } from '../db/subs';
+import { getUniqueChannels } from '../db/channels';
 
 const handleTwitterError = (code: number, msg: string, screenNames: string[]) => {
   if (code === 17 || code === 34) {

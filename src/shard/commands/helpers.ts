@@ -1,4 +1,4 @@
-import { getLang } from "../../subs";
+import { getLang } from "../../db/guilds";
 import i18n from "../i18n";
 import QChannel from "../QChannel/QChannel";
 

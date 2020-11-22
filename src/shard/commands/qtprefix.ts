@@ -1,5 +1,5 @@
 import { CmdFn } from ".";
-import { setPrefix } from "../../subs";
+import { setPrefix } from "../../db/guilds";
 import { translated } from "../post";
 
 const qtprefix: CmdFn = async ({ args }, qChannel) => {

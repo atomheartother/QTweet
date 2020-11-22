@@ -1,23 +1,20 @@
 // Config file
 import fortune from 'fortune-teller';
-import {
-  rmChannel, rmGuild, getGuildInfo,
-} from '../../subs';
 import QChannel from '../QChannel/QChannel';
 import { CmdOptions, ParsedCmd} from '.'
 // logging
 import log from '../../log';
 import {
   message as postMessage,
-  translated as postTranslatedMessage,
 } from '../post';
 import { createStream, destroyStream } from '../master';
-import commands from '../commands';
 import { user, login, isNewsChannel, isTextChannel } from './discord';
 import i18n from '../i18n';
 import dbl from '../dbl';
-import { Channel, Guild, Message, User } from 'discord.js';
+import { Channel, Guild, Message } from 'discord.js';
 import handleCommand from '../commands';
+import { rmGuild, getGuildInfo } from '../../db/guilds';
+import { rmChannel } from '../../db/channels';
 
 const parseWords = (line: string): ParsedCmd => {
   const regxp = /(?:--|—)(\w+)(=(?:"|”)(.*?)(?:"|”)|=(\S+))?|(?:"|”)(.*?)(?:"|”)|(\S+)/g;

@@ -1,4 +1,3 @@
-import { getLang } from '../subs';
 import log from '../log';
 import { handleUserTimeline as tweet } from './commands/tweet';
 import { handleTweetId as tweetId } from './commands/tweetId';

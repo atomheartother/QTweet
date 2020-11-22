@@ -1,5 +1,5 @@
 import { login, getClient } from './discord/discord';
-import { init as initDb } from '../subs';
+import { init as initDb } from '../db';
 import log from '../log';
 import {
   handleMessage,

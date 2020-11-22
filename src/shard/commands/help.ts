@@ -1,9 +1,9 @@
 import { MessageEmbed } from "discord.js";
-import { getGuildInfo } from "../../subs";
 import i18n from "../i18n";
 import { profileURL } from '../../../config.json';
 import { embed } from "../post";
 import { CmdFn } from ".";
+import { getGuildInfo } from "../../db/guilds";
 
 const help : CmdFn = async (_, qChannel) => {
     const { lang: language, prefix } = await getGuildInfo(qChannel.guildId());

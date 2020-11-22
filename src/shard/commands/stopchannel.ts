@@ -1,9 +1,9 @@
 import { CmdFn } from ".";
 import log from "../../log";
-import { getChannelSubs, rmChannel } from "../../subs";
-import { isDmChannel, isTextChannel } from "../discord/discord";
+import { getChannelSubs } from "../../db/subs";
 import { translated } from "../post";
 import QChannel, { isQCSupportedChannel } from "../QChannel/QChannel";
+import { rmChannel } from "../../db/channels";
 
 const stopchannel: CmdFn = async ({ args }, qChannel) => {
     let targetChannel = qChannel.id;

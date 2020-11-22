@@ -2,17 +2,25 @@ import Twitter from 'twitter-lite';
 
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
-import {
-  getUserIds, getUserSubs, updateUser, getUsersForSanityCheck, bulkDeleteUsers, databaseSanityCheck,
-} from './subs';
 import Backup from './backup';
 import log from './log';
 
 import { post, someoneHasChannel } from './shardMgr/shardManager';
 import Stream from './twitterStream';
-import { getChannels, rmChannel } from './postgres';
-
-
+import {
+  getUserSubs,
+  updateUser,
+  getUserIds,
+  getUsersForSanityCheck,
+  bulkDeleteUsers,
+} from './db/user';
+import {
+  getChannels,
+  rmChannel,
+} from './db/channels';
+import {
+  sanityCheck as dbSanityCheck,
+} from './db';
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
 let twitterTimeout = null;
@@ -522,7 +530,7 @@ export const sanityCheck = async () => {
     log(`Found invalid channel: ${c.channelId}`);
     return rmChannel(c.channelId);
   }));
-  const { channels, users, guilds } = await databaseSanityCheck();
+  const { channels, users, guilds } = await dbSanityCheck();
   log(`✅ DB sanity check completed!\n${channels + deletedChannels.reduce((prev, del) => prev + del, 0)} channels, ${guilds} guilds, ${users} users removed.`);
 
   const disableSanityCheck = !!Number(process.env.DISABLE_SANITY_CHECK);

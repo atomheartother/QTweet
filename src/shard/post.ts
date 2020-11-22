@@ -1,8 +1,8 @@
-import { getLang } from '../subs';
 import log from '../log';
 import QChannel from './QChannel/QChannel';
 import i18n, { i18nOptions } from './i18n';
 import { QCSerialized } from './QChannel/type';
+import { getLang } from '../db/guilds';
 
 // Return values for post functions:
 // 0: Success
