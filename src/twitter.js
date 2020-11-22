@@ -8,12 +8,14 @@ import log from './log';
 import { post, someoneHasChannel } from './shardMgr/shardManager';
 import Stream from './twitterStream';
 import {
-  getUserSubs,
   updateUser,
   getUserIds,
   getUsersForSanityCheck,
   bulkDeleteUsers,
 } from './db/user';
+import {
+  getUserSubs,
+} from './db/subs';
 import {
   getChannels,
   rmChannel,
