@@ -15,7 +15,7 @@ WORKDIR /app
 # Copy build files and install using yarn
 COPY package.json .
 COPY yarn.lock .
-RUN yarn install --production
+RUN yarn install
 
 # Copy everything over
 COPY . .

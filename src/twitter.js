@@ -1,5 +1,5 @@
 import Twitter from 'twitter-lite';
-
+import { Status as Tweet } from 'twitter-d';
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
 import Backup from './backup';
@@ -23,6 +23,7 @@ import {
 import {
   sanityCheck as dbSanityCheck,
 } from './db';
+
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
 let twitterTimeout = null;
