@@ -1,9 +1,18 @@
+import { QCSerialized } from "../shard/QChannel/type";
 import { getInt, pool, sanityCheck } from ".";
 import { addChannel } from "./channels";
 import { addUser } from "./user";
 
+type DbSubscription = {
+  twitterId: string
+  channelId: string
+  isDM: string
+  flags: string
+  msg: string
+}
+
 export const getAllSubs = async () => {
-  const { rows } = await pool.query(`SELECT ${getInt('subs."channelId"', '"channelId"')}, ${getInt(
+  const { rows } = await pool.query<DbSubscription>(`SELECT ${getInt('subs."channelId"', '"channelId"')}, ${getInt(
     '"twitterId"',
   )}, subs."isDM" AS "isDM", "flags" FROM subs`);
   return rows;
@@ -32,7 +41,7 @@ export const removeSubscription = async (channelId: string, twitterId: string) =
 };
 
 export const getGuildSubs = async (guildId: string) => {
-  const { rows } = await pool.query(`
+  const { rows } = await pool.query<DbSubscription>(`
   SELECT 
     ${getInt('subs."channelId"', '"channelId"')},
     ${getInt('subs."twitterId"', '"twitterId"')},
@@ -47,7 +56,7 @@ export const getGuildSubs = async (guildId: string) => {
 };
 
 export const getChannelSubs = async (channelId: string, withName = false) => {
-  const res = await pool.query(withName
+  const { rows } = await pool.query<DbSubscription>(withName
     ? `SELECT ${getInt(
       'subs."twitterId"',
       '"twitterId"',
@@ -61,11 +70,11 @@ export const getChannelSubs = async (channelId: string, withName = false) => {
       '"twitterId"',
     )}, "flags" FROM subs WHERE subs."channelId"=$1`,
   [channelId]);
-  return res.rows;
+  return rows;
 };
 
 export const getUserSubs = async (twitterId: string, withInfo = false) => {
-  const { rows } = await pool.query(
+  const { rows } = await pool.query<DbSubscription>(
     withInfo
       ? `SELECT ${getInt('subs."channelId"', '"channelId"')}, "flags", ${getInt(
         '"guildId"',
@@ -80,9 +89,15 @@ export const getUserSubs = async (twitterId: string, withInfo = false) => {
 };
 
 // Add a subscription to this userId or update an existing one
-export const add = async ({
-  channelId, isDM, guildId, ownerId,
-}, twitterId: string, name: string, flags: number, msg: string) => {
+export const add = async (
+  {
+    channelId, isDM, guildId, ownerId,
+  }: QCSerialized & {guildId: string, ownerId: string},
+  twitterId: string,
+  name: string,
+  flags: number,
+  msg: string
+) => {
   const users = await addUser(twitterId, name);
   const channels = await addChannel(channelId, guildId, ownerId, isDM);
   const subs = await addSubscription(channelId, twitterId, flags, isDM, msg);

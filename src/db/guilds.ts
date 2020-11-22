@@ -1,5 +1,11 @@
 import { pool, sanityCheck } from ".";
 
+type DbGuild = {
+  guildId: string;
+  prefix: string;
+  lang: string
+}
+
 export const createGuild = async (guildId: string) => {
     const { rowCount } = await pool.query('INSERT INTO guilds("guildId") VALUES($1) ON CONFLICT DO NOTHING',
       [guildId]);
@@ -19,7 +25,7 @@ export const rmGuild = async (guildId: string) => {
 };
 
 export const setLang = async (guildId: string, lang: string) => {
-  const { rows: [{ case: inserted }] } = await pool.query(`INSERT INTO guilds("guildId", "lang")
+  const { rows: [{ case: inserted }] } = await pool.query<{case: number}>(`INSERT INTO guilds("guildId", "lang")
   VALUES($1, $2)
   ON CONFLICT("guildId") DO
     UPDATE SET "lang"=$2
@@ -29,7 +35,7 @@ export const setLang = async (guildId: string, lang: string) => {
 };
 
 const getLangSQL = async (guildId: string) => {
-  const { rows: [lang] } = await pool.query('SELECT "lang" FROM guilds WHERE "guildId"=$1', [guildId]);
+  const { rows: [lang] } = await pool.query<{lang: string}>('SELECT "lang" FROM guilds WHERE "guildId"=$1', [guildId]);
   return lang;
 };
 
@@ -39,7 +45,7 @@ export const getLang = async (guildId: string) => {
 };
 
 export const setPrefix = async (guildId: string, prefix: string) => {
-  const { rows: [{ case: inserted }] } = await pool.query(`INSERT INTO guilds("guildId", "prefix")
+  const { rows: [{ case: inserted }] } = await pool.query<{case: number}>(`INSERT INTO guilds("guildId", "prefix")
   VALUES($1, $2)
   ON CONFLICT("guildId") DO
     UPDATE SET "prefix"=$2
@@ -48,8 +54,8 @@ export const setPrefix = async (guildId: string, prefix: string) => {
   return inserted;
 };
 
-const getGuildInfoSQL = async (guildId: string) => {
-  const { rows: [data] } = await pool.query('SELECT lang, prefix FROM guilds WHERE "guildId"=$1 LIMIT 1', [guildId]);
+const getGuildInfoSQL = async (guildId: string): Promise<DbGuild | undefined> => {
+  const { rows: [data] } = await pool.query<DbGuild>('SELECT * FROM guilds WHERE "guildId"=$1 LIMIT 1', [guildId]);
   return data;
 };
 

@@ -2,7 +2,6 @@ import { Pool } from 'pg';
 
 export let pool: Pool;
 
-
 export const init = () => {
   pool = new Pool();
 };
