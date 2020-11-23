@@ -68,7 +68,7 @@ function resetTwitterTimeout() {
     // Destroy the stream, then wait 1s to re-create it
     stream.disconnected();
     // eslint-disable-next-line no-use-before-define
-    setTimeout(createStream, 1000);
+    setTimeout(createStream, 10000);
   }, twitterTimeoutDelay * 1000);
 }
 
