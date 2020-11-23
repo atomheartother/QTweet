@@ -167,7 +167,7 @@ export const tweet : ShardMsgHandlerFunction<'tweet'> = async ({ count, flags, .
     if (!code) {
       log('Exception thrown without error');
       return {
-        cmd: 'postTranslated', trCode: 'tweetIdGeneralError', screenName,
+        cmd: 'postTranslated', trCode: 'tweetGeneralError', screenName,
       };
     }
     return handleTwitterError(code, msg, [screenName]);
