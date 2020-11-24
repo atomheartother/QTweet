@@ -53,6 +53,10 @@ const reconnectionDelay = new Backup({
 
 let reconnectionTimeoutID = null;
 
+export const destroyStream = () => {
+  if (stream) { stream.disconnected(); }
+};
+
 function resetTwitterTimeout() {
   if (twitterTimeoutDelay <= 0) return;
   if (twitterTimeout !== null) {
@@ -65,8 +69,7 @@ function resetTwitterTimeout() {
       log('❌ We\'re already in reconnection mode, abort timeout system');
       return;
     }
-    // Destroy the stream, then wait 1s to re-create it
-    stream.disconnected();
+    destroyStream();
     // eslint-disable-next-line no-use-before-define
     setTimeout(createStream, 10000);
   }, twitterTimeoutDelay * 1000);
@@ -406,7 +409,7 @@ const streamData = async (tweet) => {
 // Called when twitter ends the connection
 const streamEnd = () => {
   // The backup exponential algorithm will take care of reconnecting
-  stream.disconnected();
+  destroyStream();
   log(
     `❌ We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`,
   );
@@ -420,18 +423,18 @@ const streamEnd = () => {
 
 // Called when the stream has an error
 const streamError = ({ url, status, statusText }) => {
+  const delay = reconnectionDelay.value();
+  log(
+    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
+  );
   if (status === 420 && reconnectionDelay.value() < 30000) {
     log('⚙️ 420 status code detected, jumping to 30s delay immediately', null, true);
     // If we're being rate-limited, wait 30s at least, up to max
     reconnectionDelay.set(30000);
   }
   // We simply can't get a stream, don't retry
-  stream.disconnected();
-  const delay = reconnectionDelay.value();
+  stream.disconnected(false);
   reconnectionDelay.increment();
-  log(
-    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
-  );
   if (reconnectionTimeoutID) {
     clearTimeout(reconnectionTimeoutID);
   }
@@ -478,10 +481,6 @@ export const createStream = async () => {
 const createStreamClearTimeout = () => {
   reconnectionTimeoutID = null;
   createStream();
-};
-
-export const destroyStream = () => {
-  if (stream) { stream.disconnected(); }
 };
 
 export const userLookup = (params) => tClient.post('users/lookup', params);
