@@ -26,7 +26,7 @@ class Stream {
       log('⚙️ New users found!', null, true);
       this.newUserIds = false;
       if (this.stream) {
-        this.stream.destroy();
+        process.exit();
         this.stream = null;
         log(`⚙️ Destroying stream for re-creation in ${destroyDelay}ms`, null, true);
         setTimeout(() => {
@@ -79,7 +79,7 @@ class Stream {
     if (this.stream) {
       log('Destroying stream');
       try {
-        this.stream.destroy();
+        process.exit();
       } catch (e) {
         console.error('Tried to destroy a stream but ran into error:');
         console.error(e);
