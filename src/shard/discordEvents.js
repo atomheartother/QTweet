@@ -1,5 +1,4 @@
 // Config file
-import fortune from 'fortune-teller';
 import {
   rmChannel, rmGuild, getGuildInfo,
 } from '../subs';
@@ -81,7 +80,7 @@ export const handleMessage = async (message) => {
       && !!message.mentions.members
       && message.mentions.members.find((item) => item.user.id === user().id)
     ) {
-      message.reply(`My prefix on this server is \`${prefix}\`\n\n${fortune.fortune()}`);
+      message.reply(`My prefix on this server is \`${prefix}\`\n`);
     } else if (message.channel.type === 'dm') {
       postMessage(qc, i18n(lang, 'welcomeMessage'));
     }
