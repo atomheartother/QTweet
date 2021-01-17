@@ -392,7 +392,6 @@ const streamData = async (tweet) => {
     if (msg) {
       post(qChannel, msg, 'message');
     }
-    if (qChannel.isDM) log(`Posting ${tweet.id_str} to ${qChannel.channelId}.`);
     post(qChannel, embed, 'embed');
   });
   if (tweet.is_quote_status) {
