@@ -37,7 +37,7 @@ services:
       - postgres
 
   postgres:
-    image: postgres:13.1-alpine
+    image: postgres:13-alpine
     restart: always
     volumes:
       - ./db-init:/docker-entrypoint-initdb.d
