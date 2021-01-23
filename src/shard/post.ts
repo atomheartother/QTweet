@@ -1,7 +1,8 @@
-import { rmChannel, getLang } from '../subs';
 import log from '../log';
-import QChannel from './QChannel';
-import i18n from './i18n';
+import QChannel from './QChannel/QChannel';
+import i18n, { i18nOptions } from './i18n';
+import { QCSerialized } from './QChannel/type';
+import { getLang } from '../db/guilds';
 
 // Return values for post functions:
 // 0: Success
@@ -10,7 +11,7 @@ import i18n from './i18n';
 // 3: Number of attempts expired, user wasn't warned
 // 4: No way to contact user about error
 
-const asyncTimeout = (f, ms) => new Promise((resolve) => setTimeout(() => {
+const asyncTimeout = <T=any>(f: Function, ms: number): Promise<T> => new Promise((resolve) => setTimeout(() => {
   resolve(f());
 }, ms));
 
@@ -23,7 +24,7 @@ const handleDiscordPostError = async (
   type,
   msg,
   errorCount = 0,
-) => {
+): Promise<number> => {
   const errCode = error.statusCode || error.code || error.status;
   // We keep fucking up. Stop trying.
   if (errorCount >= 2) {
@@ -88,8 +89,8 @@ const handleDiscordPostError = async (
     });
     newType = 'permission message';
   } else if (
-    ( 
-      Number(errCode) !== NaN 
+    (
+      !Number.isNaN(errCode)
       && Number(errCode) >= 500
       && Number(errCode) < 600
     )
@@ -125,7 +126,7 @@ const handleDiscordPostError = async (
     log("Couldn't find a way to send error notification", qChannel);
     return 4;
   }
-  return asyncTimeout(async () => {
+  return asyncTimeout<number>(async (): Promise<number> => {
     try {
       await targetChannel.send(newMsg);
       log(`Posted ${newType} successfully`, targetChannel);
@@ -142,7 +143,7 @@ const handleDiscordPostError = async (
   }, delay);
 };
 
-export const post = async (qChannel, content, type) => {
+export const post = async (qChannel: QChannel, content: any, type: 'embed' | 'message'): Promise<number> => {
   try {
     await qChannel.send(content);
   } catch (err) {
@@ -151,9 +152,9 @@ export const post = async (qChannel, content, type) => {
   return 0;
 };
 
-export const embed = (qChannel, content) => post(qChannel, content, 'embed');
+export const embed = (qChannel: QChannel, content: any): Promise<number> => post(qChannel, content, 'embed');
 
-export const embeds = async (qChannel, arr) => {
+export const embeds = async (qChannel: QChannel, arr: any[]) => {
   let successful = 0;
   for (let i = 0; i < arr.length; i += 1) {
     const content = arr[i];
@@ -166,12 +167,12 @@ export const embeds = async (qChannel, arr) => {
   return { err: null, successful };
 };
 
-export const message = (qChannel, content) => post(qChannel, content, 'message');
+export const message = (qChannel: QChannel, content: any) => post(qChannel, content, 'message');
 
-export const translated = async (qChannel, key, options = {}) => message(qChannel,
+export const translated = async (qChannel: QChannel, key: string, options: i18nOptions = {}) => message(qChannel,
   i18n(await getLang(qChannel.guildId()), key, options));
 
-export const announcement = (content, channels) => {
+export const announcement = (content: any, channels: QCSerialized[]) => {
   if (channels.length <= 0) return;
   const nextQChannel = QChannel.unserialize(channels.shift());
   message(nextQChannel, content);
@@ -180,7 +181,7 @@ export const announcement = (content, channels) => {
   }, 1000);
 };
 
-export const dm = async (qChannel, content) => {
+export const dm = async (qChannel: QChannel, content: any) => {
   try {
     await qChannel.sendToOwner(content);
   } catch (err) {

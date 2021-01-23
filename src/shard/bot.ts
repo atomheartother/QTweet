@@ -1,5 +1,5 @@
-import { login, getClient } from './discord';
-import { init as initDb } from '../subs';
+import { login, getClient } from './discord/discord';
+import { init as initDb } from '../db';
 import log from '../log';
 import {
   handleMessage,
@@ -8,7 +8,7 @@ import {
   handleGuildDelete,
   handleReady,
   handleChannelDelete,
-} from './discordEvents';
+} from './discord/discordEvents';
 
 import handleMasterMsg from './handleMasterMsg';
 

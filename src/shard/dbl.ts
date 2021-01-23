@@ -1,8 +1,8 @@
 import DBL from 'dblapi.js';
-import { getClient } from './discord';
+import { getClient } from './discord/discord';
 import log from '../log';
 
-let dblClient = null;
+let dblClient: DBL = null;
 
 export default () => {
   // Already initialized?
@@ -12,8 +12,8 @@ export default () => {
     : null;
   if (dblClient) {
     log('✅ DBL client initialized');
-    dblClient.on('error', ({ status }) => {
-      log(`❌ DBL: Error with status ${status}`);
+    dblClient.on('error', (err) => {
+      log(`❌ DBL: Error with status ${err.message}`);
     });
   }
 };

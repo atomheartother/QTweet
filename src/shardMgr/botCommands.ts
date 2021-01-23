@@ -1,13 +1,13 @@
-import log from './log';
+import log from '../log';
 import {
   userTimeline, userLookup, createStream, getError, showTweet, formatTweet, hasMedia,
-} from './twitter';
-import {
-  rm, add, getUserIds as getAllSubs, getUniqueChannels,
-} from './subs';
+} from '../twitter';
 import { post, postAnnouncement } from './shardManager';
+import { DbModificationsInfo, ShardMsgHandlerFunction } from '.';
+import { add, getAllSubs, rm } from '../db/subs';
+import { getUniqueChannels } from '../db/channels';
 
-const handleTwitterError = (code, msg, screenNames) => {
+const handleTwitterError = (code: number, msg: string, screenNames: string[]) => {
   if (code === 17 || code === 34) {
     return {
       cmd: 'postTranslated',
@@ -36,7 +36,7 @@ const handleTwitterError = (code, msg, screenNames) => {
   };
 };
 
-const getUserIds = async (screenNames) => {
+const getUserIds = async (screenNames: string[]): Promise<string[]> => {
   const chunks = 100;
   const promises = [];
   for (let i = 0; i < screenNames.length; i += chunks) {
@@ -48,7 +48,7 @@ const getUserIds = async (screenNames) => {
   return [].concat(...arrays);
 };
 
-export const start = async ({
+export const start: ShardMsgHandlerFunction<'start'> = async ({
   qc, flags, screenNames, msg: tweetMessage,
 }) => {
   let data = [];
@@ -95,7 +95,7 @@ export const start = async ({
   return { data, results };
 };
 
-export const stop = async ({ qc, screenNames }) => {
+export const stop : ShardMsgHandlerFunction<'stop'> = async ({ qc, screenNames }) => {
   let data = null;
   try {
     data = await getUserIds(screenNames);
@@ -113,7 +113,7 @@ export const stop = async ({ qc, screenNames }) => {
   }
   const promises = data.map(({ id_str: userId }) => rm(qc.channelId, userId));
 
-  const results = await Promise.all(promises);
+  const results: DbModificationsInfo[] = await Promise.all(promises);
   const { users, subs } = results.reduce(
     (acc, { subs: removedSubs, users: removedUsers }) => ({
       subs: acc.subs + removedSubs,
@@ -125,14 +125,14 @@ export const stop = async ({ qc, screenNames }) => {
   return { data, users, subs };
 };
 
-export const tweet = async ({ count, flags, ...params }) => {
+export const tweet : ShardMsgHandlerFunction<'tweet'> = async ({ count, flags, ...params }) => {
   const TWEETS_MAX = 200;
   // Get tweets 200 by 200 until we have count tweets
   // or until we run out of tweets
   try {
     const tweets = [];
     let doneWithTimeline = false;
-    let maxId;
+    let maxId: string | undefined;
     const p = {
       ...params,
       count: TWEETS_MAX,
@@ -167,14 +167,14 @@ export const tweet = async ({ count, flags, ...params }) => {
     if (!code) {
       log('Exception thrown without error');
       return {
-        cmd: 'postTranslated', trCode: 'tweetIdGeneralError', screenName,
+        cmd: 'postTranslated', trCode: 'tweetGeneralError', screenName,
       };
     }
     return handleTwitterError(code, msg, [screenName]);
   }
 };
 
-export const tweetId = async ({ id }) => {
+export const tweetId : ShardMsgHandlerFunction<'tweetId'> = async ({ id }) => {
   let t = null;
   try {
     t = await showTweet(id);
@@ -198,7 +198,8 @@ export const tweetId = async ({ id }) => {
   return { isQuoted, formatted: await formattedPromise };
 };
 
-export const announce = async ({ msg }) => {
+export const announce : ShardMsgHandlerFunction<'announce'> = async ({ msg }) => {
   const channels = await getUniqueChannels();
   postAnnouncement(msg, channels);
+  return null;
 };
