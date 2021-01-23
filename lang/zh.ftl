@@ -62,7 +62,7 @@ usage-lang =
   {-b}{-usage}{-b}: `{-pr}lang [list] [set <language>]`
 usage-lang-set = {-usage}: `{-pr}lang set <language>`
 
-usage-qtprefix =
+usage-qtprefix = 
   更改命令前缀。
   你需要拥有管理员权限。
   {-b}{-usage}{-b}: `{-pr}qtprefix <new_prefix>`
@@ -88,7 +88,7 @@ tweetCountUnderOne =
 
 tweetCountHighConfirm =
   {-b}你正在要求获取大量的推文{-b}
-  确定要发送{$count}条推文吗。只要我一开始你就无法让我停下。
+  确定要发送{$count}条推文吗。这无法取消。
   如果你确定这么做，使用以下指令。
   `{-pr}tweet {$screenName} --count={$count} --force`
 
@@ -215,11 +215,11 @@ tooManyUsersRequested =
   看来我请求了太多的twitter用户了。这是不应该发生的，但请同时请求更少的用户!
 
 noSuchTwitterId =
-  {-b没有这个ID{-b}
-  推特说没有这个ID的推文。
+  {-b}没有这个ID{-b}
+  推特没有这个ID的推文。
 
 twitterUnknwnError =
-  {-b}与推特交互的时候出现了问题{-b}
+  {-b}从推特获取数据时出现了问题{-b}
   {-error-apology}
 
 ### Command permissions error msg
@@ -233,7 +233,7 @@ announceForAdmin =
   抱歉，只有机器人所有者才能使用公告！
 leaveForAdmin =
   {-b}{-botOwnerCmd}{-b}
-  抱歉，只有机器人所有者
+  抱歉，只有机器人所有者才能强制让我离开一个服务器！
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   这个指令只能在私聊中使用。
@@ -264,16 +264,16 @@ noSubscriptions =
 formatFlags = 推送设置:文本推送{$notext -> 
     *[0] 开启
     [1] 关闭
-  }, 转推{$retweet ->
+  }，转推{$retweet ->
     *[0] 关闭
     [1] 开启
-  }，引用推文推文推送{$noquote ->
+  }，引用推文推送{$noquote ->
     *[0] 开启
     [1] 关闭
-  }，提及推送 {$ping -> 
+  }，提及推送{$ping -> 
     *[0] 开启
     [1] 关闭
-  }回复推送{$replies -> 
+  }，回复推送{$replies -> 
     *[0] 关闭
     [1] 开启
   }
