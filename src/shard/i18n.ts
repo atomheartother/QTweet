@@ -1,20 +1,26 @@
-import fs from 'fs';
+import { readFileSync } from 'fs';
 import { FluentBundle } from 'fluent';
 import log from '../log';
 import { supportedLangs } from '../../config.json';
 
 const langDir = './lang';
-const langs = {};
+const langs : {
+  [key:string]: FluentBundle
+} = {};
+
+export type i18nOptions = {
+  [key:string]: string | number;
+}
+
 {
-  const globalConf = fs
-    .readFileSync(`${langDir}/global.o.ftl`, 'utf8')
-    .toString('utf8');
+  const globalConf = readFileSync(`${langDir}/global.o.ftl`, 'utf8')
+    .toString();
 
   supportedLangs.forEach((lang) => {
     const b = new FluentBundle(lang, { useIsolating: false });
     b.addMessages(globalConf);
     const errors = b.addMessages(
-      fs.readFileSync(`${langDir}/${lang}.o.ftl`, 'utf8').toString('utf8'),
+      readFileSync(`${langDir}/${lang}.o.ftl`, 'utf8').toString(),
     );
     if (errors.length) {
       log(`Errors parsing language: ${lang}`);
@@ -26,7 +32,7 @@ const langs = {};
   });
 }
 
-const i18n = (lang, key, options) => {
+const i18n = (lang: string, key: string, options: i18nOptions = {}): string => {
   const bundle = langs[lang];
   if (!bundle) {
     if (lang !== 'en') return i18n('en', key, options);

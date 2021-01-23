@@ -1,4 +1,6 @@
-export default async (message, qChannel = null, verbose = false) => {
+import QChannel from "./shard/QChannel/QChannel";
+
+export default async (message: any, qChannel: QChannel = null, verbose = false) => {
   // Only let through verbose messages in verbose mode
   if (verbose === true && Number(process.env.VERBOSE) !== 1) return;
   const dateString = new Date().toLocaleString('en-GB');

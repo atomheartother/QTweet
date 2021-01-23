@@ -4,6 +4,7 @@ import Discord from 'discord.js';
 import * as config from '../../config.json';
 import { isSet } from '../flags';
 import i18n from './i18n';
+import { QCSerialized } from './QChannel/type';
 
 const defaults = {
   data: [],
@@ -15,14 +16,38 @@ const defaults = {
   color: 0x0e7675,
 };
 
-const computeFormattedRow = async (elem, params, formatTitle, formatField) => {
+type FormatFunc<T, P> = (t: T, p: P) => Promise<string> | string;
+
+const computeFormattedRow = async <T, P=object>(
+  elem: T,
+  params: P,
+  formatTitle: FormatFunc<T, P>,
+  formatField: FormatFunc<T, P>
+) => {
   const titlePromise = formatTitle(elem, params);
   const fieldPromise = formatField(elem, params);
   return { title: await titlePromise, field: await fieldPromise };
 };
 
-export const formatGenericList = async (
-  { qc, lang },
+export const FORMAT_POST_TRANSLATED = 'postTranslated';
+export const FORMAT_POST_EMBEDS = 'postEmbeds';
+
+interface PostTranslatedReturn {
+  cmd: typeof FORMAT_POST_TRANSLATED,
+  qc: QCSerialized,
+  trCode: string,
+};
+
+type PostableEmbedded = {embed: object};
+
+interface PostEmbedsReturn {
+  cmd: typeof FORMAT_POST_EMBEDS,
+  qc: QCSerialized,
+  embeds: PostableEmbedded[],
+}
+
+export const formatGenericList = async <T, P=object>(
+  { qc, lang }: {qc: QCSerialized, lang: string},
   {
     data = defaults.data,
     formatTitle = defaults.formatTitle,
@@ -31,18 +56,27 @@ export const formatGenericList = async (
     noElements = defaults.noElements,
     objectName = defaults.objectName,
     color = defaults.color,
-    params = {},
-  } = {},
-) => {
+    params,
+  }: {
+    data?: T[],
+    formatTitle: FormatFunc<T, P>,
+    formatField: FormatFunc<T, P>,
+    description?: string,
+    noElements?: string,
+    objectName?: string,
+    color?: number,
+    params?: P
+  },
+): Promise<PostEmbedsReturn | PostTranslatedReturn> => {
   if (data.length === 0) {
     return {
-      cmd: 'postTranslated',
+      cmd: FORMAT_POST_TRANSLATED,
       qc,
       trCode: noElements,
     };
   }
   let page = 1;
-  const embeds = [];
+  const embeds: PostableEmbedded[] = [];
   let embed = new Discord.MessageEmbed()
     .setColor(color)
     .setTitle(`${i18n(lang, objectName, { count: data.length })}:`)
@@ -79,7 +113,7 @@ export const formatGenericList = async (
     embeds.push({ embed: { ...embed } });
   }
   return {
-    cmd: 'postList',
+    cmd: FORMAT_POST_EMBEDS,
     embeds,
     qc,
   };
@@ -87,12 +121,12 @@ export const formatGenericList = async (
 
 export const formatTwitterUserShort = (name) => `@${name} (https://twitter.com/${name})`;
 
-const formatSubMsg = (msg) => {
+const formatSubMsg = (msg: string | undefined) => {
   if (!msg) return '';
   return `\nWith message: \`${msg}\``;
 };
 
-export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
+export const formatFlags = (lang: string, flags: number) => i18n(lang, 'formatFlags', {
   notext: isSet(flags, 'notext'),
   retweet: isSet(flags, 'retweet'),
   noquote: isSet(flags, 'noquote'),
@@ -100,7 +134,7 @@ export const formatFlags = (lang, flags) => i18n(lang, 'formatFlags', {
   replies: isSet(flags, 'replies'),
 });
 
-export const formatSubsList = async (qc, subs, lang) => formatGenericList({ qc, lang }, {
+export const formatSubsList = async (qc: QCSerialized, subs, lang: string) => formatGenericList({ qc, lang }, {
   data: subs,
   formatTitle: ({ name }) => formatTwitterUserShort(name),
   formatField: ({ twitterId, flags, msg }) => `**${i18n(lang, 'id')}:** ${twitterId}\n${formatFlags(lang, flags)}${formatSubMsg(msg)}`,
@@ -108,9 +142,9 @@ export const formatSubsList = async (qc, subs, lang) => formatGenericList({ qc, 
   objectName: 'subscriptions',
 });
 
-export const formatLanguages = async (qc, languagesList, lang) => formatGenericList({ qc, lang }, {
+export const formatLanguages = async (qc: QCSerialized, languagesList: string[], lang: string) => formatGenericList<string>({ qc, lang }, {
   data: languagesList,
-  formatTitle: (k) => (k === lang ? `[${k}]` : k),
-  formatField: (k) => i18n(k, 'languageCredit'),
+  formatTitle: (k: string) => (k === lang ? `[${k}]` : k),
+  formatField: (k: string) => i18n(k, 'languageCredit'),
   objectName: 'languages',
 });

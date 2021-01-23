@@ -1,8 +1,8 @@
-import { getClient } from './discord';
+import { getClient } from './discord/discord';
 
 const clientShard = getClient().shard;
 
-export const cmd = (command, args) => {
+export const cmd = (command: string, args: any) => {
   clientShard.send({ ...args, cmd: command });
 };
 

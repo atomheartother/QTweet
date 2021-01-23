@@ -1,17 +1,28 @@
 import Twitter from 'twitter-lite';
-
+import { Status as Tweet } from 'twitter-d';
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
-import {
-  getUserIds, getUserSubs, updateUser, getUsersForSanityCheck, bulkDeleteUsers, databaseSanityCheck,
-} from './subs';
 import Backup from './backup';
 import log from './log';
 
-import { post, someoneHasChannel } from './shardManager';
+import { post, someoneHasChannel } from './shardMgr/shardManager';
 import Stream from './twitterStream';
-import { getChannels, rmChannel } from './postgres';
-
+import {
+  updateUser,
+  getUserIds,
+  getUsersForSanityCheck,
+  bulkDeleteUsers,
+} from './db/user';
+import {
+  getUserSubs,
+} from './db/subs';
+import {
+  getChannels,
+  rmChannel,
+} from './db/channels';
+import {
+  sanityCheck as dbSanityCheck,
+} from './db';
 
 // Stream object, holds the twitter feed we get posts from, initialized at the first
 let stream = null;
@@ -42,6 +53,10 @@ const reconnectionDelay = new Backup({
 
 let reconnectionTimeoutID = null;
 
+export const destroyStream = () => {
+  if (stream) { stream.disconnected(); }
+};
+
 function resetTwitterTimeout() {
   if (twitterTimeoutDelay <= 0) return;
   if (twitterTimeout !== null) {
@@ -54,10 +69,9 @@ function resetTwitterTimeout() {
       log('❌ We\'re already in reconnection mode, abort timeout system');
       return;
     }
-    // Destroy the stream, then wait 1s to re-create it
-    stream.disconnected();
+    destroyStream();
     // eslint-disable-next-line no-use-before-define
-    setTimeout(createStream, 1000);
+    setTimeout(createStream, 10000);
   }, twitterTimeoutDelay * 1000);
 }
 
@@ -105,8 +119,8 @@ const bestPicture = (twitterCard, openGraph) => {
   if (openGraph && openGraph.images) {
     images = images.concat(openGraph.images);
   }
-  images = images.filter(({ url, width, height }) => {
-    if (!url || !width || !height) return false; // Ignore invalid images
+  images = images.filter(({ url }) => {
+    if (!url) return false; // Ignore invalid images
     if (!url.startsWith('http') && !url.startsWith('//')) return false; // Ignore URLS that aren't valid
     const idx = url.indexOf('.');
     return (idx > -1 && idx < url.length - 1); // Ignore if there's no dot
@@ -378,7 +392,6 @@ const streamData = async (tweet) => {
     if (msg) {
       post(qChannel, msg, 'message');
     }
-    if (qChannel.isDM) log(`Posting ${tweet.id_str} to ${qChannel.channelId}.`);
     post(qChannel, embed, 'embed');
   });
   if (tweet.is_quote_status) {
@@ -395,7 +408,7 @@ const streamData = async (tweet) => {
 // Called when twitter ends the connection
 const streamEnd = () => {
   // The backup exponential algorithm will take care of reconnecting
-  stream.disconnected();
+  destroyStream();
   log(
     `❌ We got disconnected from twitter. Reconnecting in ${reconnectionDelay.value()}ms...`,
   );
@@ -409,18 +422,18 @@ const streamEnd = () => {
 
 // Called when the stream has an error
 const streamError = ({ url, status, statusText }) => {
+  const delay = reconnectionDelay.value();
+  log(
+    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
+  );
   if (status === 420 && reconnectionDelay.value() < 30000) {
     log('⚙️ 420 status code detected, jumping to 30s delay immediately', null, true);
     // If we're being rate-limited, wait 30s at least, up to max
     reconnectionDelay.set(30000);
   }
   // We simply can't get a stream, don't retry
-  stream.disconnected();
-  const delay = reconnectionDelay.value();
+  stream.disconnected(false);
   reconnectionDelay.increment();
-  log(
-    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
-  );
   if (reconnectionTimeoutID) {
     clearTimeout(reconnectionTimeoutID);
   }
@@ -467,10 +480,6 @@ export const createStream = async () => {
 const createStreamClearTimeout = () => {
   reconnectionTimeoutID = null;
   createStream();
-};
-
-export const destroyStream = () => {
-  if (stream) { stream.disconnected(); }
 };
 
 export const userLookup = (params) => tClient.post('users/lookup', params);
@@ -522,7 +531,7 @@ export const sanityCheck = async () => {
     log(`Found invalid channel: ${c.channelId}`);
     return rmChannel(c.channelId);
   }));
-  const { channels, users, guilds } = await databaseSanityCheck();
+  const { channels, users, guilds } = await dbSanityCheck();
   log(`✅ DB sanity check completed!\n${channels + deletedChannels.reduce((prev, del) => prev + del, 0)} channels, ${guilds} guilds, ${users} users removed.`);
 
   const disableSanityCheck = !!Number(process.env.DISABLE_SANITY_CHECK);

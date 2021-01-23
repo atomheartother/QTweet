@@ -1,57 +1,26 @@
 // Config file
 import fortune from 'fortune-teller';
-import {
-  rmChannel, rmGuild, getGuildInfo,
-} from '../subs';
-import QChannel from './QChannel';
-
+import QChannel from '../QChannel/QChannel';
+import { CmdOptions, ParsedCmd} from '.'
 // logging
-import log from '../log';
+import log from '../../log';
 import {
   message as postMessage,
-  translated as postTranslatedMessage,
-} from './post';
-import { createStream, destroyStream } from './master';
-import commands from './commands';
-import { user, login } from './discord';
-import i18n from './i18n';
-import dbl from './dbl';
+} from '../post';
+import { createStream, destroyStream } from '../master';
+import { user, login, isNewsChannel, isTextChannel } from './discord';
+import i18n from '../i18n';
+import dbl from '../dbl';
+import { Channel, Guild, Message } from 'discord.js';
+import handleCommand from '../commands';
+import { rmGuild, getGuildInfo } from '../../db/guilds';
+import { rmChannel } from '../../db/channels';
 
-const handleCommand = async (commandName, author, qChannel, parsedArgs) => {
-  const command = commands[commandName];
-  // Check that the command exists
-  if (command) {
-    const { args } = parsedArgs;
-    // Check that there's the right number of args
-    if (args.length < command.minArgs) {
-      postTranslatedMessage(qChannel, `usage-${commandName}`);
-      return;
-    }
-    log(
-      `Executing command: "${commandName} ${args}" from ${author.tag}`,
-      qChannel,
-    );
-    const passedArray = await Promise.all(command.checks.map(({ f }) => f(author, qChannel)));
-    for (let i = 0; i < command.checks.length; i += 1) {
-      const { badB } = command.checks[i];
-      if (!passedArray[i]) {
-        // If it's not met and we were given a bad boy, post it
-        if (badB) postTranslatedMessage(qChannel, badB);
-        log(`Rejected command "${commandName} ${args}" with reason: ${badB}`);
-        return;
-      }
-    }
-    command.function(parsedArgs, qChannel, author);
-  }
-};
-
-// Input: str
-// Ouput: { args: string[], options: {[key:string]: string}, flags: string[]}
-const parseWords = (line) => {
-  const regxp = /--(\w+)(="(.*?)"|=(\S+))?|"(.*?)"|(\S+)/g;
+const parseWords = (line: string): ParsedCmd => {
+  const regxp = /(?:--|—)(\w+)(=(?:"|”)(.*?)(?:"|”)|=(\S+))?|(?:"|”)(.*?)(?:"|”)|(\S+)/g;
   const args = [];
   const flags = [];
-  const options = [];
+  const options: CmdOptions = {}
   let match = regxp.exec(line);
   while (match) {
     if (match[6] || match[5]) { // Single word or multiple word arg
@@ -68,12 +37,13 @@ const parseWords = (line) => {
   return { args, flags, options };
 };
 
-export const handleMessage = async (message) => {
+export const handleMessage = async (message: Message) => {
   // Ignore bots
   if (message.author.bot) return;
   const { author, channel } = message;
+  if (isNewsChannel(channel)) return;
   const qc = new QChannel(channel);
-  const { lang, prefix } = await getGuildInfo(await qc.guildId());
+  const { lang, prefix } = await getGuildInfo(qc.guildId());
   // In case anything goes wrong with the db prefix, still use the old prefix as backup!
   if (message.content.indexOf(prefix) !== 0) {
     if (
@@ -97,20 +67,19 @@ export const handleMessage = async (message) => {
   handleCommand(command.toLowerCase(), author, qc, parsedCmd);
 };
 
-export const handleError = ({ message, error }) => {
+export const handleError = ({ message }: Error) => {
   log(`Discord client encountered an error: ${message}`);
-  log(error);
   // Destroy the twitter stream cleanly, we will re-intantiate it sooner that way
   destroyStream();
   login();
 };
 
-export const handleGuildCreate = async (guild) => {
+export const handleGuildCreate = async (guild: Guild) => {
   // Message the guild owner with useful information
   log(`Joined guild ${guild.name}`);
 };
 
-export const handleGuildDelete = async ({ id, name }) => {
+export const handleGuildDelete = async ({ id, name }: Guild) => {
   const { users } = await rmGuild(id);
   log(`Left guild ${name}, ${users} users deleted.`);
   if (users > 0) createStream();
@@ -123,7 +92,9 @@ export const handleReady = async () => {
   createStream();
 };
 
-export const handleChannelDelete = async ({ id, name }) => {
+export const handleChannelDelete = async (c: Channel) => {
+  if (!isTextChannel(c)) return;
+  const {id, name} = c;
   const { users } = await rmChannel(id);
   log(`Channel #${name} (${id}) deleted.`);
   if (users > 0) createStream();

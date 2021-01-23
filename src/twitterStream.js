@@ -74,9 +74,10 @@ class Stream {
 
   // We've been disconnected, discard all info we have,
   // effectively resetting the object until next creation
-  disconnected() {
+  // If destroyStream is not set, there's no need to destroy it as it's already destroyed
+  disconnected(destroyStream = true) {
     log('Disconnecting stream');
-    if (this.stream) {
+    if (this.stream && this.stream.destroy && destroyStream) {
       log('Destroying stream');
       try {
         this.stream.destroy();

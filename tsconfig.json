@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+      "target": "ES2019",
+      "module": "es6",
+      "outDir": "dist",
+      "sourceMap": true,
+      "allowJs": true,
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
+      "baseUrl": ".",
+      "paths": {
+        "*": [
+            "node_modules/*",
+        ]
+      }
+    },
+    "include": [
+      "src/**/*.js", "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+  }
