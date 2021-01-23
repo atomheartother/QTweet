@@ -144,7 +144,7 @@ formatUserNames = {$count ->
   }
 
 startUpdateSuccess = 
-  {-b}{$addedObjectName} 更新了！{-b}
+  {-b}{$addedObjectName} 的订阅参数更新了！{-b}
   您的新参数已经注册。这些变化应该是即时的。
 
 ## !!leaveguild
