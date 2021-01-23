@@ -261,22 +261,22 @@ noSubscriptions =
   使用 `{-pr}start <{-screen-name-variable}>` 来开始订阅！
 
 # Flag formatting is on one line, in plain text
-formatFlags = {$notext -> 
-    *[0] 文本推送
-    [1] 非文本推送
-  }, {$retweet ->
-    *[0] 无转推
-    [1] 转推
-  }，{$noquote ->
-    *[0] 引用推文
-    [1] 无引用推文
-  }，提及 {$ping -> 
+formatFlags = 推送设置:文本推送{$notext -> 
     *[0] 开启
     [1] 关闭
-  }和{$replies -> 
-    *[0] 无回复
-    [1] 回复
-  } 将被推送。
+  }, 转推{$retweet ->
+    *[0] 关闭
+    [1] 开启
+  }，引用推文推文推送{$noquote ->
+    *[0] 开启
+    [1] 关闭
+  }，提及推送 {$ping -> 
+    *[0] 开启
+    [1] 关闭
+  }回复推送{$replies -> 
+    *[0] 关闭
+    [1] 开启
+  }
 
 genericObjects = {$count} {$count -> 
     [one] 对象
