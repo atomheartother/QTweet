@@ -119,8 +119,8 @@ const bestPicture = (twitterCard, openGraph) => {
   if (openGraph && openGraph.images) {
     images = images.concat(openGraph.images);
   }
-  images = images.filter(({ url, width, height }) => {
-    if (!url || !width || !height) return false; // Ignore invalid images
+  images = images.filter(({ url }) => {
+    if (!url) return false; // Ignore invalid images
     if (!url.startsWith('http') && !url.startsWith('//')) return false; // Ignore URLS that aren't valid
     const idx = url.indexOf('.');
     return (idx > -1 && idx < url.length - 1); // Ignore if there's no dot
