@@ -67,7 +67,7 @@ usage-qtprefix =
   你需要拥有管理员权限。
   {-b}{-usage}{-b}: `{-pr}qtprefix <new_prefix>`
 
-usage-tweetid
+usage-tweetid = 
   获取特定推文id的推文
   {-b}{-usage}{-b}: `{-pr}tweetid (推文ID)`
 
