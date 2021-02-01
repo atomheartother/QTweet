@@ -33,13 +33,13 @@ Writing messages for QTweet comes with a certain degree of creative freedom. How
 
 ### Language code
 
-For your language code, try to use an official code, `eng` won't work for English.
+For your language code, try to use an official code, `eng` won't work for English. You can find the official code for your language in a bunch of places, the [Unicode plural rules](https://unicode-org.github.io/cldr-staging/charts/37/supplemental/language_plural_rules.html) page lists it though.
 
 ### Plural Rules
 
 Fluent is smart, and uses plural rules to stay consistent with a language's internal logic. For example some languages will consider 2 objects to be singular.
 
-Keep in mind your language may have different _plural rules_ than English, so you might have to adapt the selectors. You can find your language's plural rules [here](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html) and you can learn about Fluent selectors [here](https://projectfluent.org/fluent/guide/selectors.html).
+Keep in mind your language may have different _plural rules_ than English, so you might have to adapt the selectors. You can find your language's plural rules [here](https://unicode-org.github.io/cldr-staging/charts/37/supplemental/language_plural_rules.html) and you can learn about Fluent selectors [here](https://projectfluent.org/fluent/guide/selectors.html).
 
 Here's a good example of a problem with plurals and how to fix them, take this stopChannel rule:
 
