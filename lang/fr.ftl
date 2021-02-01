@@ -128,8 +128,6 @@ noValidGid = Pas d'ID de guilde valide fourni.
 
 guildNotFound = Je n'ai pas pu trouver la guilde {$guild}.
 
-leaveSuccess = J'ai quitté la guilde {$name}
-
 ## !!stop
 noSuchSubscription =
   {-b}Tu n'es pas abonné·e à {$screenNames}{-b}
@@ -164,11 +162,6 @@ noSuchLang =
 langSuccess =
   {-b}Langage modifié{-b}
   Je parlerai désormais dans la langue de Molière!
-
-## !!admin
-adminInvalidId = Je n'ai pas pu construre un objet salon valide avec ID: {$channelId}
-
-adminInvalidTwitter = Je ne suis abonné à aucun utilisateur nommé `@{$screenName}`
 
 ## General
 invalidVerb = 
@@ -208,9 +201,6 @@ twitterUnknwnError =
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
   Désolée, seul mon propriétaire peut faire des annonces!
-leaveForAdmin =
-  {-b}{-botOwnerCmd}{-b}
-  Désolée, seul mon propriétaire peut me forcer à quitter un serveur.
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Cette commande n'est autorisée que dans les MPs.

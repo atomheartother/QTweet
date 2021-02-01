@@ -67,6 +67,11 @@ usage-qtprefix =
   You need to be a **server-wide** mod to do this!
   {-b}{-usage}{-b}: `{-pr}qtprefix <new_prefix>`
 
+usage-tweetid =
+  Post the formatted tweet with the specified ID.
+  {-b}{-usage}{-b}: `{-pr}tweetid <tweet_id>`
+
+
 ### Command feedback
 -error-apology = I'm on it, sorry for the trouble!
 ## !!tweet
@@ -134,6 +139,8 @@ startSuccess =
     *[other] It also appears I was unable to find some of the users you specified, make sure you used their screen name!
   }
 
+# This is how we display multiple names.
+# If we only have one, we display it, if we have multiple we display them, then add the last one.
 formatUserNames = {$count ->
     [one] {$lastName}
     *[other] {$names} and {$lastName}
@@ -147,8 +154,6 @@ startUpdateSuccess =
 noValidGid = No valid guild ID provided
 
 guildNotFound = I couldn't find guild {$guild}.
-
-leaveSuccess = Left guild {$name}
 
 ## !!stop
 noSuchSubscription =
@@ -187,11 +192,6 @@ langSuccess =
 prefixSuccess =
   {-b}Prefix changed successfully{-b}
   You'll now have to use {$prefix} for me to understand you!
-
-## !!admin
-adminInvalidId = I couldn't build a valid channel object with id: {$channelId}
-
-adminInvalidTwitter = I'm not subscribed to any user called `@{$screenName}`
 
 ## General
 invalidVerb = 
@@ -233,9 +233,6 @@ twitterUnknwnError =
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
   Sorry, only my owner can do announcements!
-leaveForAdmin =
-  {-b}{-botOwnerCmd}{-b}
-  Sorry, only my owner can force me off a server.
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   This command is only allowed in DMs.

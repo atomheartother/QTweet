@@ -138,8 +138,6 @@ noValidGid = ID-ul guild-ului nu este valid!
 
 guildNotFound = Nu am putut găsi guild-ul {$guild}.
 
-leaveSuccess = Guild-ul {$name} a fost părăsit!
-
 ## !!stop
 noSuchSubscription =
   {-b}Nu există un abonament la {$screenNames}{-b}
@@ -173,11 +171,6 @@ noSuchLang =
 langSuccess =
   {-b}Limba a fost schimbată cu succes!{-b}
   Bine ai venit în minunata lume a limbii române!
-
-## !!admin
-adminInvalidId = Nu am putut construi un obiect al canalului valid cu id-ul: {$channelId}
-
-adminInvalidTwitter = Nu există un abonament la utilizatorul `@{$screenName}`
 
 ## General
 invalidVerb = 
@@ -219,9 +212,6 @@ twitterUnknwnError =
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
   Scuze, doar proprietarul meu poate să facă anunțuri prin intermediul meu!
-leaveForAdmin =
-  {-b}{-botOwnerCmd}{-b}
-  Scuze, doar proprietarul meu mă poate forța să ies de pe un server.
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Această comandă este permisă doar în DMs.

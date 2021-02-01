@@ -148,8 +148,6 @@ noValidGid = Inget giltigt gille ID försett.
 
 guildNotFound = Jag kunde inte hitta gille {$guild}.
 
-leaveSuccess = Lämnade gille {$name}
-
 ## !!stop
 noSuchSubscription =
   {-b}Följer inte {$screenNames}{-b}
@@ -187,11 +185,6 @@ langSuccess =
 prefixSuccess =
   {-b}Ändringen av prefixen lyckades{-b}
   Du måste nu använda {$prefix} för att jag ska förstå dig!
-
-## !!admin
-adminInvalidId = Jag kunde inte bygga ett giltigt kanals objekt med ID: {$channelId}
-
-adminInvalidTwitter = Jag följer inte någon användare som heter `@{$screenName}`
 
 ## General
 invalidVerb = 
@@ -233,9 +226,6 @@ twitterUnknwnError =
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
   Ledsen, endast min ägare kan skicka meddelanden!
-leaveForAdmin =
-  {-b}{-botOwnerCmd}{-b}
-  Ledsen, endast min ägare kan tvinga mig bort från en server.
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Det här kommandot är bara tillåtet i direkta meddelanden.

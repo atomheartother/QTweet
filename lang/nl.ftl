@@ -137,8 +137,6 @@ noValidGid = Geen bestaande server gevonden.
 
 guildNotFound = Ik kon de server niet vinden. {$guild}.
 
-leaveSuccess = Server verlaten. {$name}
-
 ## !!stop
 noSuchSubscription =
   {-b}Je volgt {$screenNames} op het moment niet.{-b}
@@ -172,11 +170,6 @@ noSuchLang =
 langSuccess =
   {-b}Je taal is succesvol veranderd.{-b}
   Welkom in de wondere wereld van een Nederlandse QTweet!
-
-## !!admin
-adminInvalidId = I couldn't build a valid channel object with id: {$channelId}
-
-adminInvalidTwitter = I'm not subscribed to any user called `@{$screenName}`
 
 ## General
 invalidVerb = 
@@ -218,9 +211,6 @@ twitterUnknwnError =
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
   Sorry, alleen mijn eigenaar kan aankondigingen maken!
-leaveForAdmin =
-  {-b}{-botOwnerCmd}{-b}
-  Sorry, alleen mijn eigenaar kan mij uit een server forceren!
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Dit commando werkt alleen in privé gesprekken.

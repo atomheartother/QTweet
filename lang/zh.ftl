@@ -152,8 +152,6 @@ noValidGid = 没有提供有效的工会ID。
 
 guildNotFound = 没有ID为{$guild}的工会。
 
-leaveSuccess = 已离开{$name}。
-
 ## !!stop
 noSuchSubscription =
   {-b}不再订阅{$screenNames}{-b}
@@ -192,11 +190,6 @@ prefixSuccess =
   {-b}命令前缀改变成功{-b}
   你现在应该使用{$prefix}作为命令前缀。
 
-## !!admin
-adminInvalidId = 无法在这个频道上 {$channelId} 建立有效的对象。
-
-adminInvalidTwitter = 我没有订阅`@{$screenName}`的推文
-
 ## General
 invalidVerb = 
   {-b}指令错误{-b}
@@ -231,9 +224,6 @@ twitterUnknwnError =
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
   抱歉，只有机器人所有者才能使用公告！
-leaveForAdmin =
-  {-b}{-botOwnerCmd}{-b}
-  抱歉，只有机器人所有者才能强制让我离开一个服务器！
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   这个指令只能在私聊中使用。
