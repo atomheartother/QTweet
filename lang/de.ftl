@@ -68,12 +68,12 @@ usage-qtprefix =
   {-b}{-usage}{-b}: `{-pr}qtprefix <new_prefix>`
 
 usage-tweetid =
-  Veröffentliche einen Tweet mit der angegebenen ID.
+  Sende einen Tweet mit der angegebenen ID.
   {-b}{-usage}{-b}: `{-pr}tweetid <tweet_id>`
 
 
 ### Command feedback
--error-apology = Ich bin dran, entschuldigung!
+-error-apology = Entschuldigung für die Probleme!
 ## !!tweet
 countIsNaN =
   {-b}Bitte gib eine Zahl von Tweets an, die ich holen soll!{-b}
@@ -99,7 +99,7 @@ tweetNotAuthorized =
 
 tweetUnknwnError =
   {-b}{$screenName} existiert, aber irgend etwas scheint bei dem Profil nicht zu stimmen{-b}
-  ich kann die Zeitliste nicht erreichen... Twitter sagt mir folgendes:
+  ich kann die Timeline nicht erreichen... Twitter sagt mir folgendes:
   {$error}
 
 noTweets = Sieht nicht so aus, als ob {$screenName} Tweets hat...
@@ -238,7 +238,7 @@ startForMods =
   Um einen Twitter-Account zu abonnieren, müssen Sie Moderator sein oder die richtige Rolle haben!
 langForMods =
   {-b}{-notAuthorized}{-b}
-  Nur Server weite Moderatoren können sprachbefehle ausführen!
+  Nur Server Moderatoren können Befehle bezüglich der Sprache ausführen!
 prefixForMods = 
   {-b}{-notAuthorized}{-b}
   Nur Server weite Moderatoren können den Präfix ändern!
