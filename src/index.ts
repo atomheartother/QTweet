@@ -36,5 +36,8 @@ const start = async () => {
     log(e);
   }
 };
-
-start();
+try {
+  start();
+} catch (e) {
+  log(e)
+}
