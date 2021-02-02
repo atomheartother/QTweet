@@ -42,7 +42,7 @@ usage-tweet =
   {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=count]`
 
 usage-start =
-  Abonniere einen Twitter-Benutzer und schicke seine Tweets in Echtzeit.
+  Abonniere einen Twitter-Benutzer und sende seine Tweets in Echtzeit.
   {-b}{-usage}{-b}: `{-pr}start <{-screen-name-variable}> [flags]`
   Unterstützt mehrere Benutzer, Retweets, Herausfiltern von Textbeiträgen und mehr!
   Schau dir die Dokumentation an!
@@ -74,7 +74,7 @@ usage-tweetid =
 
 
 ### Command feedback
--error-apology = Entschuldige die Unanhemlichkeit!
+-error-apology = Entschuldige die Unannehmlichkeit!
 ## !!tweet
 countIsNaN =
   {-b}Bitte gib eine Zahl von Tweets an, die ich holen soll!{-b}
@@ -228,7 +228,7 @@ twitterUnknwnError =
 
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
-  Sorry, nur Besitzer dürfen Ankündigungen machen!
+  Tut mir Leid, aber nur Besitzer dürfen Ankündigungen machen!
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
   Dieser Befehl ist nur in DMs erlaubt.
@@ -237,13 +237,13 @@ stopForMods =
   Nur Moderatoren können einen Twitter-Account deabonnieren!
 startForMods = 
   {-b}{-notAuthorized}{-b}
-  Um einen Twitter-Account zu abonnieren, müssen Sie Moderator sein oder die richtige Rolle haben!
+  Um einen Twitter-Account zu abonnieren, musst du Moderator sein oder die richtige Rolle haben!
 langForMods =
   {-b}{-notAuthorized}{-b}
   Nur Server Moderatoren können Befehle bezüglich der Sprache ausführen!
 prefixForMods = 
   {-b}{-notAuthorized}{-b}
-  Nur Server weite Moderatoren können den Präfix ändern!
+  Nur {-b}Server{-b} Moderatoren können den Präfix ändern!
 ### Lists
 genericEmptyList = Die Liste ist leer, es gibt nichts anzuzeigen.
 
@@ -291,9 +291,9 @@ languages = {$count} {$count ->
 ### Posting errors
 postPermissionError =
   {-b}Fehlende Berechtigungen:{-b} Ich konnte keine Nachrichten senden in {$name}.
-  Wenn mir ein Moderator die Erlaubnis geben würde damit ich dort {-b}Nachriten schicken{-b}, {-b}Send Embeds{-b} und {-b}Datein anhängen{-b} wäre das sehr nett.
+  Wenn mir ein Moderator die Erlaubnis geben würde damit ich dort {-b}Nachrichten senden{-b}, {-b}Links einbetten{-b} und {-b}Dateien anhängen{-b} kann, wäre das sehr nett.
   Wenn du möchtest, dass ich nicht mehr versuche, Nachrichten dorthin zu senden, können Moderatoren `{-pr}stopchannel {$id}` verwenden.
-  Wenn du glaubst alles richtig gemacht haben, diese Nachricht aber weiterhin erhälst, trete unserem Support-Server bei. Dieser ist in meiner Hilfe-Nachricht "{-pr}" verlinkt.
+  Wenn du glaubst alles richtig gemacht haben, diese Nachricht aber weiterhin erhälst, trete unserem Support-Server bei. Dieser ist in meiner Hilfe-Nachricht `{-pr}help` verlinkt.
 
 ### User Limit D:
 userLimit =
