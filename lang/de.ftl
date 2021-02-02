@@ -10,7 +10,7 @@ helpHeader = {-bot-name} ist hier!
 
 # The main help message body, followed by usage
 helpIntro =
-  Hallo, ich bin { -bot-name }, Ich bin ein sehr simpler Bot, der Twitter Nachrichten auf Discord anzeigt!
+  Hallo, ich bin { -bot-name }, Ich bin ein sehr einfacher Bot, der Twitter Nachrichten auf Discord anzeigt!
   {-b}Du solltest meine [komplette Dokumentation]({ -docs-url }) lesen.{-b}
   {-b}Möchtest du mich auf deinen Server einladen?{-b} [hier klicken]({ -invite-url })!
   {-b}Probleme, Fragen?{-b} [Wir haben einen support Server!]({ -support-server })
