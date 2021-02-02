@@ -314,4 +314,4 @@ userLimit =
   - {-b}Finde eine Alternative zu QTweet{-b}: Jap, das war's. Wenn diese Optionen für dich nicht funktionieren, dann kann ich leider nicht's mehr für dich tun!
 
 ### Credit
-languageCredit = Deutsch, erstellt von `Samsa#4879` aka framerunner
+languageCredit = Deutsch, übersetzt von `Samsa#4879` aka framerunner
