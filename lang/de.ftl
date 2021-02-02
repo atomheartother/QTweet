@@ -256,7 +256,7 @@ noSubscriptions =
   Verwende `{-pr}start <{-screen-name-variable}>` um anzufangen!
 
 # Flag formatting is on one line, in plain text
-formatFlags = With {$notext -> 
+formatFlags = Mit {$notext -> 
     *[0] Text Nachrichten
     [1] keine Text Nachrichten
   }, {$retweet ->
@@ -265,7 +265,7 @@ formatFlags = With {$notext ->
   }, {$noquote ->
     *[0] Zitate
     [1] keine Zitate
-  }, pings {$ping -> 
+  }, Pings {$ping -> 
     *[0] aus
     [1] an
   } und {$replies -> 
