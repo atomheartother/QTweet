@@ -11,7 +11,7 @@ helpHeader = {-bot-name} ist hier!
 # The main help message body, followed by usage
 helpIntro =
   Hallo, ich bin { -bot-name }, Ich bin ein sehr simpler Bot, der Twitter Nachrichten auf Discord anzeigt!
-  {-b}Du solltest meine [komplette Dokumentation]({ -docs-url }) lesen{-b}
+  {-b}Du solltest meine [komplette Dokumentation]({ -docs-url }) lesen.{-b}
   {-b}Möchtest du mich auf deinen Server einladen?{-b} [hier klicken]({ -invite-url })!
   {-b}Probleme, Fragen?{-b} [Wir haben einen support Server!]({ -support-server })
   {-b}Du möchtest QTweet unterstützen?{-b} [Mach eine Spende bei Patreon!]({ -patreon-link })
@@ -38,13 +38,14 @@ welcomeMessage =
 
 ## Usage for every command
 usage-tweet = 
-  Post the latest tweet(s) from the given user.
+  Sende die neusten Tweets, des angegebenen Benutzers.
   {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=count]`
 
 usage-start =
   Abonniere einen Twitter-Benutzer und schicke seine Tweets in Echtzeit.
   {-b}{-usage}{-b}: `{-pr}start <{-screen-name-variable}> [flags]`
-  Unterstützt mehrere Benutzer, Retweets, Herausfiltern von Textbeiträgen und mehr! Schau dir die Dokumentation an!
+  Unterstützt mehrere Benutzer, Retweets, Herausfiltern von Textbeiträgen und mehr!
+  Schau dir die Dokumentation an!
 
 usage-stop = 
   Deabonieren vom angegebenen Twitter-Benutzer.
@@ -57,13 +58,13 @@ usage-stopchannel =
 usage-list = Zeigt eine Liste der Abonnements dieses Kanals.
 
 usage-lang = 
-  Liste der verfügbaren Sprachen auf oder ändere die Sprache.
-  Lese die Dokumentation, wenn du mir helfen möchten, mich in eine Sprache zu übersetzen!
+  Zeige eine Liste der verfügbaren Sprachen oder ändere die Sprache.
+  Lese die Dokumentation, wenn du mir helfen möchtest, mich in eine andere Sprache zu übersetzen!
   {-b}{-usage}{-b}: `{-pr}lang [list] [set <language>]`
 usage-lang-set = {-usage}: `{-pr}lang set <language>`
 
 usage-qtprefix =
-  Ändern Sie das Präfix, um mit mir zu interagieren.
+  Ändere das Präfix, um mit mir zu interagieren.
   Du musst ein **Server** Moderator sein, um dies zu benutzen!
   {-b}{-usage}{-b}: `{-pr}qtprefix <new_prefix>`
 
@@ -73,7 +74,7 @@ usage-tweetid =
 
 
 ### Command feedback
--error-apology = Entschuldigung für die Probleme!
+-error-apology = Entschuldige die Unanhemlichkeit!
 ## !!tweet
 countIsNaN =
   {-b}Bitte gib eine Zahl von Tweets an, die ich holen soll!{-b}
@@ -84,12 +85,13 @@ tweetCountLimited =
   Du bist kein Moderator, daher muss ich die Anzahl der Tweets limitiern. Hier sind die letzten {$maxCount} Tweets!
 
 tweetCountUnderOne =
-  {-b}Du hast mich gebeten, {$ count} Tweets zu posten, deshalb poste ich keine!{-b}
+  {-b}Du hast mich gebeten, {$count} Tweets zu posten, deshalb poste ich keine!{-b}
   Netter Versuch~
 
 tweetCountHighConfirm =
-  {-b}Du fragst nach einer Menge Tweets{-b}
-  Bist du dir sicher, dass ich {$count} Tweets senden soll? Wenn ich einmal angefangen habe, kannst du mich nicht mehr aufhalten!
+  {-b}Du fragst nach einer großen Menge Tweets{-b}
+  Bist du dir sicher, dass ich {$count} Tweets senden soll?
+  Wenn ich einmal angefangen habe, kannst du mich nicht mehr aufhalten!
   Wenn du dir sicher bist, dass ich das tun soll, benutze:
   `{-pr}tweet {$screenName} --count={$count} --force`
 
@@ -109,7 +111,7 @@ noValidTweets =
   Vielleicht möchtest du es noch einmal versuchen, vielleicht hat Twitter es vermasselt?
 
 tweetGeneralError = 
-  {-b}Beim Abrufen von Tweets von {$ screenName} ist ein Fehler aufgetreten.{-b}
+  {-b}Beim Abrufen von Tweets von {$screenName} ist ein Fehler aufgetreten.{-b}
   {-error-apology}
 
 ## !!tweetId
@@ -127,12 +129,12 @@ getInfoGeneralError =
 
 ## !!start
 startSuccess =
-  {-b}Du hast jetzt {$ addedObjectName} abonniert!{-b}
+  {-b}Du hast jetzt {$addedObjectName} abonniert!{-b}
   Denk daran, dass du das jeder Zeit beenden kannst mit `{-pr}stop {$nameCount ->
     [one] {$firstName}
     *[other] <{-screen-name-variable}>
   }`.
-  Es kann bis zu 20 Minuten dauern, bis Tweets abgerufen werden. Sobald es angefangen hat, werden die Tweets in Echtzeit abgerufen!
+  Es kann bis zu 20 Minuten dauern, bis Tweets abgerufen werden. Sobald es einmal läuft, werden die Tweets in Echtzeit abgerufen!
 
   {$missedNames ->
     [0] {""}
@@ -201,8 +203,8 @@ invalidVerb =
 ### General twitter errors
 noSuchTwitterUser =
   {-b}Ich kann keinen {$count ->
-    [1] Twitter Benutzer mit dem Namen finden
-    *[other] dieser Benutzer finden:
+    [1] Twitter Benutzer finden mit dem Namen
+    *[other] dieser Twitter Benutzer finden:
   } {$name}.{-b}
   Du hast vermutlich versucht ihren Anzeigenamen zu verwenden anstatt ihrem Twitternamen
 
@@ -290,7 +292,7 @@ languages = {$count} {$count ->
 postPermissionError =
   {-b}Fehlende Berechtigungen:{-b} Ich konnte keine Nachrichten senden in {$name}.
   Wenn mir ein Moderator die Erlaubnis geben würde damit ich dort {-b}Nachriten schicken{-b}, {-b}Send Embeds{-b} und {-b}Datein anhängen{-b} wäre das sehr nett.
-  Wenn du möchtest, dass ich nicht mehr versuche, Nachrichten dorthin zu senden, können Moderatoren `{-pr} stopchannel {$ id}` verwenden.
+  Wenn du möchtest, dass ich nicht mehr versuche, Nachrichten dorthin zu senden, können Moderatoren `{-pr} stopchannel {$id}` verwenden.
   Wenn du glaubst alles richtig gemacht haben, diese Nachricht aber weiterhin erhälst, trete unserem Support-Server bei. Dieser ist in meiner Hilfe-Nachricht "{-pr}" verlinkt.
 
 ### User Limit D:
@@ -314,4 +316,4 @@ userLimit =
   - {-b}Finde eine Alternative zu QTweet{-b}: Jap, das war's. Wenn diese Optionen für dich nicht funktionieren, dann kann ich leider nicht's mehr für dich tun!
 
 ### Credit
-languageCredit = Deutsch, übersetzt von `Samsa#4879` aka framerunner
+languageCredit = Deutsch, übersetzt von `Samsa#4879`
