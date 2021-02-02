@@ -1,7 +1,7 @@
 ### Small words
 id = ID
 type = Typ
-dm = dm
+dm = DM
 serv = Server
 
 ### Help messages
@@ -288,30 +288,30 @@ languages = {$count} {$count ->
 
 ### Posting errors
 postPermissionError =
-  {-b}Missing Permissions:{-b} I couldn't send a message in {$name}.
-  If a mod could give me the {-b}Send Messages{-b}, {-b}Send Embeds{-b} and {-b}Attach Files{-b} permissions there that would be nice.
-  If you'd like me to stop trying to send messages there, moderators can use `{-pr}stopchannel {$id}`.
-  If you think you've done everything right but keep getting this message, join our support server, it's linked in my `{-pr}help` message.
+  {-b}Fehlende Berechtigungen:{-b} Ich konnte keine Nachrichten senden in {$name}.
+  Wenn mir ein Moderator die Erlaubnis geben würde damit ich dort {-b}Nachriten schicken{-b}, {-b}Send Embeds{-b} und {-b}Datein anhängen{-b} wäre das sehr nett.
+  Wenn du möchtest, dass ich nicht mehr versuche, Nachrichten dorthin zu senden, können Moderatoren `{-pr} stopchannel {$ id}` verwenden.
+  Wenn du glaubst alles richtig gemacht haben, diese Nachricht aber weiterhin erhälst, trete unserem Support-Server bei. Dieser ist in meiner Hilfe-Nachricht "{-pr}" verlinkt.
 
 ### User Limit D:
 userLimit =
-  {-b}I've hit my user limit!{-b} Your subscription request contained accounts no one else is subscribed to, so I had to drop them.
+  {-b} Ich habe mein Benutzerlimit erreicht! {- b} Deine Abonnementanfrage enthielt Konten, die niemand sonst abonniert hat, daher musste ich sie verwerfen.
 
-  {-b}Why did you do this?{-b}
-  Twitter currently limits every app to 5 000 subscriptions. If you're reading this I have reached that limit, and I have no choice - if I ask for more users then everything will break for everyone.
+  {-b}Warum hast du das gemacht?{-b}
+  Twitter beschränkt derzeit jede App auf 5.000 Abonnements. Wenn du das hier lesen kannst, habe ich dieses Limit erreicht und ich habe keine Wahl - wenn ich nach mehr Benutzern frage, wird alles für alle kaputt gehen.
 
-  {-b}What are you doing to fix this?{-b}
-  I've been working really hard to try and find options to get out of this situation, and it's been very stressful for me, because I really want everyone to get their tweets. However so far no option seems perfect.
-  You can find a thread on the topic here if you'd like to propose any solutions: https://github.com/atomheartother/QTweet/issues/32
+  {-b}Was tust du, um das zu beheben?{-b}
+  Ich habe wirklich hart gearbeitet, um Optionen zu finden, um aus dieser Situation herauszukommen, und es war sehr stressig für mich, weil ich wirklich möchte, dass jeder seine Tweets bekommt. Bisher scheint jedoch keine Option perfekt zu sein.
+  Einen Thread zum Thema finden Sie hier, wenn du Lösungen vorschlagen möchten: https://github.com/atomheartother/QTweet/issues/32
 
-  {-b}Can I help?{-b}
-  If you read the thread I posted above, you'll see a lot of options will cost me money. If you'd like to help and make it possible for QTweet to function better for everyone, you can support QTweet's development on Patreon - every little bit helps: https://www.patreon.com/atomheartother
+  {-b}Kann ich helfen?{-b}
+  Wenn Sie den Thread lesen, den ich oben gepostet habe, werden Sie feststellen, dass viele Optionen mich Geld kosten. Wenn Sie helfen möchten und es QTweet ermöglichen möchten, für alle besser zu funktionieren, können Sie die Entwicklung von QTweet auf Patreon unterstützen - jedes kleine bisschen hilft: https://www.patreon.com/atomheartother
 
-  {-b}How do I get my tweets in the meantime?{-b}
-  You have a few options if you really want these accounts posted to your server:
-  - {-b}Host your own version of QTweet{-b}: I would really recommend doing this, QTweet is free and open source, and you can run her from any computer or server. You can read more in the `!!help` message and contact my creator if you need help.
-  - {-b}Remove some of your subscriptions{-b} if you have any, to free up some space - note that if another server is subscribed to that account this will not work unfortunately.
-  - {-b}Find an alternative to QTweet{-b}: Yup, that's it, if those options don't work for you I'm afraid I can't do anything else for you!
+  {-b}Wie erhalte ich Tweets in der Zwischenzeit?{-b}
+  Du hast einige Optionen, wenn du wirklich möchtest, dass diese Konten auf deinem Server gesendet werden:
+  - {-b}Host deine eigene Version von QTweet{-b}: Ich würde dies wirklich empfehlen, QTweet ist kostenlos und Open Source, und du kannst sie von jedem Computer oder Server aus ausführen. Du kannst mehr in der Nachricht "!! help" lesen und meine Schöpferin kontaktieren, wenn du Hilfe benötigst.
+  - {-b}Entferne ein Paar deiner Abonnements {-b}, falls vorhanden, um Speicherplatz freizugeben. Beachte dass dies leider nicht funktioniert, wenn ein anderer Server das selbe Twitter-Konto abonniert hat.
+  - {-b}Finde eine Alternative zu QTweet{-b}: Jap, das war's. Wenn diese Optionen für dich nicht funktionieren, dann kann ich leider nicht's mehr für dich tun!
 
 ### Credit
-languageCredit = German, made by `Samsa#4879` aka framerunner
+languageCredit = Deutsch, erstellt von `Samsa#4879` aka framerunner
