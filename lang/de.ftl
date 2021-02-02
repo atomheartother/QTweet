@@ -10,29 +10,29 @@ helpHeader = {-bot-name} ist hier!
 
 # The main help message body, followed by usage
 helpIntro =
-  Hallo, ich bin { -bot-name }, I'm a very simple bot who cross-posts twitter posts to Discord!
-  {-b}You should read my [complete documentation]({ -docs-url }){-b}
-  {-b}Want to invite me to your server?{-b} [Click here]({ -invite-url })!
-  {-b}Problems, questions?{-b} [We have a support server!]({ -support-server })
-  {-b}Want to support QTweet?{-b} [Make a Patreon donation!]({ -patreon-link })
+  Hallo, ich bin { -bot-name }, Ich bin ein sehr simpler Bot, der Twitter Nachrichten auf Discord anzeigt!
+  {-b}Du solltest meine [komplette Dokumentation]({ -docs-url }) lesen{-b}
+  {-b}Möchtest du mich auf deinen Server einladen?{-b} [hier klicken]({ -invite-url })!
+  {-b}Probleme, Fragen?{-b} [Wir haben einen support Server!]({ -support-server })
+  {-b}Du möchtest QTweet unterstützen?{-b} [Mach eine Spende bei Patreon!]({ -patreon-link })
   
-  Here's a short list of commands to get you started:
+  Hier ist eine kurze Liste von Befehlen, mit denen du beginnen kannst:
 
 # Footer giving credit to the artist
-helpFooter = Profile picture art by {$artist}
+helpFooter = Profilbild von {$artist}
 
 # The welcome msg sent to server owners & her generic response when DM'd
 welcomeMessage = 
-      Hello, I'm {-bot-name}, thanks for inviting me to your server!
-      {-b}To get started:{-b} `{-pr}help` for commands and useful links!
-      {-b}If I'm useful to your server{-b}, please consider upvoting me at {-profile-url}
+      Hallo, ich bin {-bot-name}, danke dass du mich auf deinen Server eingeladen hast!
+      {-b}Um zu beginnen:{-b} `{-pr}help` für Befehle und nütliche Links!
+      {-b}Wenn ich nützlich für deinen Server bin{-b}, würde es mich freuen wenn du für mich abstimmst auf {-profile-url}
       
-      By using any of my commands, you agree that {-b}any content posted to your server or DMs through me is your own responsibility{-b}, check out my documentation for more information.
+      Wenn du einen meiner Befehle ausführst, stimmst du zu dass {-b}alle Inhalte, die über mich auf deinem Server oder über DMs gepostet werden, in deiner eigenen Verantwortung liegen{-b}. Weitere Informationen findest du in meiner Dokumentation..
 
 ### Command usage
 
 # The word "usage"
--usage = Usage
+-usage = Verwendung
 # The word used to describe a twitter screen name, in a variable
 -screen-name-variable = twitter_screen_name
 
@@ -42,254 +42,248 @@ usage-tweet =
   {-b}{-usage}{-b}: `{-pr}tweet <{-screen-name-variable}> [--count=count]`
 
 usage-start =
-  Subscribe to a twitter user and post their tweets in real time.
+  Abonniere einen Twitter-Benutzer und schicke seine Tweets in Echtzeit.
   {-b}{-usage}{-b}: `{-pr}start <{-screen-name-variable}> [flags]`
-  Supports multiple users, retweets, filtering out text posts and more! Check out the documentation!
+  Unterstützt mehrere Benutzer, Retweets, Herausfiltern von Textbeiträgen und mehr! Schau dir die Dokumentation an!
 
 usage-stop = 
-  Unsubscribe from the given user.
+  Deabonieren vom angegebenen Twitter-Benutzer.
   {-b}{-usage}{-b}: `{-pr}stop <{-screen-name-variable}>`
 
 usage-stopchannel =
-  Exactly like {-pr}stop but acts on the whole channel.
+  Genau wie {-pr}stop wirkt aber für den ganzen Kanal.
   {-b}{-usage}{-b}: `{-pr}stopchannel [channel ID]`
 
-usage-list = Print a list of this channel's subscriptions.
+usage-list = Zeigt eine Liste der Abonnements dieses Kanals.
 
 usage-lang = 
-  List available languages or change the language.
-  Read the docs if you want to help translate me in your language!
+  Liste der verfügbaren Sprachen auf oder ändere die Sprache.
+  Lese die Dokumentation, wenn du mir helfen möchten, mich in eine Sprache zu übersetzen!
   {-b}{-usage}{-b}: `{-pr}lang [list] [set <language>]`
 usage-lang-set = {-usage}: `{-pr}lang set <language>`
 
 usage-qtprefix =
-  Change the prefix to use to interact with me.
-  You need to be a **server-wide** mod to do this!
+  Ändern Sie das Präfix, um mit mir zu interagieren.
+  Du musst ein **Server** Moderator sein, um dies zu benutzen!
   {-b}{-usage}{-b}: `{-pr}qtprefix <new_prefix>`
 
 usage-tweetid =
-  Post the formatted tweet with the specified ID.
+  Veröffentliche einen Tweet mit der angegebenen ID.
   {-b}{-usage}{-b}: `{-pr}tweetid <tweet_id>`
 
 
 ### Command feedback
--error-apology = I'm on it, sorry for the trouble!
+-error-apology = Ich bin dran, entschuldigung!
 ## !!tweet
 countIsNaN =
-  {-b}I need a number of tweets to get!{-b}
-  Hey, {$count} isn't a number! >:c
+  {-b}Bitte gib eine Zahl von Tweets an, die ich holen soll!{-b}
+  Hey, {$count} ist keine gültige Zahl! >:c
 
 tweetCountLimited = 
-  {-b}Limited to {$maxCount} tweets{-b}
-  You're not a mod so I have to limit you - here's the latest {$maxCount} tweets!
+  {-b}Begrenzt auf {$maxCount} Tweets{-b}
+  Du bist kein Moderator, daher muss ich die Anzahl der Tweets limitiern. Hier sind die letzten {$maxCount} Tweets!
 
 tweetCountUnderOne =
-  {-b}You asked me to post {$count} tweets, so I won't post any{-b}
-  Nice try~
+  {-b}Du hast mich gebeten, {$ count} Tweets zu posten, deshalb poste ich keine!{-b}
+  Netter Versuch~
 
 tweetCountHighConfirm =
-  {-b}You're asking for a lot of tweets{-b}
-  Are you sure you want me to post {$count} tweets? Once I start, you won't be able to stop me!
-  If you're sure you want me to do it, run:
+  {-b}Du fragst nach einer Menge Tweets{-b}
+  Bist du dir sicher, dass ich {$count} Tweets senden soll? Wenn ich einmal angefangen habe, kannst du mich nicht mehr aufhalten!
+  Wenn du dir sicher bist, dass ich das tun soll, benutze:
   `{-pr}tweet {$screenName} --count={$count} --force`
 
 tweetNotAuthorized =
-  {-b}I tried getting a tweet from {$screenName} but Twitter tells me that's unauthorized.{-b}
-  This is usually caused by a blocked account.
+  {-b}Ich habe versucht einen Tweet von {$screenName} zu erhalten, aber Twitter sagt mir, ich wäre nicht authorisiert.{-b}
+  Dies wird normalerweise durch ein gesperrtes Konto verursacht.
 
 tweetUnknwnError =
-  {-b}{$screenName} does exist but something seems wrong with their profile{-b}
-  I can't get their timeline... Twitter had this to say:
+  {-b}{$screenName} existiert, aber irgend etwas scheint bei dem Profil nicht zu stimmen{-b}
+  ich kann die Zeitliste nicht erreichen... Twitter sagt mir folgendes:
   {$error}
 
-noTweets = It doesn't look like {$screenName} has any tweets...
+noTweets = Sieht nicht so aus, als ob {$screenName} Tweets hat...
 
 noValidTweets =
-  {-b}This user doesn't seem to have any valid tweets{-b}
-  You might want to try again, maybe Twitter messed up?
+  {-b}Dieser benutzer hat keine gültigen Tweets{-b}
+  Vielleicht möchtest du es noch einmal versuchen, vielleicht hat Twitter es vermasselt?
 
 tweetGeneralError = 
-  {-b}Something went wrong getting tweets from {$screenName}{-b}
+  {-b}Beim Abrufen von Tweets von {$ screenName} ist ein Fehler aufgetreten.{-b}
   {-error-apology}
 
 ## !!tweetId
 tweetIdGeneralError =
-  {-b}Something went wrong getting tweet {$id}{-b}
+  {-b}Beim abrufen vom Tweet {$id} ist etwas schief gelaufen!{-b}
   {-error-apology}
 
 ## Generic for start and stop
 getInfoGeneralError =
-  {-b}Something went wrong getting the info for {$namesCount ->
-  [one] this account
-  *[other] these accounts
+  {-b}Etwas ist fehlgeschlagen beim abrufen {$namesCount ->
+  [one] dieses Kontos
+  *[other] dieser Konten
   }.{-b}
   {-error-apology}
 
 ## !!start
 startSuccess =
-  {-b}You're now subscribed to {$addedObjectName}!{-b}
-  Remember you can stop me at any time with `{-pr}stop {$nameCount ->
+  {-b}Du hast jetzt {$ addedObjectName} abonniert!{-b}
+  Denk daran, dass du das jeder Zeit beenden kannst mit `{-pr}stop {$nameCount ->
     [one] {$firstName}
     *[other] <{-screen-name-variable}>
   }`.
-  It can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!
+  Es kann bis zu 20 Minuten dauern, bis Tweets abgerufen werden. Sobald es angefangen hat, werden die Tweets in Echtzeit abgerufen!
 
   {$missedNames ->
     [0] {""}
-    *[other] It also appears I was unable to find some of the users you specified, make sure you used their screen name!
+    *[other] Es scheint so, also ob ich einge der Benutzer nicht finden kann! Bitte stelle sicher, dass du die Twitter Namen verwendest, nicht die Anzeige Namen!
   }
 
 # This is how we display multiple names.
 # If we only have one, we display it, if we have multiple we display them, then add the last one.
 formatUserNames = {$count ->
     [one] {$lastName}
-    *[other] {$names} and {$lastName}
+    *[other] {$names} und {$lastName}
   }
 
 startUpdateSuccess = 
-  {-b}{$addedObjectName} updated!{-b}
-  Your new flags have been registered. The changes should be instant.
+  {-b}{$addedObjectName} aktualisiert!{-b}
+  Deine neuen Flaggen wurden registriert. Die Änderungen sollten sofort erfolgen.
 
 ## !!leaveguild
-noValidGid = No valid guild ID provided
+noValidGid = Ungültige Gilden ID
 
-guildNotFound = I couldn't find guild {$guild}.
+guildNotFound = Ich konnte die Gilde {$guild} nicht finden.
 
 ## !!stop
 noSuchSubscription =
-  {-b}Not subscribed to {$screenNames}{-b}
-  Use `{-pr}list` for a list of subscriptions!
+  {-b}Es existiert kein Abo für {$screenNames}{-b}
+  Verwende `{-pr}list` um eine Liste deiner Abonnements zu sehen!
 
 stopSuccess =
-  {-b}I've unsubscribed you from {$screenNames}{-b}
-  You should stop getting any tweets from them.
+  {-b}Ich habe dich abgemeldet von {$screenNames}{-b}
+  Du solltest nun keine Tweets mehr von {$screenNames} erhalten.
 
 ## !!stopchannel
 stopChannelInDm =
-  {-b}Use this command in the server you want to target{-b}
-  You don't have to use an argument in DMs. If you want to stop all DM subscriptions just run `{-pr}stopchannel`.
+  {-b}Verwende diesen Befehl auf dem gewünschten ziel Server{-b}
+  Diesen Befehl musst du nicht als DM schicken. Wenn du alle DM Abonnements beenden möchtest, verwende `{-pr}stopchannel`.
 
 noSuchChannel =
-  {-b}I couldn't find channel {$targetChannel} in your server.{-b}
-  If you deleted it, I've probably already left it, don't worry!
+  {-b}Ich konnte den Kanal {$targetChannel} in deinem Server nicht finden.{-b}
+  Wenn du ihn gelöscht hast, hab ich ihn schon verlassen, keine Sorge!
 
 stopChannelSuccess =
-  {-b}I've unsubscribed you from {$subs ->
-    [one] one user
-    *[other] {$subs} users
+  {-b}Ich habe dich abgemeldet von {$subs ->
+    [one] einem Benutzer
+    *[other] {$subs} Benutzern
   }.{-b}
-  You should now stop getting any tweets in `{$channelName}`.
+  Du solltest nun keine Tweets mehr in `{$channelName}` erhalten.
 
 ## !!lang
 noSuchLang =
-  {-b}I don't support this language{-b}
-  You can run `{-pr}lang list` to see a list of supported languages
+  {-b}Ich unterstütze diese Sprache nicht!{-b}
+  Du kannst `{-pr}lang list` verwednen um eine Liste der verfügbaren Sprachen zu erhalten.
 
 langSuccess =
-  {-b}Language changed successfully{-b}
-  Welcome to the magical world of english!
+  {-b}Sprache erfolgreich geändert{-b}
+  Willkommen bei der Sprache der Dichter und Denker!
 
 prefixSuccess =
-  {-b}Prefix changed successfully{-b}
-  You'll now have to use {$prefix} for me to understand you!
+  {-b}Präfix erfolgreich geändert{-b}
+  Du musst nun {$prefix} verwenden, damit ich mich angesprochen fühle!
 
 ## General
 invalidVerb = 
-  {-b}Command failed{-b}
-  Invalid verb: {$verb}
+  {-b}Befehl fehlgeschlagen{-b}
+  Ungültiges Verb: {$verb}
 
 ### General twitter errors
 noSuchTwitterUser =
-  {-b}I can't find {$count ->
-    [1] a Twitter user by the name of
-    *[other] any of those users:
+  {-b}Ich kann keinen {$count ->
+    [1] Twitter Benutzer mit dem Namen finden
+    *[other] dieser Benutzer finden:
   } {$name}.{-b}
-  You most likely tried using their display {$count ->
-    [1] name
-    *[other] names
-  } and not their twitter {$count -> 
-    [1] handle
-    *[other] handles
-  }.
+  Du hast vermutlich versucht ihren Anzeigenamen zu verwenden anstatt ihrem Twitternamen
 
 tooManyUsersRequested =
-  {-b}Too many users requested{-b}
-  It seems I requested too many users to twitter. This shouldn't happen, but in the meantime try requesting fewer users!
+  {-b}Zu viele Benutzer angefordert{-b}
+  Es sieht so aus, als hätte ich zu viele Twitter Benutzer angefordert. Das sollte nicht passieren, aber in der Zwischenzeit könntest du versuchen weniger Benutzer abzufragen!
 
 noSuchTwitterId =
-  {-b}No such ID{-b}
-  Twitter says there's no tweet with this id!
+  {-b}Ungültige ID{-b}
+  Twitter sagt es gibt keinen Tweet mit dieser ID!
 
 twitterUnknwnError =
-  {-b}Something went wrong interacting with twitter!{-b}
+  {-b}Bei der Interaktion mit Twitter ist ein Fehler aufgetreten!{-b}
   {-error-apology}
 
 ### Command permissions error msg
 # Short error indicator showing this command is for bot owners
--botOwnerCmd = Bot Owner command
+-botOwnerCmd = Bot Besitzer Befehl
 # Generic error indicator
--notAuthorized = Not authorized
+-notAuthorized = Nicht autorisiert
 
 announceForAdmin =
   {-b}{-botOwnerCmd}{-b}
-  Sorry, only my owner can do announcements!
+  Sorry, nur Besitzer dürfen Ankündigungen machen!
 cmdInDms = 
   {-b}{-notAuthorized}{-b}
-  This command is only allowed in DMs.
+  Dieser Befehl ist nur in DMs erlaubt.
 stopForMods = 
   {-b}{-notAuthorized}{-b}
-  Only moderators can unsubscribe from a twitter account!
+  Nur Moderatoren können einen Twitter-Account de-abonnieren!
 startForMods = 
   {-b}{-notAuthorized}{-b}
-  To subscribe to a twitter account you need to be a moderator or have the proper role!
+  Um einen Twitter-Account zu abonnieren, müssen Sie Moderator sein oder die richtige Rolle haben!
 langForMods =
   {-b}{-notAuthorized}{-b}
-  Only server-level moderators can perform language commands!
+  Nur Server weite Moderatoren können sprachbefehle ausführen!
 prefixForMods = 
   {-b}{-notAuthorized}{-b}
-  Only server-level moderators can change the prefix!
+  Nur Server weite Moderatoren können den Präfix ändern!
 ### Lists
-genericEmptyList = List is empty, nothing to display.
+genericEmptyList = Die Liste ist leer, es gibt nichts anzuzeigen.
 
 noUserSubscriptions = 
-  {-b}This user has no subscriptions{-b}
-  This shouldn't happen :c
+  {-b}Dieser Benutzer hat keine Abonnements{-b}
+  Das sollte nicht vorkommen :c
 
 noSubscriptions = 
-  {-b}You're not subscribed to anyone{-b}
-  Use `{-pr}start <{-screen-name-variable}>` to get started!
+  {-b}Du hast niemanden abonniert{-b}
+  Verwende `{-pr}start <{-screen-name-variable}>` um anzufangen!
 
 # Flag formatting is on one line, in plain text
 formatFlags = With {$notext -> 
-    *[0] text posts
-    [1] no text posts
+    *[0] Text Nachrichten
+    [1] keine Text Nachrichten
   }, {$retweet ->
-    *[0] no retweets
-    [1] retweets
+    *[0] keine Retweets
+    [1] Retweets
   }, {$noquote ->
-    *[0] quotes
-    [1] no quotes
+    *[0] Zitate
+    [1] keine Zitate
   }, pings {$ping -> 
-    *[0] off
-    [1] on
-  } and {$replies -> 
-    *[0] no replies
-    [1] replies
-  } being posted.
+    *[0] aus
+    [1] an
+  } und {$replies -> 
+    *[0] keine Antworten
+    [1] Antworten
+  } wurden gesendet.
 
 genericObjects = {$count} {$count -> 
-    [one] object
-    *[other] objects
+    [one] Objekt
+    *[other] Objekte
   }
 
 subscriptions = {$count} {$count -> 
-    [one] subscription
-    *[other] subscriptions
+    [one] Abonnement
+    *[other] Abonnements
   }
 
 languages = {$count} {$count -> 
-    [one] language
-    *[other] languages
+    [one] Sprache
+    *[other] Sprachen
   }
 
 ### Posting errors
