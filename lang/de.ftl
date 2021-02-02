@@ -234,7 +234,7 @@ cmdInDms =
   Dieser Befehl ist nur in DMs erlaubt.
 stopForMods = 
   {-b}{-notAuthorized}{-b}
-  Nur Moderatoren können einen Twitter-Account de-abonnieren!
+  Nur Moderatoren können einen Twitter-Account deabonnieren!
 startForMods = 
   {-b}{-notAuthorized}{-b}
   Um einen Twitter-Account zu abonnieren, müssen Sie Moderator sein oder die richtige Rolle haben!
@@ -292,26 +292,26 @@ languages = {$count} {$count ->
 postPermissionError =
   {-b}Fehlende Berechtigungen:{-b} Ich konnte keine Nachrichten senden in {$name}.
   Wenn mir ein Moderator die Erlaubnis geben würde damit ich dort {-b}Nachriten schicken{-b}, {-b}Send Embeds{-b} und {-b}Datein anhängen{-b} wäre das sehr nett.
-  Wenn du möchtest, dass ich nicht mehr versuche, Nachrichten dorthin zu senden, können Moderatoren `{-pr} stopchannel {$id}` verwenden.
+  Wenn du möchtest, dass ich nicht mehr versuche, Nachrichten dorthin zu senden, können Moderatoren `{-pr}stopchannel {$id}` verwenden.
   Wenn du glaubst alles richtig gemacht haben, diese Nachricht aber weiterhin erhälst, trete unserem Support-Server bei. Dieser ist in meiner Hilfe-Nachricht "{-pr}" verlinkt.
 
 ### User Limit D:
 userLimit =
-  {-b} Ich habe mein Benutzerlimit erreicht! {- b} Deine Abonnementanfrage enthielt Konten, die niemand sonst abonniert hat, daher musste ich sie verwerfen.
+  {-b}Ich habe mein Benutzerlimit erreicht!{-b} Deine Abonnementanfrage enthielt Konten, die niemand sonst abonniert hat, daher musste ich sie verwerfen.
 
   {-b}Warum hast du das gemacht?{-b}
   Twitter beschränkt derzeit jede App auf 5.000 Abonnements. Wenn du das hier lesen kannst, habe ich dieses Limit erreicht und ich habe keine Wahl - wenn ich nach mehr Benutzern frage, wird alles für alle kaputt gehen.
 
   {-b}Was tust du, um das zu beheben?{-b}
   Ich habe wirklich hart gearbeitet, um Optionen zu finden, um aus dieser Situation herauszukommen, und es war sehr stressig für mich, weil ich wirklich möchte, dass jeder seine Tweets bekommt. Bisher scheint jedoch keine Option perfekt zu sein.
-  Einen Thread zum Thema finden Sie hier, wenn du Lösungen vorschlagen möchten: https://github.com/atomheartother/QTweet/issues/32
+  Einen Thread zum Thema findest du hier, wenn du Lösungen vorschlagen möchten: https://github.com/atomheartother/QTweet/issues/32
 
   {-b}Kann ich helfen?{-b}
-  Wenn Sie den Thread lesen, den ich oben gepostet habe, werden Sie feststellen, dass viele Optionen mich Geld kosten. Wenn Sie helfen möchten und es QTweet ermöglichen möchten, für alle besser zu funktionieren, können Sie die Entwicklung von QTweet auf Patreon unterstützen - jedes kleine bisschen hilft: https://www.patreon.com/atomheartother
+  Wenn du den Thread lesen, den ich oben gepostet habe, wirst du feststellen, dass viele Optionen mich Geld kosten. Wenn du helfen möchtest und es QTweet ermöglichen möchtest, für alle besser zu funktionieren, kannst du die Entwicklung von QTweet auf Patreon unterstützen - jedes kleine bisschen hilft: https://www.patreon.com/atomheartother
 
   {-b}Wie erhalte ich Tweets in der Zwischenzeit?{-b}
   Du hast einige Optionen, wenn du wirklich möchtest, dass diese Konten auf deinem Server gesendet werden:
-  - {-b}Host deine eigene Version von QTweet{-b}: Ich würde dies wirklich empfehlen, QTweet ist kostenlos und Open Source, und du kannst sie von jedem Computer oder Server aus ausführen. Du kannst mehr in der Nachricht "!! help" lesen und meine Schöpferin kontaktieren, wenn du Hilfe benötigst.
+  - {-b}Host deine eigene Version von QTweet{-b}: Ich würde dies wirklich empfehlen, QTweet ist kostenlos und Open Source, und du kannst sie von jedem Computer oder Server aus ausführen. Du kannst mehr in der Nachricht "{-pr}help" lesen und meine Schöpferin kontaktieren, wenn du Hilfe benötigst.
   - {-b}Entferne ein Paar deiner Abonnements {-b}, falls vorhanden, um Speicherplatz freizugeben. Beachte dass dies leider nicht funktioniert, wenn ein anderer Server das selbe Twitter-Konto abonniert hat.
   - {-b}Finde eine Alternative zu QTweet{-b}: Jap, das war's. Wenn diese Optionen für dich nicht funktionieren, dann kann ich leider nicht's mehr für dich tun!
 
