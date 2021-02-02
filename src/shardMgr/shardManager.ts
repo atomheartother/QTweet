@@ -1,7 +1,14 @@
 import { ShardingManager } from 'discord.js';
+import log from '../log';
 import { QCSerialized } from '../shard/QChannel/type';
 
-let manager: ShardingManager = new ShardingManager('dist/src/shard/bot.js', { token: process.env.DISCORD_TOKEN, execArgv: ['-r', 'esm'] });
+let manager: ShardingManager = null;
+try {
+  manager = new ShardingManager('dist/src/shard/bot.js', { token: process.env.DISCORD_TOKEN, execArgv: ['-r', 'esm'] });
+} catch (e) {
+  log("Can't create manager");
+  log(e);
+}
 
 export default manager;
 
