@@ -6,6 +6,7 @@ import { post, postAnnouncement } from './shardManager';
 import { DbModificationsInfo, ShardMsgHandlerFunction } from '.';
 import { add, getAllSubs, rm } from '../db/subs';
 import { getUniqueChannels } from '../db/channels';
+import { getUserIds as SQLgetUserIds } from '../db/user';
 
 const handleTwitterError = (code: number, msg: string, screenNames: string[]) => {
   if (code === 17 || code === 34) {
@@ -67,7 +68,7 @@ export const start: ShardMsgHandlerFunction<'start'> = async ({
     }
     return handleTwitterError(code, msg, screenNames);
   }
-  const allUserIds = await getAllSubs();
+  const allUserIds = await SQLgetUserIds();
   if (allUserIds.length + data.length >= 5000) {
     // Filter out users which would be new users
     const filteredData = allUserIds.reduce((acc, { twitterId }) => {
