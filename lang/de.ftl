@@ -65,7 +65,7 @@ usage-lang-set = {-usage}: `{-pr}lang set <language>`
 
 usage-qtprefix =
   Ändere das Präfix, um mit mir zu interagieren.
-  Du musst ein **Server** Moderator sein, um dies zu benutzen!
+  Du musst ein {-b}Server{-b} Moderator sein, um dies zu benutzen!
   {-b}{-usage}{-b}: `{-pr}qtprefix <new_prefix>`
 
 usage-tweetid =
