@@ -6,12 +6,15 @@ import { handleStart as start } from './commands/start';
 import { handleStop as stop } from './commands/stop';
 import { post, translated } from './post';
 import QChannel from './QChannel/QChannel';
-import i18n from './i18n';
 
 const handlePost = async ({ qc, content, type }) => {
   // This command can be broadcast to all shards, we must check that it's valid
   const qChannel = QChannel.unserialize(qc);
-  if (!(await qChannel.obj())) return;
+  try {
+    if (!(await qChannel.obj())) return;
+  } catch(e) {
+    return
+  }
   if (type === 'translated') {
     const { trCode: code, ...params } = content;
     translated(qChannel, code, params);
