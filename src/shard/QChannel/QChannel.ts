@@ -91,8 +91,16 @@ class QChannel {
   }
 
   async send(content: any, options = null) {
-    const c = await this.obj();
-    return c && c.send(content, options);
+    try {
+      const c = await this.obj();
+      return c && c.send(content, options);
+    }
+    catch (e) {
+      console.log("Can't send in invalid channel");
+      console.log(e);
+      console.log(this.id);
+      return null;
+    }
   }
 
   async sendToOwner(content: any, options = null) {
@@ -137,13 +145,20 @@ class QChannel {
   // Best channel starting from this channel
   // Can return null
   async bestChannel(msgType = 'message') {
-    const c = await this.obj();
-    const checkFunction = msgType === 'embed' ? canPostEmbedIn : canPostIn;
-    if (isDmChannel(c) || checkFunction(c)) {
-      return this;
+    try {
+      const c = await this.obj();
+      const checkFunction = msgType === 'embed' ? canPostEmbedIn : canPostIn;
+      if (isDmChannel(c) || checkFunction(c)) {
+        return this;
+      }
+      // From now on we can't post in this channel
+      return QChannel.bestGuildChannel(await this.guild(), msgType);
+    } catch(e) {
+      console.log("No bestchannel for invalid channel");
+      console.log(e);
+      console.log(this.id);
     }
-    // From now on we can't post in this channel
-    return QChannel.bestGuildChannel(await this.guild(), msgType);
+    return null;
   }
 
   serialize(): QCSerialized {

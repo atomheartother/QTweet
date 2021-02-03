@@ -1,8 +1,9 @@
 import log from '../log';
 import QChannel from './QChannel/QChannel';
 import i18n, { i18nOptions } from './i18n';
-import { QCSerialized } from './QChannel/type';
+import { QCSerialized, QCSupportedChannel } from './QChannel/type';
 import { getLang } from '../db/guilds';
+import { ReactionUserManager } from 'discord.js';
 
 // Return values for post functions:
 // 0: Success
@@ -20,7 +21,7 @@ const asyncTimeout = <T=any>(f: Function, ms: number): Promise<T> => new Promise
 // - Plan for the notification failing too
 const handleDiscordPostError = async (
   error,
-  qChannel,
+  qChannel: QChannel,
   type,
   msg,
   errorCount = 0,
@@ -54,7 +55,16 @@ const handleDiscordPostError = async (
     // Either the channel was deleted or Discord 404'd trying to access twitter data.
     retCode = 2;
     channelToPostIn = 'none';
-    if (!(await qChannel.obj())) {
+    let obj: QCSupportedChannel = null;
+    try {
+      obj = await qChannel.obj()
+    } catch (e) {
+      log("Channel can't be turned into obj");
+      console.log(e);
+      log(qChannel.id);
+      return 1;
+    }
+    if (!obj) {
       // Channel deleted
       // The channel was deleted or we don't have access to it
       // const { subs, users } = await rmChannel(qChannel.id);
