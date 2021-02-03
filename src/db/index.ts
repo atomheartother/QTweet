@@ -1,9 +1,15 @@
 import { Pool } from 'pg';
+import log from '../log';
 
 export let pool: Pool;
 
 export const init = () => {
-  pool = new Pool();
+  try {
+    pool = new Pool();
+  } catch(e) {
+    log("Can't initialize database:");
+    log(e);
+  }
 };
 
 export const close = async () => {

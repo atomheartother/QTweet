@@ -3,11 +3,20 @@ import { Client, Permissions, Channel, TextChannel, GuildChannel, DMChannel, New
 import log from '../../log';
 import Backup from '../../backup';
 
-const dClient = new Client({
-  messageCacheMaxSize: 1,
-  messageCacheLifetime: 30,
-  messageSweepInterval: 60,
-});
+let dClient: Client = null;
+
+export const init = () => {
+  try {
+    dClient = new Client({
+      messageCacheMaxSize: 1,
+      messageCacheLifetime: 30,
+      messageSweepInterval: 60,
+    });
+  } catch(e) {
+    log("Can't initialize discord client");
+    log(e);
+  }
+}
 
 const reconnectionDelay = new Backup({
   mode: 'exponential',
