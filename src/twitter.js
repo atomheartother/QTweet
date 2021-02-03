@@ -532,7 +532,7 @@ export const sanityCheck = async () => {
     return rmChannel(c.channelId);
   }));
   const { channels, users, guilds } = await dbSanityCheck();
-  log(`✅ DB sanity check completed!\n${channels + deletedChannels.reduce((prev, del) => prev + del.channels, 0)} channels, ${guilds} guilds, ${users} users removed.`);
+  log(`✅ DB sanity check completed!\n${channels + deletedChannels.reduce((prev, del) => (del ? prev + del.channels : prev), 0)} channels, ${guilds} guilds, ${users} users removed.`);
 
   const disableSanityCheck = !!Number(process.env.DISABLE_SANITY_CHECK);
   if (!disableSanityCheck) {
