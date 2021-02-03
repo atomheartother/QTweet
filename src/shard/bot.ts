@@ -1,5 +1,6 @@
-import { init, login, getClient } from './discord/discord';
-import { init as initDb } from '../db';
+import { init as initDiscord, login, getClient } from './discord/discord';
+import { init as initDb } from '../db'
+import { init as initShard } from './master';
 import log from '../log';
 import {
   handleMessage,
@@ -29,7 +30,8 @@ const start = async () => {
   initDb();
   // Init discord client
   log("⚙️ Creating Discord client...");
-  init();
+  initDiscord();
+  initShard();
   // Register discord handles
   getClient()
     .on('message', handleMessage)
