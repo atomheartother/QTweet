@@ -15,7 +15,7 @@ export const init = (): ShardingManager => {
   }
 }
 
-export default manager;
+export const mgr = (): ShardingManager => manager;
 
 // Does one of our shard have this channel??? :O
 export const someoneHasChannel = async ({ channelId, isDM }) => {
