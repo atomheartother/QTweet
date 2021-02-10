@@ -1,8 +1,9 @@
 import { init as initDb } from './db';
 import { sanityCheck } from './twitter';
 import shardMsgHandler from './shardMgr/shardMsgHandler';
-import manager from './shardMgr/shardManager';
+import { init as initSharding } from './shardMgr/shardManager';
 import log from './log';
+import manager from './shardMgr/shardManager';
 
 const shardReady = async () => {
   if (manager.shards.size !== manager.totalShards
@@ -24,13 +25,15 @@ process.on('beforeExit', (code) => {
 });
 
 const start = async () => {
-  try {
-    manager.on('shardCreate', (shard) => {
+  const mgr = initSharding();
+  if (!mgr) return 1;
+  mgr.on('shardCreate', (shard) => {
     log(`⚙️ Launched shard ${shard.id}...`);
     shard.on('ready', shardReady);
   });
+  try {
     log("Spawning shards...");
-    manager.spawn('auto', Number(process.env.SHARD_SPAWN_DELAY || 15000), Number(process.env.SHARD_SPAWN_TIMEOUT || 60000));
+    mgr.spawn('auto', Number(process.env.SHARD_SPAWN_DELAY || 15000), Number(process.env.SHARD_SPAWN_TIMEOUT || 60000));
   } catch (e) {
     log("Can't spawn shard:");
     log(e);

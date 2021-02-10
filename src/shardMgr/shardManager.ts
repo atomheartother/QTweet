@@ -3,11 +3,16 @@ import log from '../log';
 import { QCSerialized } from '../shard/QChannel/type';
 
 let manager: ShardingManager = null;
-try {
-  manager = new ShardingManager('dist/src/shard/bot.js', { token: process.env.DISCORD_TOKEN, execArgv: ['-r', 'esm'] });
-} catch (e) {
-  log("Can't create manager");
-  log(e);
+
+export const init = (): ShardingManager => {
+  try {
+    manager = new ShardingManager('dist/src/shard/bot.js', { token: process.env.DISCORD_TOKEN, execArgv: ['-r', 'esm'] });
+    return manager;
+  } catch (e) {
+    log("Can't create manager");
+    log(e);
+    return null;
+  }
 }
 
 export default manager;
