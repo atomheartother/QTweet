@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node -r esm dist/index.js",
+    "start": "node -r esm dist/src/index.js",
     "lint": "yarn eslint src/* --fix"
   },
   "author": "Elise Navennec",
