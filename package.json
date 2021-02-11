@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node -r esm dist/src/index.js",
+    "start": "node -r esm dist/index.js",
     "lint": "yarn eslint src/* --fix"
   },
   "author": "Elise Navennec",
@@ -17,11 +17,11 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.0",
-    "typescript": "^3.8.3"
+    "typescript": "^4.1.5"
   },
   "dependencies": {
     "dblapi.js": "^2.3.0",
-    "discord.js": "^12.0.2",
+    "discord.js": "atomheartother/discord.js#master",
     "esm": "^3.2.25",
     "fluent": "^0.12.0",
     "fortune-teller": "^0.1.2",

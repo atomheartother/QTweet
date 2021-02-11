@@ -15,7 +15,7 @@ export const isServerMod: CheckFn = async (author, qChannel) => {
     log("User isn't an owner and we can't check for more", qChannel);
     return false;
   }
-  const guildMember = guild.member(author);
+  const guildMember = guild.members.resolve(author);
   // Are they an admin or have global management rights? (means they're a moderator)
   const serverWideMod = guildMember.permissions
     .toArray()
@@ -38,7 +38,7 @@ export const isChannelMod: CheckFn = async (author, qChannel) => {
     // This should never be reached.
     return true;
   }
-  const guildMember = guild.member(author);
+  const guildMember = guild.members.resolve(author);
   const channelPermissions = channel.permissionsFor(guildMember);
   return !!channelPermissions.toArray().find((perm) => perm === 'MANAGE_CHANNELS' || perm === 'MANAGE_MESSAGES');
 };
