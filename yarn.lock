@@ -332,9 +332,9 @@ delayed-stream@~1.0.0:
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
   integrity sha1-3zrhmayt+31ECqrgsp4icrJOxhk=
 
-discord.js@atomheartother/discord.js#master:
+discord.js@ahnolds/discord.js#master:
   version "12.5.0"
-  resolved "https://codeload.github.com/atomheartother/discord.js/tar.gz/5179a17af77298e1097dbee539208a6b227bfc77"
+  resolved "https://codeload.github.com/ahnolds/discord.js/tar.gz/be9a49604406218a385e09d0c4dd664bef225940"
   dependencies:
     "@discordjs/collection" "^0.1.6"
     "@discordjs/form-data" "^3.0.1"

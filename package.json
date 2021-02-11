@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "dblapi.js": "^2.3.0",
-    "discord.js": "atomheartother/discord.js#master",
+    "discord.js": "ahnolds/discord.js#master",
     "esm": "^3.2.25",
     "fluent": "^0.12.0",
     "fortune-teller": "^0.1.2",
