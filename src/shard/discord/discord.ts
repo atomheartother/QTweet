@@ -25,7 +25,7 @@ const reconnectionDelay = new Backup({
 });
 
 export const isDmChannel = (c: Channel): c is DMChannel => c.type === 'dm';
-export const isTextChannel = (c: Channel): c is TextChannel => c.type === 'text';
+export const isTextChannel = (c: Channel): c is TextChannel | NewsChannel => c.type === 'text' || c.type === 'news';;
 export const isNewsChannel = (c: Channel): c is NewsChannel => c.type === 'news';
 
 export const getClient = () => dClient;
