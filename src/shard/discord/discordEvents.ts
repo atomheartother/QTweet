@@ -1,6 +1,6 @@
 // Config file
 import fortune from 'fortune-teller';
-import QChannel from '../QChannel/QChannel';
+import QChannel, { isQCSupportedChannel } from '../QChannel/QChannel';
 import { CmdOptions, ParsedCmd} from '.'
 // logging
 import log from '../../log';
@@ -8,7 +8,7 @@ import {
   message as postMessage,
 } from '../post';
 import { createStream, destroyStream } from '../master';
-import { user, login, isNewsChannel, isTextChannel } from './discord';
+import { user, login, isTextChannel } from './discord';
 import i18n from '../i18n';
 import dbl from '../dbl';
 import { Channel, Guild, Message } from 'discord.js';
@@ -41,7 +41,7 @@ export const handleMessage = async (message: Message) => {
   // Ignore bots
   if (message.author.bot) return;
   const { author, channel } = message;
-  if (isNewsChannel(channel)) return;
+  if (!isQCSupportedChannel(channel)) return;
   const qc = new QChannel(channel);
   const { lang, prefix } = await getGuildInfo(qc.guildId());
   // In case anything goes wrong with the db prefix, still use the old prefix as backup!

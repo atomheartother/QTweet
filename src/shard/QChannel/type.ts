@@ -1,8 +1,8 @@
-import { DMChannel, TextChannel } from "discord.js"
+import { DMChannel, NewsChannel, TextChannel } from "discord.js"
 
-export type QCType = 'dm' | 'text'
+export type QCType = 'dm' | 'text' | 'news';
 
-export type QCSupportedChannel = TextChannel | DMChannel;
+export type QCSupportedChannel = TextChannel | DMChannel | NewsChannel;
 
 export type QCConstructor = {
     id: string;
