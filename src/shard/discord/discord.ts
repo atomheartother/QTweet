@@ -1,17 +1,21 @@
 // Direct mappings for discord.js methods
-import { Client, Permissions, Channel, TextChannel, GuildChannel, DMChannel, NewsChannel } from 'discord.js';
+import { Client, Permissions, Channel, TextChannel, GuildChannel, DMChannel, NewsChannel, Intents } from 'discord.js';
 import log from '../../log';
 import Backup from '../../backup';
 
 let dClient: Client = null;
 
+
 export const init = () => {
   try {
+    const intents = new Intents();
+    intents.add('GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'DIRECT_MESSAGES')
     dClient = new Client({
       messageCacheMaxSize: 1,
       messageCacheLifetime: 30,
       messageSweepInterval: 60,
       restGlobalRateLimit: 7,
+      intents
     });
   } catch(e) {
     log("Can't initialize discord client");
