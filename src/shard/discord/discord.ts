@@ -14,7 +14,7 @@ export const init = () => {
       messageCacheMaxSize: 1,
       messageCacheLifetime: 30,
       messageSweepInterval: 60,
-      restGlobalRateLimit: 7,
+      restGlobalRateLimit: 5,
       intents
     });
   } catch(e) {
