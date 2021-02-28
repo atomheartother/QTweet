@@ -9,7 +9,7 @@ let dClient: Client = null;
 export const init = () => {
   try {
     const intents = new Intents();
-    intents.add('GUILDS', 'GUILD_MEMBERS', 'GUILD_MESSAGES', 'DIRECT_MESSAGES')
+    intents.add('GUILDS', 'GUILD_MESSAGES', 'DIRECT_MESSAGES')
     dClient = new Client({
       messageCacheMaxSize: 1,
       messageCacheLifetime: 30,
