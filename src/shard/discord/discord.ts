@@ -15,7 +15,8 @@ export const init = () => {
       messageCacheLifetime: 30,
       messageSweepInterval: 60,
       restGlobalRateLimit: 5,
-      intents
+      intents,
+      partials: ['CHANNEL'],
     });
   } catch(e) {
     log("Can't initialize discord client");
