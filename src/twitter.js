@@ -256,10 +256,16 @@ export const formatTweet = async (tweet, isQuoted) => {
     idStr = retweetedStatus.id_str || idStr;
     targetScreenName = retweetedStatus.user.screen_name || targetScreenName;
   }
+  let authorName = `${user.name} (@${user.screen_name})`;
+  if (isQuoted) {
+    authorName = `[QUOTED] ${authorName}`;
+  } else if (tweet.in_reply_to_screen_name) {
+    authorName = `${authorName} [REPLY TO @${tweet.in_reply_to_screen_name}]`;
+  }
   const embed = {
     url: `https://twitter.com/${targetScreenName}/status/${idStr}`,
     author: {
-      name: `${isQuoted ? '[QUOTED] ' : ''}${user.name} (@${user.screen_name})`,
+      name: authorName,
       url: `https://twitter.com/${targetScreenName}/status/${idStr}`,
     },
     thumbnail: {
