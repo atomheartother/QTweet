@@ -95,7 +95,7 @@ tweetCountHighConfirm =
 
 tweetNotAuthorized =
   {-b}{$screenName}からツイートを取得しようとしましたがTwitter側から拒否されました{-b}
-  これは通常ブロックされていることが原因です。
+  これは殆どの場合ブロックされていることが原因です。
 
 tweetUnknwnError =
   {-b}{$screenName} は存在しますが、そのプロフィールに何か問題があるようです。{-b}
@@ -129,7 +129,7 @@ getInfoGeneralError =
 startSuccess =
   {-b}{$addedObjectName}の登録に成功しました！{-b}
   `{-pr}stop {$nameCount ->
-    [one] {$firstName}
+    [1] {$firstName}
     *[other] <{-screen-name-variable}>
   }`でいつでも停止することができます！
   はじめはツイートの取得は20分ほどかかってしまいますが、一度始まってしまえばリアルタイムになります。
@@ -142,7 +142,7 @@ startSuccess =
 # This is how we display multiple names.
 # If we only have one, we display it, if we have multiple we display them, then add the last one.
 formatUserNames = {$count ->
-    [one] {$lastName}
+    [1] {$lastName}
     *[other] {$names} と {$lastName}
   }
 
@@ -200,7 +200,7 @@ noSuchTwitterUser =
 
 tooManyUsersRequested =
   {-b}多すぎるユーザー数がリクエストされました{-b}
-  にリクエストしたユーザー数が多すぎたようです。このようなことは起こらないはずですが、ユーザー数を減らしてリクエストしてみてください。
+  リクエストしたユーザー数が多すぎたようです。このようなことは起こらないはずですが、ユーザー数を減らしてリクエストしてみてください。
 
 noSuchTwitterId =
   {-b}そのようなIDはありません{-b}
