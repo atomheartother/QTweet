@@ -129,7 +129,7 @@ getInfoGeneralError =
 startSuccess =
   {-b}You're now subscribed to {$addedObjectName}!{-b}
   Remember you can stop me at any time with `{-pr}stop {$nameCount ->
-    [one] {$firstName}
+    [1] {$firstName}
     *[other] <{-screen-name-variable}>
   }`.
   It can take up to 20min to start getting tweets from them, but once it starts, it'll be in real time!
@@ -142,7 +142,7 @@ startSuccess =
 # This is how we display multiple names.
 # If we only have one, we display it, if we have multiple we display them, then add the last one.
 formatUserNames = {$count ->
-    [one] {$lastName}
+    [1] {$lastName}
     *[other] {$names} and {$lastName}
   }
 
