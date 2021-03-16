@@ -11,7 +11,7 @@ helpHeader = {-bot-name} が来たよ!
 # The main help message body, followed by usage
 helpIntro =
   こんにちは、 私は { -bot-name }です。 私は、ツイートをDiscordに投稿するとてもシンプルなボットです。
-  {-b}[完全なドキュメント]を読むことをおすすめします({ -docs-url }){-b}
+  {-b}[完全なドキュメント]({ -docs-url })を読むことをおすすめします{-b}
   {-b}私をサーバーに招待したいですか？{-b} [ここをクリック]({ -invite-url })!
   {-b}質問や問題がありますか？{-b} [サポートサーバーがあります！]({ -support-server })
   {-b}QTweetを支援していただけますか？{-b} [Patreonで寄付してください！]({ -patreon-link })
