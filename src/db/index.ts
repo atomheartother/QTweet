@@ -32,11 +32,11 @@ export const sanityCheck = async () => {
       WHERE  subs."channelId" = channels."channelId"
     );`));
     // Remove guilds that are linked to no channels.
-    ({ rowCount: guilds } = await client.query(`DELETE FROM guilds
-    WHERE NOT EXISTS (
-      SELECT FROM channels
-      WHERE  channels."guildId" = guilds."guildId"
-    );`));
+    // ({ rowCount: guilds } = await client.query(`DELETE FROM guilds
+    // WHERE NOT EXISTS (
+    //   SELECT FROM channels
+    //   WHERE  channels."guildId" = guilds."guildId"
+    // );`));
     // Remove users that are linked to no subs
     ({ rowCount: users } = await client.query(`DELETE FROM twitterUsers
     WHERE NOT EXISTS (
