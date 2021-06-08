@@ -37,6 +37,10 @@ export const postAnnouncement = (msg: string, channels) => {
 
 // Send a message to shards and let them figure out which shard should get it
 export const post = (qc: QCSerialized, content: any, type) => {
+  if (qc.isDM) {
+    manager.shards.array()[0].send({cmd: 'post', qc, content, type});
+    return;
+  }
   manager.broadcast({
     cmd: 'post', qc, content, type,
   });
