@@ -47,7 +47,7 @@ const DISABLE_STREAMS = !!Number(process.env.DISABLE_STREAMS);
 
 const reconnectionDelay = new Backup({
   mode: 'exponential',
-  startValue: 2000,
+  startValue: 2 * 1000,
   maxValue: Number(process.env.TWITTER_MAX_RECONNECT_DELAY) || 240000,
 });
 
@@ -71,7 +71,7 @@ function resetTwitterTimeout() {
     }
     destroyStream();
     // eslint-disable-next-line no-use-before-define
-    setTimeout(createStream, 10000);
+    setTimeout(createStream, 30000);
   }, twitterTimeoutDelay * 1000);
 }
 
@@ -428,21 +428,22 @@ const streamEnd = () => {
 
 // Called when the stream has an error
 const streamError = ({ url, status, statusText }) => {
-  const delay = reconnectionDelay.value();
-  log(
-    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
-  );
-  if (status === 420 && reconnectionDelay.value() < 30000) {
-    log('⚙️ 420 status code detected, jumping to 30s delay immediately', null, true);
-    // If we're being rate-limited, wait 30s at least, up to max
-    reconnectionDelay.set(30000);
+  if (status === 420 && reconnectionDelay.value() < 60000) {
+    log('⚙️ 420 status code detected, jumping to 1min delay immediately', null, true);
+    // If we're being rate-limited, wait 1min at least, up to max
+    reconnectionDelay.set(60000);
   }
   // We simply can't get a stream, don't retry
   stream.disconnected(false);
-  reconnectionDelay.increment();
+  const delay = reconnectionDelay.value();
   if (reconnectionTimeoutID) {
     clearTimeout(reconnectionTimeoutID);
+  } else {
+    reconnectionDelay.increment();
   }
+  log(
+    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
+  );
   // eslint-disable-next-line no-use-before-define
   reconnectionTimeoutID = setTimeout(createStreamClearTimeout, delay);
 };
