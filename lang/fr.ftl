@@ -14,6 +14,9 @@ helpIntro =
   {-b}Un problème, une question?{-b} [On a un serveur de support!]({ -support-server })
   Voilà une liste de quelques unes de mes commandes:
 
+# What QTWeet posts when people ping her
+pingReply = Mon préfix sur ce serveur est `{$prefix}`.
+
 helpFooter = Image de profil faite par {$artist}
 
 welcomeMessage = 

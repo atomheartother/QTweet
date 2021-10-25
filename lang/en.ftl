@@ -18,6 +18,9 @@ helpIntro =
   
   Here's a short list of commands to get you started:
 
+# What QTWeet posts when people ping her
+pingReply = My prefix on this server is `{$prefix}`.
+
 # Footer giving credit to the artist
 helpFooter = Profile picture art by {$artist}
 

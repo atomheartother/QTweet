@@ -51,7 +51,7 @@ export const handleMessage = async (message: Message) => {
       && !!message.mentions.members
       && message.mentions.members.find((item) => item.user.id === user().id)
     ) {
-      message.reply(`My prefix on this server is \`${prefix}\`\n\n${fortune.fortune()}`);
+      message.reply(`${i18n(lang, 'pingReply', {prefix})}\n\n${fortune.fortune()}`);
     } else if (message.channel.type === 'dm') {
       postMessage(qc, i18n(lang, 'welcomeMessage'));
     }
