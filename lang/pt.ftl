@@ -18,6 +18,8 @@ helpIntro =
   
   Aqui está uma pequena lista de comandos para te ajudar a começar:
 
+pingReply = Meu prefixo nesse servidor é {$prefix}.
+
 # Footer giving credit to the artist
 helpFooter = Foto de perfil por {$artist}
 
