@@ -56,7 +56,7 @@ export const start: ShardMsgHandlerFunction<'start'> = async ({
   try {
     data = await getUserIds(screenNames);
   } catch (res) {
-    const { code, msg } = getError(res);
+    const { code, msg, message } = getError(res);
     if (!code) {
       log('Exception thrown without error');
       log(res);
@@ -66,7 +66,7 @@ export const start: ShardMsgHandlerFunction<'start'> = async ({
         namesCount: screenNames.length,
       };
     }
-    return handleTwitterError(code, msg, screenNames);
+    return handleTwitterError(code, msg || message, screenNames);
   }
   const allUserIds = await SQLgetUserIds();
   if (allUserIds.length + data.length >= 5000) {
@@ -101,7 +101,7 @@ export const stop : ShardMsgHandlerFunction<'stop'> = async ({ qc, screenNames }
   try {
     data = await getUserIds(screenNames);
   } catch (response) {
-    const { code, msg } = getError(response);
+    const { code, msg, message } = getError(response);
     if (!code) {
       log(response);
       return {
@@ -110,7 +110,7 @@ export const stop : ShardMsgHandlerFunction<'stop'> = async ({ qc, screenNames }
         namesCount: screenNames.length,
       };
     }
-    return handleTwitterError(code, msg, screenNames);
+    return handleTwitterError(code, msg || message, screenNames);
   }
   const promises = data.map(({ id_str: userId }) => rm(qc.channelId, userId));
 
@@ -164,14 +164,14 @@ export const tweet : ShardMsgHandlerFunction<'tweet'> = async ({ count, flags, .
     return tweets.slice(0, count);
   } catch (response) {
     const { screen_name: screenName } = params;
-    const { code, msg } = getError(response);
+    const { code, msg, message } = getError(response);
     if (!code) {
       log('Exception thrown without error');
       return {
         cmd: 'postTranslated', trCode: 'tweetGeneralError', screenName,
       };
     }
-    return handleTwitterError(code, msg, [screenName]);
+    return handleTwitterError(code, msg || message, [screenName]);
   }
 };
 
@@ -180,14 +180,14 @@ export const tweetId : ShardMsgHandlerFunction<'tweetId'> = async ({ id }) => {
   try {
     t = await showTweet(id);
   } catch (response) {
-    const { code, msg } = getError(response);
+    const { code, msg, message } = getError(response);
     if (!code) {
       log('Exception thrown without error');
       return {
         cmd: 'postTranslated', trCode: 'tweetIdGeneralError', id,
       };
     }
-    return handleTwitterError(code, msg, [id]);
+    return handleTwitterError(code, msg || message, [id]);
   }
   const formattedPromise = formatTweet(t);
   const isQuoted = t.quoted_status && t.quoted_status.user;
