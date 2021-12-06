@@ -428,10 +428,9 @@ const streamEnd = () => {
 
 // Called when the stream has an error
 const streamError = ({ url, status, statusText }) => {
-  if (status === 420 && reconnectionDelay.value() < 60000) {
-    log('⚙️ 420 status code detected, jumping to 1min delay immediately', null, true);
-    // If we're being rate-limited, wait 1min at least, up to max
-    reconnectionDelay.set(60000);
+  if (status === 420) {
+    log('⚙️ 420 status code detected, exiting cleanly to reboot bot', null, false);
+    process.exit();
   }
   // We simply can't get a stream, don't retry
   stream.disconnected(false);
