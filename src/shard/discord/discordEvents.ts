@@ -17,7 +17,7 @@ import { rmGuild, getGuildInfo } from '../../db/guilds';
 import { rmChannel } from '../../db/channels';
 
 const parseWords = (line: string): ParsedCmd => {
-  const regxp = /(?:--|—)(\w+)(=(?:"|”)(.*?)(?:"|”)|=(\S+))?|(?:"|”)(.*?)(?:"|”)|(\S+)/g;
+  const regxp = /(?:--|—)(\w+)(=(?:"|”)(.*?)(?:"|”|“)|=(\S+))?|(?:"|”)(.*?)(?:"|”|“)|(\S+)/g;
   const args = [];
   const flags = [];
   const options: CmdOptions = {}
