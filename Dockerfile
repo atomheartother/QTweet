@@ -9,7 +9,7 @@ ARG PREFIX=!!
 RUN for file in ./lang/*.ftl; do f=${file%.ftl}; cat $file | envsubst '$BOT_NAME:$PREFIX' > $f.o.ftl; echo "Built $f.o.ftl "; done
 
 ## This container compiles src/ files from typescript to javascript
-FROM node:17.6-alpine AS compiler
+FROM node:17-alpine AS compiler
 WORKDIR /app
 
 # Copy build files and install using yarn
@@ -24,7 +24,7 @@ RUN yarn build
 
 
 ## This is the actual qtweet container, using the results from the 2 previous containers
-FROM node:17.6-alpine
+FROM node:17-alpine
 WORKDIR /app
 
 COPY package.json .
