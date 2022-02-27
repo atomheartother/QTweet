@@ -1,5 +1,4 @@
 import Twitter from 'twitter-lite';
-import { Status as Tweet } from 'twitter-d';
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
 import Backup from './backup';

@@ -1,9 +1,9 @@
 import { CmdFn } from ".";
 import { getLang, setLang } from "../../db/guilds";
 import { formatLanguages, FORMAT_POST_EMBEDS } from "../format";
-import { supportedLangs } from '../../../config.json';
 import { embeds, translated } from "../post";
 import log from "../../log";
+import { supportedLangs } from "../i18n";
 
 const lang: CmdFn = async ({ args }, qChannel) => {
     const verb = args.shift();

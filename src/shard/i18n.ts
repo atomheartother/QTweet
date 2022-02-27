@@ -1,7 +1,9 @@
 import { readFileSync } from 'fs';
 import { FluentBundle } from 'fluent';
 import log from '../log';
-import { supportedLangs } from '../../config.json';
+import process from 'process';
+
+export const supportedLangs = process.env.SUPPORTED_LANGS.split(' ');
 
 const langDir = './lang';
 const langs : {

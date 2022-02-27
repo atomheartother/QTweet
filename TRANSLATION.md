@@ -16,7 +16,7 @@ You can also edit an existing translation by simply copying the file over and ed
 
 Once you're done:
 
-- If you're familiar with git and development in general, you can make a merge request, you can even test your new file yourself (You'll need to edit `config.json` to include your language in `supportedLangs`).
+- If you're familiar with git and development in general, you can make a merge request, you can even test your new file yourself (You'll need to edit `.env` to include your language in `supportedLangs`).
 - Otherwise just send me the translation file in the support server or in DMs and I'll test it for you and guide you from there :) You'll also be credited for your work obviously.
 
 ## Style Guide
