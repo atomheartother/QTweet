@@ -1,4 +1,4 @@
-import { ShardingManager } from 'discord.js';
+import { Client, ShardingManager } from 'discord.js';
 import log from '../log';
 import { QCSerialized } from '../shard/QChannel/type';
 
@@ -17,10 +17,14 @@ export const init = (): ShardingManager => {
 
 export const mgr = (): ShardingManager => manager;
 
+const hasChannel = (c: Client, { channelId }): boolean => {
+  return !!c.channels.resolve(channelId);
+}
+
 // Does one of our shard have this channel??? :O
 export const someoneHasChannel = async ({ channelId, isDM }) => {
   if (!isDM) {
-    const res = await manager.broadcastEval<boolean>(client => !!client.channels.resolve(channelId));
+    const res = await manager.broadcastEval(hasChannel, { context: {channelId} });
     return res.indexOf(true) !== -1;
   }
   return true;
