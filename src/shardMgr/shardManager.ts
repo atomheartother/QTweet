@@ -6,7 +6,7 @@ let manager: ShardingManager = null;
 
 export const init = (): ShardingManager => {
   try {
-    manager = new ShardingManager('dist/src/shard/bot.js', { token: process.env.DISCORD_TOKEN, execArgv: ['-r', 'esm'] });
+    manager = new ShardingManager('dist/shard/bot.js', { token: process.env.DISCORD_TOKEN, execArgv: ['--es-module-specifier-resolution=node'] });
     return manager;
   } catch (e) {
     log("Can't create manager");

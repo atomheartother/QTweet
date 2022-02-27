@@ -1,12 +1,11 @@
 {
     "compilerOptions": {
-      "target": "ES2019",
-      "module": "es6",
+      "target": "ESNext",
+      "module": "ESNext",
       "outDir": "dist",
       "sourceMap": true,
       "allowJs": true,
       "moduleResolution": "node",
-      "resolveJsonModule": true,
       "allowSyntheticDefaultImports": true,
       "baseUrl": ".",
       "paths": {
