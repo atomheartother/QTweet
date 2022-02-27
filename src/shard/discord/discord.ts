@@ -1,5 +1,5 @@
 // Direct mappings for discord.js methods
-import { Client, Permissions, Channel, TextChannel, GuildChannel, DMChannel, NewsChannel, Intents } from 'discord.js';
+import { Client, Permissions, AnyChannel, TextChannel, GuildChannel, DMChannel, NewsChannel, Intents } from 'discord.js';
 import log from '../../log';
 import Backup from '../../backup';
 
@@ -11,7 +11,6 @@ export const init = () => {
     const intents = new Intents();
     intents.add('GUILDS', 'GUILD_MESSAGES', 'DIRECT_MESSAGES')
     dClient = new Client({
-      messageCacheMaxSize: 1,
       messageCacheLifetime: 30,
       messageSweepInterval: 60,
       restGlobalRateLimit: 5,
@@ -30,9 +29,9 @@ const reconnectionDelay = new Backup({
   maxValue: 60000,
 });
 
-export const isDmChannel = (c: Channel): c is DMChannel => c.type === 'dm';
-export const isTextChannel = (c: Channel): c is TextChannel | NewsChannel => c.type === 'text' || c.type === 'news';;
-export const isNewsChannel = (c: Channel): c is NewsChannel => c.type === 'news';
+export const isDmChannel = (c: AnyChannel): c is DMChannel => c.type === 'DM';
+export const isTextChannel = (c: AnyChannel): c is TextChannel | NewsChannel => c.type === 'GUILD_TEXT' || c.type === 'GUILD_NEWS';;
+export const isNewsChannel = (c: AnyChannel): c is NewsChannel => c.type === 'GUILD_NEWS';
 
 export const getClient = () => dClient;
 

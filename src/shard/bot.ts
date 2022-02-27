@@ -18,7 +18,7 @@ process.on('unhandledRejection', (err) => {
   log(err);
 });
 
-process.on('message', (msg) => {
+process.on('message', (msg: any) => {
   if (msg.cmd) {
     handleMasterMsg(msg);
   }

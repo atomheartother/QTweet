@@ -20,14 +20,14 @@ export const mgr = (): ShardingManager => manager;
 // Does one of our shard have this channel??? :O
 export const someoneHasChannel = async ({ channelId, isDM }) => {
   if (!isDM) {
-    const res = await manager.broadcastEval(`!!this.channels.resolve("${channelId}")`);
+    const res = await manager.broadcastEval<boolean>(client => !!client.channels.resolve(channelId));
     return res.indexOf(true) !== -1;
   }
   return true;
 };
 
 // Send a message to all shards, telling them to post it to every channel they can
-export const postAnnouncement = (msg: string, channels) => {
+export const postAnnouncement = (msg: string, channels: {channelId: string; ownerId: string; guildId: string; isDM: boolean;}[]) => {
   manager.broadcast({
     cmd: 'announce',
     msg,
@@ -36,9 +36,9 @@ export const postAnnouncement = (msg: string, channels) => {
 };
 
 // Send a message to shards and let them figure out which shard should get it
-export const post = (qc: QCSerialized, content: any, type) => {
+export const post = (qc: QCSerialized, content: any, type: string) => {
   if (qc.isDM) {
-    manager.shards.array()[0].send({cmd: 'post', qc, content, type});
+    manager.shards.at(0).send({cmd: 'post', qc, content, type});
     return;
   }
   manager.broadcast({
