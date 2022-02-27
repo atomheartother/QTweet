@@ -8,10 +8,10 @@ import {
   message as postMessage,
 } from '../post';
 import { createStream, destroyStream } from '../master';
-import { user, login, isTextChannel } from './discord';
+import { user, login, isTextChannel, isDmChannel } from './discord';
 import i18n from '../i18n';
 import dbl from '../dbl';
-import { Channel, Guild, Message } from 'discord.js';
+import { AnyChannel, Guild, Message } from 'discord.js';
 import handleCommand from '../commands';
 import { rmGuild, getGuildInfo } from '../../db/guilds';
 import { rmChannel } from '../../db/channels';
@@ -52,7 +52,7 @@ export const handleMessage = async (message: Message) => {
       && message.mentions.members.find((item) => item.user.id === user().id)
     ) {
       message.reply(`${i18n(lang, 'pingReply', {prefix})}\n\n${fortune.fortune()}`);
-    } else if (message.channel.type === 'dm') {
+    } else if (isDmChannel(message.channel)) {
       postMessage(qc, i18n(lang, 'welcomeMessage'));
     }
     return;
@@ -92,7 +92,7 @@ export const handleReady = async () => {
   createStream();
 };
 
-export const handleChannelDelete = async (c: Channel) => {
+export const handleChannelDelete = async (c: AnyChannel) => {
   if (!isTextChannel(c)) return;
   const {id, name} = c;
   const { users } = await rmChannel(id);

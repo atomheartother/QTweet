@@ -1,6 +1,6 @@
 import { DMChannel, NewsChannel, TextChannel } from "discord.js"
 
-export type QCType = 'dm' | 'text' | 'news';
+export type QCType = 'DM' | 'GUILD_TEXT' | 'GUILD_NEWS';
 
 export type QCSupportedChannel = TextChannel | DMChannel | NewsChannel;
 
