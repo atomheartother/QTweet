@@ -1,5 +1,5 @@
 import { QCSerialized } from "../shard/QChannel/type";
-import { getInt, pool, sanityCheck } from ".";
+import { getInt, pool, sanityCheck } from "./index";
 import { addChannel } from "./channels";
 import { addUser } from "./user";
 

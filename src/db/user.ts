@@ -1,4 +1,4 @@
-import { getInt, pool, sanityCheck } from '.'
+import { getInt, pool, sanityCheck } from './index'
 
 type DbUser = {
   twitterId: string;

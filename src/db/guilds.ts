@@ -1,4 +1,4 @@
-import { pool, sanityCheck } from ".";
+import { pool, sanityCheck } from "./index";
 
 type DbGuild = {
   guildId: string;

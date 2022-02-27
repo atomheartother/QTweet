@@ -1,10 +1,13 @@
 import { CheckFn } from '.';
-import * as config from '../../../config.json';
 import { isDmChannel } from '../discord/discord';
 import log from '../../log';
+import process from 'process'
+
+const envOwnerId = process.env.OWNER_ID;
+const envModRole = process.env.MOD_ROLE;
 
 // Takes an author and returns whether or not they are the owner of the bot
-export const isOwner: CheckFn = (author) => author.id === config.ownerID;
+export const isOwner: CheckFn = (author) => author.id === envOwnerId;
 
 // Whether or not the author is a server admin (with server-wide powers) or the bot owner
 export const isServerMod: CheckFn = async (author, qChannel) => {
@@ -26,7 +29,7 @@ export const isServerMod: CheckFn = async (author, qChannel) => {
     );
   if (serverWideMod) return true;
   // Now we can check if they have the appropriate role
-  const modRole = guildMember.roles.cache.find((role) => role.name === config.modRole);
+  const modRole = guildMember.roles.cache.find((role) => role.name === envModRole);
   return !!modRole;
 };
 

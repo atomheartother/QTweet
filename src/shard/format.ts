@@ -1,10 +1,10 @@
 // A module for formatting data for displaying
 
 import Discord from 'discord.js';
-import * as config from '../../config.json';
 import { isSet } from '../flags';
 import i18n from './i18n';
 import { QCSerialized } from './QChannel/type';
+import process from 'process'
 
 const defaults = {
   data: [],
@@ -80,7 +80,7 @@ export const formatGenericList = async <T, P=object>(
   let embed = new Discord.MessageEmbed()
     .setColor(color)
     .setTitle(`${i18n(lang, objectName, { count: data.length })}:`)
-    .setURL(config.profileURL);
+    .setURL(process.env.PROFILE_URL);
   if (description) {
     embed.setDescription(description);
   }
@@ -105,7 +105,7 @@ export const formatGenericList = async <T, P=object>(
         .setTitle(
           `${i18n(lang, objectName, { count: data.length })} (${page}):`,
         )
-        .setURL(config.profileURL);
+        .setURL(process.env.PROFILE_URL);
       counter = 0;
     }
   }

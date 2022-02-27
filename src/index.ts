@@ -1,4 +1,4 @@
-import { init as initDb } from './db';
+import { init as initDb } from './db/index';
 import { sanityCheck } from './twitter';
 import shardMsgHandler from './shardMgr/shardMsgHandler';
 import { init as initSharding, mgr } from './shardMgr/shardManager';

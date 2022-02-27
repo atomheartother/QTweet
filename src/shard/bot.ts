@@ -1,5 +1,5 @@
 import { init as initDiscord, login, getClient } from './discord/discord';
-import { init as initDb } from '../db'
+import { init as initDb } from '../db/index'
 import { init as initShard } from './master';
 import log from '../log';
 import {
