@@ -328,7 +328,7 @@ export const formatTweet = async (tweet, isQuoted) => {
     embed.color = embed.color || colors.image;
   }
   embed.description = txt;
-  return { embed: { embed, files }, metadata };
+  return { embed: { embeds: [{...embed}], files }, metadata };
 };
 
 // Takes a tweet and determines whether or not it should be posted with these flags
