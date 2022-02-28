@@ -38,7 +38,7 @@ interface PostTranslatedReturn {
   trCode: string,
 };
 
-type PostableEmbedded = {embed: object};
+type PostableEmbedded = object;
 
 interface PostEmbedsReturn {
   cmd: typeof FORMAT_POST_EMBEDS,
@@ -99,7 +99,7 @@ export const formatGenericList = async <T, P=object>(
     counter += 1;
     if (counter > 20) {
       page += 1;
-      embeds.push({ embed: { ...embed } });
+      embeds.push({ ...embed });
       embed = new Discord.MessageEmbed()
         .setColor(color)
         .setTitle(
@@ -110,7 +110,7 @@ export const formatGenericList = async <T, P=object>(
     }
   }
   if (counter > 0) {
-    embeds.push({ embed: { ...embed } });
+    embeds.push({ ...embed });
   }
   return {
     cmd: FORMAT_POST_EMBEDS,
