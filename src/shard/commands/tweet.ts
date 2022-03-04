@@ -8,26 +8,22 @@ import { CmdFn } from ".";
 import { formatTweet } from "../../twitter";
 import {MessageOptions} from "discord.js";
 
-export const handleUserTimeline = async ({
-  qc,
-  res: tweets,
-  msg: { screen_name: screenName, flags },
-}) => {
-  const qChannel = QChannel.unserialize(qc);
+export const handleUserTimeline = async ({ qc, res: tweets, msg: { screen_name: screenName, flags } }) => {
+    const qChannel = QChannel.unserialize(qc);
 
-  if (tweets.error) {
-    if (tweets.error === 'Not authorized.') {
-      translated(qChannel, 'tweetNotAuthorized', { screenName });
-    } else {
-      translated(qChannel, 'tweetUnknwnError', {
-        error: tweets.error,
-        screenName,
-      });
-      log('Unknown error on twitter timeline', qChannel);
-      log(tweets.error, qChannel);
+    if (tweets.error) {
+        if (tweets.error === "Not authorized.") {
+            translated(qChannel, "tweetNotAuthorized", { screenName });
+        } else {
+            translated(qChannel, "tweetUnknwnError", {
+                error: tweets.error,
+                screenName,
+            });
+            log("Unknown error on twitter timeline", qChannel);
+            log(tweets.error, qChannel);
+        }
+        return;
     }
-    return;
-  }
   if (tweets.length < 1) {
     translated(qChannel, 'noTweets', { screenName });
     return;
@@ -52,46 +48,49 @@ export const handleUserTimeline = async ({
   );
 };
 
-
-const postTimeline = async (qChannel: QChannel, screenName: string, count: number, flags: string[]) => {
-    cmd('tweet', {
-      screen_name: screenName, tweet_mode: 'extended', count, qc: qChannel.serialize(), flags,
+export const postTimeline = async (qChannel: QChannel, screenName: string, count: number, flags: string[]) => {
+    cmd("tweet", {
+        screen_name: screenName,
+        tweet_mode: "extended",
+        count,
+        qc: qChannel.serialize(),
+        flags,
     });
-  };
-  
+};
+
 const tweet: CmdFn = async ({ args, flags, options }, qChannel, author) => {
     let force = false;
     let screenNames = args.map(getScreenName);
-    if (flags.indexOf('force') !== -1) force = true;
+    if (flags.indexOf("force") !== -1) force = true;
     const isMod = await checks.isChannelMod(author, qChannel);
     let count = options.count ? Number(options.count) : 1;
     if (!count || Number.isNaN(count)) {
-        translated(qChannel, 'countIsNaN', { count: options.count });
-      return;
+        translated(qChannel, "countIsNaN", { count: options.count });
+        return;
     }
     const maxCount = 5;
     const aLot = 15;
     if (!isMod && count * screenNames.length > maxCount) {
-      if (screenNames.length === 1) count = maxCount;
-      else {
-        screenNames = screenNames.slice(0, maxCount);
-        count = Math.floor(maxCount / screenNames.length);
-      }
-      translated(qChannel, 'tweetCountLimited', {
-        maxCount: count * screenNames.length,
-      });
+        if (screenNames.length === 1) count = maxCount;
+        else {
+            screenNames = screenNames.slice(0, maxCount);
+            count = Math.floor(maxCount / screenNames.length);
+        }
+        translated(qChannel, "tweetCountLimited", {
+            maxCount: count * screenNames.length,
+        });
     }
     if (count < 1) {
-      translated(qChannel, 'tweetCountUnderOne', { count });
-      return;
+        translated(qChannel, "tweetCountUnderOne", { count });
+        return;
     }
     if (count * screenNames.length >= aLot && !force) {
-      log('Asked user to confirm', qChannel);
-      translated(qChannel, 'tweetCountHighConfirm', {
-        screenName: screenNames.join(' '),
-        count,
-      });
-      return;
+        log("Asked user to confirm", qChannel);
+        translated(qChannel, "tweetCountHighConfirm", {
+            screenName: screenNames.join(" "),
+            count,
+        });
+        return;
     }
     screenNames.forEach((screenName: string) => postTimeline(qChannel, screenName, count, flags));
 };
