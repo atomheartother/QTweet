@@ -1,7 +1,7 @@
 // Config file
-import fortune from 'fortune-teller';
-import QChannel, { isQCSupportedChannel } from '../QChannel/QChannel';
-import { CmdOptions, ParsedCmd} from '.'
+import fortune from "fortune-teller";
+import QChannel, { isQCSupportedChannel } from "../QChannel/QChannel";
+import { CmdOptions, ParsedCmd } from ".";
 // logging
 import log from '../../log';
 import {
@@ -58,38 +58,50 @@ export const handleMessage = async (message: Message) => {
     return;
   }
 
-  const [command, ...words] = message.content
-    .slice(prefix.length)
-    .trim()
-    .split(/ +/g);
+  const [command, ...words] = message.content.slice(prefix.length).trim().split(/ +/g);
 
-  const parsedCmd = parseWords(words.join(' '));
+  const parsedCmd = parseWords(words.join(" "));
   handleCommand(command.toLowerCase(), author, qc, parsedCmd);
 };
 
+export const handleInteraction = async (client: Client, interaction: Interaction) => {
+    if (!interaction.isCommand()) return;
+    await interaction.deferReply();
+    const command = client.slashCommands.get(interaction.commandName) as any;
+    if (!command) interaction.reply("This slash command couldn't be found");
+    if (!isQCSupportedChannel(interaction.channel)) return;
+
+    const qc = new QChannel(interaction.channel);
+
+    await command.function({ client, interaction, qc });
+    await interaction.deleteReply();
+};
+
 export const handleError = ({ message }: Error) => {
-  log(`Discord client encountered an error: ${message}`);
-  // Destroy the twitter stream cleanly, we will re-intantiate it sooner that way
-  destroyStream();
-  login();
+    log(`Discord client encountered an error: ${message}`);
+    // Destroy the twitter stream cleanly, we will re-intantiate it sooner that way
+    destroyStream();
+    login();
 };
 
 export const handleGuildCreate = async (guild: Guild) => {
-  // Message the guild owner with useful information
-  log(`Joined guild ${guild.name}`);
+    // Message the guild owner with useful information
+    log(`Joined guild ${guild.name}`);
 };
 
 export const handleGuildDelete = async ({ id, name }: Guild) => {
-  const { users } = await rmGuild(id);
-  log(`Left guild ${name}, ${users} users deleted.`);
-  if (users > 0) createStream();
+    const { users } = await rmGuild(id);
+    log(`Left guild ${name}, ${users} users deleted.`);
+    if (users > 0) createStream();
 };
 
-export const handleReady = async () => {
-  log('✅ Logged in to Discord');
-  // If we're using DBL, init it here
-  dbl();
-  createStream();
+export const handleReady = async (client: Client) => {
+    log("✅ Logged in to Discord");
+    // If we're using DBL, init it here
+    dbl();
+    createStream();
+    loadSlashCommands(client);
+    registerSlashCommands(client);
 };
 
 export const handleChannelDelete = async (c: AnyChannel) => {
