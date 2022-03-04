@@ -1,4 +1,3 @@
-import { CmdFn } from '../commands';
 import log from '../../log';
 import { getChannelSubs } from '../../db/subs';
 import { translated } from '../post';
