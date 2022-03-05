@@ -1,11 +1,11 @@
 import { getLang, setLang } from '../../db/guilds';
 import { formatLanguages, FORMAT_POST_EMBEDS } from '../format';
-import { supportedLangs } from '../../../config.json';
 import { embeds, translated } from '../post';
 import log from '../../log';
 import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { isServerMod } from '../commands/checks';
+import { supportedLangs } from "../i18n";
 
 export default {
   data: new SlashCommandBuilder()
