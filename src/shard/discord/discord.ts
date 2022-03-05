@@ -23,9 +23,9 @@ export const init = () => {
 }
 
 const reconnectionDelay = new Backup({
-    mode: "exponential",
-    startValue: 1000,
-    maxValue: 60000,
+  mode: 'exponential',
+  startValue: 1000,
+  maxValue: 60000,
 });
 
 export const isDmChannel = (c: AnyChannel): c is DMChannel => c.type === 'DM';
@@ -35,16 +35,16 @@ export const isNewsChannel = (c: AnyChannel): c is NewsChannel => c.type === 'GU
 export const getClient = () => dClient;
 
 export const login = async () => {
-    try {
-        log("⚙️ Logging into Discord");
-        await dClient.login(process.env.DISCORD_TOKEN);
-        reconnectionDelay.reset();
-    } catch (err) {
-        log("Couldn't log into discord:");
-        log(err);
-        setTimeout(login, reconnectionDelay.value());
-        reconnectionDelay.increment();
-    }
+  try {
+    log('⚙️ Logging into Discord');
+    await dClient.login(process.env.DISCORD_TOKEN);
+    reconnectionDelay.reset();
+  } catch (err) {
+    log("Couldn't log into discord:");
+    log(err);
+    setTimeout(login, reconnectionDelay.value());
+    reconnectionDelay.increment();
+  }
 };
 
 export const user = () => dClient.user;
@@ -56,24 +56,24 @@ export const getGuild = (id: string) => dClient.guilds.resolve(id);
 export const getUser = (id: string) => dClient.users.resolve(id);
 
 export const getUserDm = async (id: string) => {
-    const usr = dClient.users.resolve(id);
-    if (!usr) return null;
-    return usr.dmChannel ? usr.dmChannel : usr.createDM();
+  const usr = dClient.users.resolve(id);
+  if (!usr) return null;
+  return usr.dmChannel ? usr.dmChannel : usr.createDM();
 };
 
 export const canPostIn = (channel: GuildChannel) => {
-    if (!channel) return false;
-    const permissions = channel.permissionsFor(dClient.user);
-    return permissions.has(Permissions.FLAGS.SEND_MESSAGES) && permissions.has(Permissions.FLAGS.VIEW_CHANNEL);
+  if (!channel) return false;
+  const permissions = channel.permissionsFor(dClient.user);
+  return permissions.has(Permissions.FLAGS.SEND_MESSAGES) && permissions.has(Permissions.FLAGS.VIEW_CHANNEL);
 };
 
 export const canPostEmbedIn = (channel: GuildChannel) => {
-    if (!channel) return false;
-    const permissions = channel.permissionsFor(dClient.user);
-    return (
-        permissions.has(Permissions.FLAGS.SEND_MESSAGES) &&
-        permissions.has(Permissions.FLAGS.VIEW_CHANNEL) &&
-        permissions.has(Permissions.FLAGS.EMBED_LINKS) &&
-        permissions.has(Permissions.FLAGS.ATTACH_FILES)
-    );
+  if (!channel) return false;
+  const permissions = channel.permissionsFor(dClient.user);
+  return (
+    permissions.has(Permissions.FLAGS.SEND_MESSAGES) &&
+    permissions.has(Permissions.FLAGS.VIEW_CHANNEL) &&
+    permissions.has(Permissions.FLAGS.EMBED_LINKS) &&
+    permissions.has(Permissions.FLAGS.ATTACH_FILES)
+  );
 };
