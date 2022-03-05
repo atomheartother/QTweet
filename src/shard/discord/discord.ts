@@ -1,8 +1,8 @@
 // Direct mappings for discord.js methods
-import { Permissions, AnyChannel, TextChannel, GuildChannel, DMChannel, NewsChannel, Intents } from "discord.js";
-import log from "../../log";
-import Backup from "../../backup";
-import { Client } from "./clientType";
+import { Permissions, AnyChannel, TextChannel, GuildChannel, DMChannel, NewsChannel, Intents } from 'discord.js';
+import log from '../../log';
+import Backup from '../../backup';
+import { Client } from './clientType';
 
 let dClient: Client = null;
 
@@ -24,9 +24,9 @@ export const init = () => {
 }
 
 const reconnectionDelay = new Backup({
-    mode: "exponential",
-    startValue: 1000,
-    maxValue: 60000,
+  mode: 'exponential',
+  startValue: 1000,
+  maxValue: 60000,
 });
 
 export const isDmChannel = (c: AnyChannel): c is DMChannel => c.type === 'DM';
@@ -57,9 +57,9 @@ export const getGuild = (id: string) => dClient.guilds.resolve(id);
 export const getUser = (id: string) => dClient.users.resolve(id);
 
 export const getUserDm = async (id: string) => {
-    const usr = dClient.users.resolve(id);
-    if (!usr) return null;
-    return usr.dmChannel ? usr.dmChannel : usr.createDM();
+  const usr = dClient.users.resolve(id);
+  if (!usr) return null;
+  return usr.dmChannel ? usr.dmChannel : usr.createDM();
 };
 
 export const canPostIn = (channel: GuildChannel) => {
