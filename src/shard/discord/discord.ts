@@ -45,7 +45,7 @@ export const login = async () => {
     setTimeout(login, reconnectionDelay.value());
     reconnectionDelay.increment();
   }
-};
+}
 
 export const user = () => dClient.user;
 
@@ -64,16 +64,11 @@ export const getUserDm = async (id: string) => {
 export const canPostIn = (channel: GuildChannel) => {
   if (!channel) return false;
   const permissions = channel.permissionsFor(dClient.user);
-  return permissions.has(Permissions.FLAGS.SEND_MESSAGES) && permissions.has(Permissions.FLAGS.VIEW_CHANNEL);
+  return permissions.has([Permissions.FLAGS.SEND_MESSAGES, Permissions.FLAGS.VIEW_CHANNEL]);
 };
 
 export const canPostEmbedIn = (channel: GuildChannel) => {
   if (!channel) return false;
   const permissions = channel.permissionsFor(dClient.user);
-  return (
-    permissions.has(Permissions.FLAGS.SEND_MESSAGES) &&
-    permissions.has(Permissions.FLAGS.VIEW_CHANNEL) &&
-    permissions.has(Permissions.FLAGS.EMBED_LINKS) &&
-    permissions.has(Permissions.FLAGS.ATTACH_FILES)
-  );
+  return permissions.has([Permissions.FLAGS.SEND_MESSAGES, Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.EMBED_LINKS, Permissions.FLAGS.ATTACH_FILES]);
 };
