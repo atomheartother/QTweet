@@ -6,9 +6,13 @@ import QChannel from "../QChannel/QChannel";
 import log from "../../log";
 import { CmdFn } from ".";
 import { formatTweet } from "../../twitter";
-import {MessageOptions} from "discord.js";
+import { MessageOptions } from "discord.js";
 
-export const handleUserTimeline = async ({ qc, res: tweets, msg: { screen_name: screenName, flags } }) => {
+export const handleUserTimeline = async ({
+  qc,
+  res: tweets,
+  msg: { screen_name: screenName, flags },
+}) => {
   const qChannel = QChannel.unserialize(qc);
 
   if (tweets.error) {
@@ -48,51 +52,48 @@ export const handleUserTimeline = async ({ qc, res: tweets, msg: { screen_name: 
   );
 };
 
-export const postTimeline = async (qChannel: QChannel, screenName: string, count: number, flags: string[]) => {
-  cmd('tweet', {
-    screen_name: screenName,
-    tweet_mode: 'extended',
-    count,
-    qc: qChannel.serialize(),
-    flags,
-  });
-};
 
+const postTimeline = async (qChannel: QChannel, screenName: string, count: number, flags: string[]) => {
+    cmd('tweet', {
+      screen_name: screenName, tweet_mode: 'extended', count, qc: qChannel.serialize(), flags,
+    });
+  };
+  
 const tweet: CmdFn = async ({ args, flags, options }, qChannel, author) => {
-  let force = false;
-  let screenNames = args.map(getScreenName);
-  if (flags.indexOf('force') !== -1) force = true;
-  const isMod = await checks.isChannelMod(author, qChannel);
-  let count = options.count ? Number(options.count) : 1;
-  if (!count || Number.isNaN(count)) {
-    translated(qChannel, 'countIsNaN', { count: options.count });
-    return;
-  }
-  const maxCount = 5;
-  const aLot = 15;
-  if (!isMod && count * screenNames.length > maxCount) {
-    if (screenNames.length === 1) count = maxCount;
-    else {
-      screenNames = screenNames.slice(0, maxCount);
-      count = Math.floor(maxCount / screenNames.length);
+    let force = false;
+    let screenNames = args.map(getScreenName);
+    if (flags.indexOf('force') !== -1) force = true;
+    const isMod = await checks.isChannelMod(author, qChannel);
+    let count = options.count ? Number(options.count) : 1;
+    if (!count || Number.isNaN(count)) {
+        translated(qChannel, 'countIsNaN', { count: options.count });
+      return;
     }
-    translated(qChannel, 'tweetCountLimited', {
-      maxCount: count * screenNames.length,
-    });
-  }
-  if (count < 1) {
-    translated(qChannel, 'tweetCountUnderOne', { count });
-    return;
-  }
-  if (count * screenNames.length >= aLot && !force) {
-    log('Asked user to confirm', qChannel);
-    translated(qChannel, 'tweetCountHighConfirm', {
-      screenName: screenNames.join(' '),
-      count,
-    });
-    return;
-  }
-  screenNames.forEach((screenName: string) => postTimeline(qChannel, screenName, count, flags));
+    const maxCount = 5;
+    const aLot = 15;
+    if (!isMod && count * screenNames.length > maxCount) {
+      if (screenNames.length === 1) count = maxCount;
+      else {
+        screenNames = screenNames.slice(0, maxCount);
+        count = Math.floor(maxCount / screenNames.length);
+      }
+      translated(qChannel, 'tweetCountLimited', {
+        maxCount: count * screenNames.length,
+      });
+    }
+    if (count < 1) {
+      translated(qChannel, 'tweetCountUnderOne', { count });
+      return;
+    }
+    if (count * screenNames.length >= aLot && !force) {
+      log('Asked user to confirm', qChannel);
+      translated(qChannel, 'tweetCountHighConfirm', {
+        screenName: screenNames.join(' '),
+        count,
+      });
+      return;
+    }
+    screenNames.forEach((screenName: string) => postTimeline(qChannel, screenName, count, flags));
 };
 
 export default tweet;
