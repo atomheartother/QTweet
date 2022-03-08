@@ -1,5 +1,5 @@
 // Helper class to interact with channels and keep memory down
-import { AnyChannel, Channel, DMChannel, Guild, GuildChannel, TextChannel } from 'discord.js';
+import { AnyChannel, Channel, DMChannel, Guild, GuildChannel, MessageOptions, TextChannel } from 'discord.js';
 import {
   getUserDm,
   getChannel,
@@ -90,7 +90,7 @@ class QChannel {
     return getUserDm(this.ownerId());
   }
 
-  async send(content: any) {
+  async send(content: MessageOptions | string) {
     try {
       const c = await this.obj();
       return c && c.send(content);

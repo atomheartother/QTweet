@@ -3,7 +3,8 @@ import QChannel from './QChannel/QChannel';
 import i18n, { i18nOptions } from './i18n';
 import { QCSerialized, QCSupportedChannel } from './QChannel/type';
 import { getLang } from '../db/guilds';
-import { ReactionUserManager } from 'discord.js';
+import { MessageEmbed, MessageOptions, ReactionUserManager } from 'discord.js';
+import {APIEmbed} from 'discord-api-types';
 
 // Return values for post functions:
 // 0: Success
@@ -153,7 +154,7 @@ const handleDiscordPostError = async (
   }, delay);
 };
 
-export const post = async (qChannel: QChannel, content: any, type: 'embed' | 'message'): Promise<number> => {
+export const post = async (qChannel: QChannel, content: string | MessageOptions, type: 'embed' | 'message'): Promise<number> => {
   try {
     await qChannel.send(content);
   } catch (err) {
@@ -162,9 +163,9 @@ export const post = async (qChannel: QChannel, content: any, type: 'embed' | 'me
   return 0;
 };
 
-export const embed = (qChannel: QChannel, content: any): Promise<number> => post(qChannel, content, 'embed');
+export const embed = (qChannel: QChannel, content: MessageOptions): Promise<number> => post(qChannel, content, 'embed');
 
-export const embeds = async (qChannel: QChannel, arr: any[]) => post(qChannel, {embeds: arr}, 'embed');
+export const embeds = async (qChannel: QChannel, arr: (MessageEmbed | APIEmbed)[]) => post(qChannel, {embeds: arr}, 'embed');
 
 export const message = (qChannel: QChannel, content: any) => post(qChannel, content, 'message');
 
