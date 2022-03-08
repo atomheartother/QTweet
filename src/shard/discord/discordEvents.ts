@@ -1,20 +1,22 @@
 // Config file
 import fortune from 'fortune-teller';
 import QChannel, { isQCSupportedChannel } from '../QChannel/QChannel';
-import { CmdOptions, ParsedCmd } from '.';
+import { CmdOptions, ParsedCmd} from '.'
 // logging
 import log from '../../log';
 import {
   message as postMessage,
 } from '../post';
 import { createStream, destroyStream } from '../master';
-import { user, login, isTextChannel, isDmChannel } from './discord';
+import { user, login, isTextChannel, isDmChannel, getClient } from './discord';
 import i18n from '../i18n';
 import dbl from '../dbl';
 import { AnyChannel, Guild, Message } from 'discord.js';
 import handleCommand from '../commands';
 import { rmGuild, getGuildInfo } from '../../db/guilds';
 import { rmChannel } from '../../db/channels';
+import loadSlashCommandFiles from './loadSlashCommandFiles';
+import registerSlashCommands from './registerSlashCommands';
 
 const parseWords = (line: string): ParsedCmd => {
   const regxp = /(?:--|—)(\w+)(=(?:"|”|“)(.*?)(?:"|”|“)|=(\S+))?|(?:"|”|“)(.*?)(?:"|”|“)|(\S+)/g;
@@ -58,14 +60,18 @@ export const handleMessage = async (message: Message) => {
     return;
   }
 
-  const [command, ...words] = message.content.slice(prefix.length).trim().split(/ +/g);
+  const [command, ...words] = message.content
+    .slice(prefix.length)
+    .trim()
+    .split(/ +/g);
 
   const parsedCmd = parseWords(words.join(" "));
   handleCommand(command.toLowerCase(), author, qc, parsedCmd);
 };
 
-export const handleInteraction = async (client: Client, interaction: Interaction) => {
+export const handleInteraction = async (interaction: Interaction) => {
   if (!interaction.isCommand()) return;
+  const client = getClient();
 
   // defer the reply so that 'the application did not responded' is avoided,
   // and also because it counts as a reply
@@ -106,13 +112,13 @@ export const handleGuildDelete = async ({ id, name }: Guild) => {
   if (users > 0) createStream();
 };
 
-export const handleReady = async (client: Client) => {
+export const handleReady = async () => {
   log('✅ Logged in to Discord');
   // If we're using DBL, init it here
   dbl();
   createStream();
-  loadSlashCommands(client);
-  registerSlashCommands(client);
+  loadSlashCommandFiles(getClient());
+  registerSlashCommands(getClient());
 };
 
 export const handleChannelDelete = async (c: AnyChannel) => {
