@@ -31,7 +31,7 @@ const start = async () => {
     .on('error', handleError)
     .on('guildCreate', handleGuildCreate)
     .on('guildDelete', handleGuildDelete)
-    .on('ready', handleReady)
+    .on('ready', handleReady.bind(null, getClient()))
     .on('channelDelete', handleChannelDelete)
     .on('interactionCreate', handleInteraction);
   // Login
