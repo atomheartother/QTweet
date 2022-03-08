@@ -18,7 +18,7 @@ const help : CmdFn = async (_, qChannel) => {
       .addField(`${prefix}lang`, i18n(language, 'usage-lang'))
       .addField(`${prefix}list`, i18n(language, 'usage-list'))
       .setFooter({ text: i18n(language, 'helpFooter', { artist: 'ryusukehamamoto' })});
-    embed(qChannel, { embed: helpMsg });
+    embed(qChannel, { embeds: [helpMsg] });
 };
 
 export default help;
