@@ -52,7 +52,7 @@ const Start : SlashCommand = {
     const screenNamesArr = interaction.options.getString('users', true).split(' ');
     const screenNames = screenNamesArr.map(getScreenName);
 
-    const [ownerId, guildId] = await Promise.all([qc.ownerId(), qc.guild()]);
+    const [ownerId, guildId] = await Promise.all([qc.ownerId(), qc.guildId()]);
 
     cmd('start', {
       screenNames,
