@@ -165,7 +165,11 @@ export const post = async (qChannel: QChannel, content: string | MessageOptions,
 
 export const embed = (qChannel: QChannel, content: MessageOptions): Promise<number> => post(qChannel, content, 'embed');
 
-export const embeds = async (qChannel: QChannel, arr: (MessageEmbed | APIEmbed)[]) => post(qChannel, {embeds: arr}, 'embed');
+export const embeds = async (qChannel: QChannel, arr: MessageOptions[]) => {
+  for (let i=0 ; i < arr.length ; i += 1) {
+    await post(qChannel, arr[i], 'embed');
+  }
+}
 
 export const message = (qChannel: QChannel, content: any) => post(qChannel, content, 'message');
 

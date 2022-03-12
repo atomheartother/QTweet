@@ -11,6 +11,7 @@ import QChannel from "../QChannel/QChannel";
 import log from "../../log";
 import { CmdFn } from ".";
 import { formatTweet } from "../../twitter";
+import {MessageOptions} from "discord.js";
 
 export const handleUserTimeline = async ({
   qc,
@@ -43,23 +44,15 @@ export const handleUserTimeline = async ({
     log(tweets, qChannel);
     return;
   }
-  const formattedTweets = await Promise.all(validTweets.map((t) => formatTweet(t, false)));
+  const formattedTweets = await Promise.all(validTweets.map((t) => formatTweet(t, false))) as {embed: MessageOptions}[];
   const posts = formattedTweets.map(({ embed }) => embed);
   const reverseOrder = flags.indexOf('reverse') !== -1;
-  const {
-    successful,
-    err,
-    // So I know this is weird but we originally got tweets in the WRONG order,
-    // from most recent to oldest
-    // If we get the reverse flag, we therefore DON'T reverse, we just leave it in the wrong order
-  } = await embeds(qChannel, reverseOrder ? posts : posts.reverse());
-  if (err) {
-    log(`Error posting tweet ${successful + 1} / ${validTweets.length} from ${screenName}`, qChannel);
-    log(err);
-    return;
-  }
+  // So I know this is weird but we originally got tweets in the WRONG order,
+  // from most recent to oldest
+  // If we get the reverse flag, we therefore DON'T reverse, we just leave it in the wrong order
+  await embeds(qChannel, reverseOrder ? posts : posts.reverse());
   log(
-    `Posted latest ${successful} tweet(s) from ${screenName}`,
+    `Posted latest ${posts.length} tweet(s) from ${screenName}`,
     qChannel,
   );
 };
