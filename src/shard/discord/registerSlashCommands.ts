@@ -13,7 +13,7 @@ export default (client: Client) => {
 
   const slashCmdsGuild = process.env.SLASH_CMDS_GUILD
   if (!!slashCmdsGuild) {
-      log(`## DEV MODE ##\nRegistering slash commands in guild ${slashCmdsGuild}!`);
+      log(`⚠️ DEV MODE \nRegistering slash commands in guild ${slashCmdsGuild}!`);
     rest.put(Routes.applicationGuildCommands(client.application!.id, slashCmdsGuild), { body: commands }).then(() => {
       log('✅ Registered guild slash commands');
     });
