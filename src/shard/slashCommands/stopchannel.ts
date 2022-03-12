@@ -22,16 +22,16 @@ const StopChannel : SlashCommand = {
     }
     let targetChannel = qc.id;
     let channelName = await qc.name();
-    const args = interaction.options.getString('channelId').split(' ');
+    const channelIdArg = interaction.options.getString('channelIid');
 
-    if (args.length > 0) {
+    if (!!channelIdArg) {
       if (qc.isDM) {
         translated(qc, 'stopChannelInDm');
         return;
       }
       const guild = await qc.guild();
-      [targetChannel] = args;
-      const channelObj = guild.channels.cache.find((c) => c.id === targetChannel);
+      targetChannel = channelIdArg;
+      const channelObj = guild.channels.cache.find((c) => c.id === channelIdArg);
       if (!channelObj || !isQCSupportedChannel(channelObj)) {
         translated(qc, 'noSuchChannel', { targetChannel });
         return;
