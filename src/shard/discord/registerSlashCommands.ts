@@ -10,7 +10,7 @@ export default (client: Client) => {
   console.log(commands);
   // register them
   log('⚙️  Registering slash commands...');
-  const rest = new REST({ version: '9' }).setToken(process.env.TOKEN!);
+  const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
 
   const slashCmdsGuild = process.env.SLASH_CMDS_GUILD
   if (!!slashCmdsGuild) {
