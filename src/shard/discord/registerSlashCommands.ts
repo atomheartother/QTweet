@@ -12,11 +12,16 @@ export default (client: Client) => {
   log('⚙️  Registering slash commands...');
   const rest = new REST({ version: '9' }).setToken(process.env.TOKEN!);
 
-  // ATTENTION: this is guild commands, which are registered instantly
-  // change to .applicationGuildCommands(appId, guildId) to test them or put in a single server
-  // change to .applicationCommands(appId) to register them globally
-  // they can take up to one hour to register
-  rest.put(Routes.applicationGuildCommands(client.application!.id, '149624121024577536'), { body: commands }).then(() => {
-    log('✅ Registered slash commands');
-  });
+  const slashCmdsGuild = process.env.SLASH_CMDS_GUILD
+  if (!!slashCmdsGuild) {
+      log(`## DEV MODE ##\nRegistering slash commands in guild ${slashCmdsGuild}!`);
+    rest.put(Routes.applicationGuildCommands(client.application!.id, slashCmdsGuild), { body: commands }).then(() => {
+      log('✅ Registered guild slash commands');
+    });
+  } else {
+    rest.put(Routes.applicationCommands(client.application!.id), { body: commands }).then(() => {
+      log('✅ Registered slash commands');
+    });
+
+  }
 };

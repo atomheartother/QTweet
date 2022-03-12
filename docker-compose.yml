@@ -37,6 +37,7 @@ services:
       PROFILE_URL: ${PROFILE_URL:-https://discordbots.org/bot/433615162394804224}
       OWNER_ID: ${OWNER_ID:-135712262156451840}
       SUPPORTED_LANGS: ${SUPPORTED_LANGS:-en fr ro nl ru sv zh de ja pt}
+      SLASH_CMDS_GUILD: ${SLASH_CMDS_GUILD}
     depends_on:
       - postgres
 
