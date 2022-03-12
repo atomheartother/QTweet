@@ -7,7 +7,7 @@ import { isChannelMod } from '../commands/checks';
 import { translated } from '../post';
 import log from '../../log';
 
-export default {
+const Start : SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('start')
     .setDescription('Subscribe to a twitter user and post their tweets in real time.')
@@ -36,4 +36,6 @@ export default {
       msg: interaction.options.getString('msg'),
     });
   },
-} as SlashCommand;
+};
+
+export default Start;

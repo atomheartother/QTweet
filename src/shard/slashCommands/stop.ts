@@ -6,7 +6,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { isChannelMod } from '../commands/checks';
 import log from '../../log';
 
-export default {
+const Stop : SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('stop')
     .setDescription('Causes QTweet to stop sending you tweets from this particular user.')
@@ -26,4 +26,6 @@ export default {
     }
     cmd('stop', { screenNames, qc: qc.serialize() });
   },
-} as SlashCommand;
+};
+
+export default Stop;
