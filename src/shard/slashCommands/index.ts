@@ -8,6 +8,7 @@ import stop from './stop'
 import stopchannel from './stopchannel'
 import tweet from './tweet'
 import tweetId from './tweetId'
+import help from './help'
 
 const commands : SlashCommand[] = [
   announce,
@@ -18,7 +19,8 @@ const commands : SlashCommand[] = [
   stop,
   stopchannel,
   tweet,
-  tweetId
+  tweetId,
+  help
 ]
 
 export default (client: Client) => {
