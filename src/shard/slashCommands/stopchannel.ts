@@ -11,7 +11,7 @@ const StopChannel : SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('stopchannel')
     .setDescription('Acts like /stop but on the whole channel.')
-    .addStringOption((option) => option.setName('channelId').setDescription('The channel ID to stop posts').setRequired(false)),
+    .addStringOption((option) => option.setName('channelid').setDescription('The channel ID to stop posts').setRequired(false)),
 
   function: async ({ qc, interaction }) => {
     const isMod = await isChannelMod(interaction.user, qc);
