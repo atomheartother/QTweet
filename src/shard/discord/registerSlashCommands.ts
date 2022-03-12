@@ -7,7 +7,6 @@ export default (client: Client) => {
   // get commands json data
   const commands = [...client.slashCommands.values()].map((command: any) => command.data.toJSON());
 
-  console.log(commands);
   // register them
   log('⚙️  Registering slash commands...');
   const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN);
