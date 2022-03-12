@@ -55,7 +55,7 @@ export type CmdStart = {
     flags: number;
     // Needs a little extra info on this one
     qc: QCSerialized & { ownerId: string, guildId: string};
-    msg?: string;
+    msg: string|null;
 }
 
 type MasterStartResponse = TrCmd | {
