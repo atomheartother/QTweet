@@ -1,8 +1,9 @@
 import fs from 'fs';
 import { Client } from './clientType';
+import log from '../../log';
 
 export default (client: Client) => {
-  console.log('Loading command files...');
+  log('Loading command files...');
 
   // read commands dir and filter .ts files
   const commandFiles = fs.readdirSync('../slashCommands', { withFileTypes: true }).filter((file) => file.name.endsWith('.ts'));
