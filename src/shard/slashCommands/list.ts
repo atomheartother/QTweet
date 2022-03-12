@@ -5,7 +5,7 @@ import { embeds, translated } from "../post";
 import { SlashCommand } from "../discord/clientType";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
-export default {
+const List : SlashCommand = {
     data: new SlashCommandBuilder()
         .setName("list")
         .setDescription("Lists all the users whose tweets you're getting automatically in the current channel."),
@@ -21,4 +21,6 @@ export default {
             translated(qc, trCode);
         }
     },
-} as SlashCommand;
+}
+
+export default List;

@@ -6,7 +6,7 @@ import { postTimeline } from "../commands/tweet";
 import { SlashCommand } from "../discord/clientType";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
-export default {
+const Tweet : SlashCommand = {
     data: new SlashCommandBuilder()
         .setName("tweet")
         .setDescription("Get the latest tweet from a twitter user and post it in this channel.")
@@ -17,7 +17,7 @@ export default {
     function: async ({ qc, interaction }) => {
         const { user: author } = interaction;
         let force = false;
-        const flags = interaction.options.getString("flags").split(" ");
+        const flags : string[] = interaction.options.getString("flags").split(" ");
         const options: any = {};
         options.count = flags.find(flag => flag.includes("--count"));
         options.count = options.count ? Number(options.count) : 1;
@@ -62,4 +62,6 @@ export default {
         }
         screenNames.forEach((screenName: string) => postTimeline(qc, screenName, count, flags));
     },
-} as SlashCommand;
+};
+
+export default Tweet;

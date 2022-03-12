@@ -7,7 +7,7 @@ import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { isServerMod } from '../commands/checks';
 
-export default {
+const Lang : SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('lang')
     .setDescription('Changes the bot language')
@@ -18,8 +18,7 @@ export default {
         .setDescription('Changes the bot language')
         .addStringOption((option) => {
           option.setName('language').setDescription('The language to switch to');
-          let choices: any[];
-          supportedLangs.forEach((lang) => choices.push([lang, lang]));
+          const choices: [string, string][] = supportedLangs.map((l) => [l, l]);
           return option.addChoices(choices);
         })
     ),
@@ -48,4 +47,6 @@ export default {
       log(`Changed language to ${language}`, qc);
     }
   },
-} as SlashCommand;
+}
+
+export default Lang;

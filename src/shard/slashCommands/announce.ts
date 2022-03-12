@@ -5,7 +5,7 @@ import { isOwner } from '../commands/checks';
 import { translated } from '../post';
 import log from '../../log';
 
-export default {
+const Announce : SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('announce')
     .setDescription('Posts an announcement to every guild this bot is currently posting in.')
@@ -21,4 +21,6 @@ export default {
     const msg = interaction.options.getString('msg', true);
     cmd('announce', { msg });
   },
-} as SlashCommand;
+}
+
+export default Announce;

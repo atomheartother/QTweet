@@ -15,7 +15,7 @@ import { AnyChannel, Guild, Interaction, Message } from 'discord.js';
 import handleCommand from '../commands';
 import { rmGuild, getGuildInfo } from '../../db/guilds';
 import { rmChannel } from '../../db/channels';
-import loadSlashCommandFiles from './loadSlashCommandFiles';
+import loadSlashCmds from '../slashCommands'
 import registerSlashCommands from './registerSlashCommands';
 
 
@@ -118,7 +118,7 @@ export const handleReady = async () => {
   // If we're using DBL, init it here
   dbl();
   createStream();
-  loadSlashCommandFiles(getClient());
+  loadSlashCmds(getClient());
   registerSlashCommands(getClient());
 };
 

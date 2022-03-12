@@ -5,7 +5,7 @@ import { SlashCommandBuilder } from '@discordjs/builders';
 import { isServerMod } from '../commands/checks';
 import log from '../../log';
 
-export default {
+const QtPrefix : SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('qtprefix')
     .setDescription('Changes the bot prefix for this server')
@@ -22,4 +22,6 @@ export default {
     setPrefix(qc.guildId(), prefix);
     translated(qc, 'prefixSuccess', { prefix });
   },
-} as SlashCommand;
+}
+
+export default QtPrefix;

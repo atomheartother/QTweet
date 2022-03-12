@@ -7,7 +7,7 @@ import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { isChannelMod } from '../commands/checks';
 
-export default {
+const StopChannel : SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('stopchannel')
     .setDescription('Acts like /stop but on the whole channel.')
@@ -43,4 +43,6 @@ export default {
     log(`Removed all gets from channel ID:${targetChannel}. ${subs.length} subs removed.`, qc);
     translated(qc, 'stopChannelSuccess', { subs: subs.length, channelName });
   },
-} as SlashCommand;
+}
+
+export default StopChannel;
