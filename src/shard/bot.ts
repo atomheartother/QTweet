@@ -19,10 +19,10 @@ process.on('message', (msg: any) => {
 
 const start = async () => {
   // Init database
-  log('⚙️ Initializing database...');
+  log('⚙️  Initializing database...');
   initDb();
   // Init discord client
-  log('⚙️ Creating Discord client...');
+  log('⚙️  Creating Discord client...');
   initDiscord();
   initShard();
   // Register discord handles

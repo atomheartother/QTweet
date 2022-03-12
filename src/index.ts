@@ -27,7 +27,7 @@ const start = async () => {
   const manager = initSharding();
   if (!manager) return 1;
   manager.on('shardCreate', (shard) => {
-    log(`⚙️ Launched shard ${shard.id}...`);
+    log(`⚙️  Launched shard ${shard.id}...`);
     shard.on('ready', shardReady);
   });
   try {
