@@ -1,5 +1,5 @@
 import { Client, SlashCommand } from '../discord/clientType';
-import announce from '../slashCommands/announce'
+import announce from './announce'
 import lang from './lang'
 import list from './list'
 import qtprefix from './qtprefix'
