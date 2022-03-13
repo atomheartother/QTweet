@@ -1,7 +1,7 @@
 import { getInt, pool, sanityCheck } from "./index";
 import { createGuild } from "./guilds";
 
-type DbChannel = {
+export type DbChannel = {
   channelId: string;
   ownerId: string;
   guildId: string;
