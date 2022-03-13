@@ -18,7 +18,7 @@ const Announce: SlashCommand = {
       log(`Rejected command "announce" with reason: announceForAdmin`);
       return;
     }
-    const msg = interaction.options.getString('msg', true);
+    const msg = interaction.options.getString('msg', true).replaceAll("\\n", "\n");
     cmd('announce', { msg });
   },
 }
