@@ -7,7 +7,7 @@ import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { isServerMod } from '../commands/checks';
 
-const Lang : SlashCommand = {
+const Lang: SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('lang')
     .setDescription('Changes the bot language')

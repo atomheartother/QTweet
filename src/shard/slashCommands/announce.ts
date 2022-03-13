@@ -5,7 +5,7 @@ import { isOwner } from '../commands/checks';
 import { translated } from '../post';
 import log from '../../log';
 
-const Announce : SlashCommand = {
+const Announce: SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('announce')
     .setDescription('Posts an announcement to every guild this bot is currently posting in.')

@@ -30,7 +30,7 @@ const initSlashCommandBuilder = () => {
   return b;
 }
 
-const Start : SlashCommand = {
+const Start: SlashCommand = {
   data: initSlashCommandBuilder(),
   function: async ({ interaction, qc }) => {
     const isMod = await isChannelMod(interaction.user, qc);

@@ -5,7 +5,7 @@ import { embeds, translated } from "../post";
 import { SlashCommand } from "../discord/clientType";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
-const List : SlashCommand = {
+const List: SlashCommand = {
     data: new SlashCommandBuilder()
         .setName("list")
         .setDescription("Lists all the users whose tweets you're getting automatically in the current channel."),
