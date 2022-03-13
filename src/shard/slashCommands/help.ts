@@ -3,7 +3,7 @@ import i18n from "../i18n";
 import { embed } from "../post";
 import { getGuildInfo } from "../../db/guilds";
 import process from 'process'
-import {SlashCommand} from "../discord/clientType";
+import {SlashCommand} from "./types";
 import {SlashCommandBuilder} from "@discordjs/builders";
 
 const Help: SlashCommand = {

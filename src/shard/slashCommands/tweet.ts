@@ -3,17 +3,23 @@ import { translated } from "../post";
 import * as checks from "../commands/checks";
 import log from "../../log";
 import { postTimeline } from "../commands/tweet";
-import { SlashCommand } from "../discord/clientType";
-import { SlashCommandBuilder } from "@discordjs/builders";
+import {createSlashCommand} from "./utils";
+import {SlashCommandDefinition, SlashCommand} from "./types";
+
+const cmdDef : SlashCommandDefinition = {
+  name: "tweet",
+  description: "Post the latest tweet(s) from certain user(s).",
+  options: [
+    { name: "users", description: "The users' screen names, separated by spaces.", type: "string", required: true},
+    { name: "noretweets", description: "Don't count retweets as tweets.", type: "boolean" },
+    { name: "reverse", description: "Order tweets from newest to oldest.", type: "boolean" },
+    { name: "notext", description: "Don't count text-only tweets, only count media tweets.", type: "boolean" },
+    { name: "count", description: "The number of tweets you'd like to get from each account.", type: "number" }
+  ]
+}
 
 const Tweet : SlashCommand = {
-    data: new SlashCommandBuilder()
-        .setName("tweet")
-        .setDescription("Get the latest tweet from a twitter user and post it in this channel.")
-        .addStringOption(option => option.setName("users").setDescription("The users @"))
-        .addStringOption(option =>
-            option.setName("flags").setDescription("The flags to use. Check the docs for more information").setRequired(false)
-        ),
+    data: createSlashCommand(cmdDef),
     function: async ({ qc, interaction }) => {
         const { user: author } = interaction;
         let force = false;

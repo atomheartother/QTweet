@@ -118,7 +118,7 @@ export const handleReady = async () => {
   // If we're using DBL, init it here
   dbl();
   createStream();
-  loadSlashCmds(getClient());
+  loadSlashCmds();
   registerSlashCommands(getClient());
 };
 

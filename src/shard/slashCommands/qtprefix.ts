@@ -1,9 +1,9 @@
 import { setPrefix } from '../../db/guilds';
 import { translated } from '../post';
-import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { isServerMod } from '../commands/checks';
 import log from '../../log';
+import {SlashCommand} from './types';
 
 const QtPrefix : SlashCommand = {
   data: new SlashCommandBuilder()

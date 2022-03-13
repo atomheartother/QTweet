@@ -3,9 +3,9 @@ import { getChannelSubs } from '../../db/subs';
 import { translated } from '../post';
 import QChannel, { isQCSupportedChannel } from '../QChannel/QChannel';
 import { rmChannel } from '../../db/channels';
-import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { isChannelMod } from '../commands/checks';
+import {SlashCommand} from './types';
 
 const StopChannel : SlashCommand = {
   data: new SlashCommandBuilder()

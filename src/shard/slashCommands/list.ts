@@ -2,8 +2,8 @@ import { getChannelSubs } from "../../db/subs";
 import { getLang } from "../../db/guilds";
 import { formatSubsList, FORMAT_POST_EMBEDS } from "../format";
 import { embeds, translated } from "../post";
-import { SlashCommand } from "../discord/clientType";
 import { SlashCommandBuilder } from "@discordjs/builders";
+import {SlashCommand} from "./types";
 
 const List: SlashCommand = {
     data: new SlashCommandBuilder()
