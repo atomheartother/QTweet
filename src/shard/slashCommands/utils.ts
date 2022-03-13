@@ -1,4 +1,5 @@
 import {SlashCommandBuilder} from "@discordjs/builders"
+import {CommandInteraction} from "discord.js"
 import {SlashCommandDefinition} from "./types"
 
 export const createSlashCommand = (def: SlashCommandDefinition) => {
@@ -28,3 +29,13 @@ export const createSlashCommand = (def: SlashCommandDefinition) => {
   })
   return b;
 }
+
+export const getBoolFlags = (cmdDef: SlashCommandDefinition, interaction: CommandInteraction): string[] =>
+  cmdDef.options.reduce((acc, curr) => {
+      if (curr.type !== 'boolean') return acc;
+      const opt = interaction.options.getBoolean(curr.name, false);
+      if (opt) {
+        return [...acc, curr.name]
+      }
+      return acc;
+    }, [])

@@ -5,7 +5,7 @@ import { isChannelMod } from '../commands/checks';
 import { translated } from '../post';
 import log from '../../log';
 import {SlashCommand, SlashCommandDefinition} from './types';
-import {createSlashCommand} from './utils';
+import {createSlashCommand, getBoolFlags} from './utils';
 
 const cmdDef : SlashCommandDefinition = {
   name: "start",
@@ -29,15 +29,7 @@ const Start : SlashCommand = {
       return;
     }
 
-    const flagsArr : string[] = cmdDef.options.reduce((acc, curr) => {
-      if (curr.type !== 'boolean') return acc;
-      const opt = interaction.options.getBoolean(curr.name, false);
-      if (opt) {
-        return [...acc, curr.name]
-      }
-      return acc;
-    }, [])
-    const flags = computeFlags(flagsArr);
+    const flags = computeFlags(getBoolFlags(cmdDef, interaction));
 
     const screenNamesArr = interaction.options.getString('users', true).split(' ');
     const screenNames = screenNamesArr.map(getScreenName);
