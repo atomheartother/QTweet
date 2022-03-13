@@ -1,10 +1,11 @@
+import {DbChannel} from "../../db/channels";
 import { CmdFn } from ".";
 import { cmd } from "../master";
 import { announcement } from "../post";
 import QChannel from "../QChannel/QChannel";
 
 export const handleAnnounce = async ({ channels, msg }) => {
-    const qChannelPromises = channels.map((channel) => {
+    const qChannelPromises = channels.map((channel: DbChannel) => {
       const qc = QChannel.unserialize(channel);
       return qc.obj();
     });
