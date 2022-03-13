@@ -1,10 +1,10 @@
 import { cmd } from '../master';
 import { translated } from '../post';
 import { getScreenName } from '../commands/helpers';
-import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { isChannelMod } from '../commands/checks';
 import log from '../../log';
+import {SlashCommand} from './types';
 
 const Stop: SlashCommand = {
   data: new SlashCommandBuilder()

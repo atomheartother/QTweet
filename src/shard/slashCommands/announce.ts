@@ -1,9 +1,9 @@
-import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { cmd } from '../master';
 import { isOwner } from '../commands/checks';
 import { translated } from '../post';
 import log from '../../log';
+import {SlashCommand} from './types';
 
 const Announce: SlashCommand = {
   data: new SlashCommandBuilder()

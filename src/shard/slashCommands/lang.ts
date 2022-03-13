@@ -3,9 +3,9 @@ import { formatLanguages, FORMAT_POST_EMBEDS } from '../format';
 import { supportedLangs } from "../i18n";
 import { embeds, translated } from '../post';
 import log from '../../log';
-import { SlashCommand } from '../discord/clientType';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { isServerMod } from '../commands/checks';
+import {SlashCommand} from './types';
 
 const Lang: SlashCommand = {
   data: new SlashCommandBuilder()

@@ -1,6 +1,6 @@
 import { cmd } from "../master";
-import { SlashCommand } from "../discord/clientType";
 import { SlashCommandBuilder } from "@discordjs/builders";
+import {SlashCommand} from "./types";
 
 const TweetId: SlashCommand = {
     data: new SlashCommandBuilder()

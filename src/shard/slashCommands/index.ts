@@ -1,4 +1,3 @@
-import { Client, SlashCommand } from '../discord/clientType';
 import announce from './announce'
 import lang from './lang'
 import list from './list'
@@ -9,6 +8,8 @@ import stopchannel from './stopchannel'
 import tweet from './tweet'
 import tweetId from './tweetId'
 import help from './help'
+import { getClient } from '../discord/discord';
+import {SlashCommand} from './types';
 
 const commands : SlashCommand[] = [
   announce,
@@ -23,7 +24,8 @@ const commands : SlashCommand[] = [
   help
 ]
 
-export default (client: Client) => {
+export default () => {
+  const client = getClient();
   for (const command of commands) {
     client.slashCommands.set(command.data.name, command);
   }
