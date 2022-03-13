@@ -324,3 +324,9 @@ userLimit =
 
 ### Credit
 languageCredit = English, made by `Booyah!#4242`
+
+### Temporary/Urgent stuff
+slashCmdsWarning =
+  :warning: {-b}Regular commands will soon be replaced by slash commands.{-b}
+  Within a few weeks, {-bot-name} won't work with regular commands anymore as Discord is forcing all bots to move to slash commands.
+  I recommend trying to use slash commands right now and reporting bugs to our support server if there's any issue!

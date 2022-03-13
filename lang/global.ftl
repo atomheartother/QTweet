@@ -9,7 +9,7 @@
 -patreon-link = {"https://www.patreon.com/atomheartother"}
 
 # Prefix: This is the prefix that goes in front of commands
--pr = {"${PREFIX}"}
+-pr = {"/"}
 
 ### Formatting
 # Bold markers, put these around text to bolden it
