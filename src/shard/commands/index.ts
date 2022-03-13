@@ -135,6 +135,9 @@ const handleCommand = async (commandName: string, author: User, qChannel: QChann
         qChannel,
       );
       const passedArray = await Promise.all(command.checks.map(({ f }) => f(author, qChannel)));
+      await qChannel.send(`:warning: **Regular commands will soon be replaced by slash commands.**
+                          Within a few weeks, ${process.env.BOT_NAME} won't work with regular commands anymore as Discord is forcing all bots to move to slash commands.
+                          I recommend trying to use slash commands right now and reporting bugs to our support server if there's any issue!`)
       for (let i = 0; i < command.checks.length; i += 1) {
         const { badB } = command.checks[i];
         if (!passedArray[i]) {
