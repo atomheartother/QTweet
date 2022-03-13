@@ -62,6 +62,6 @@ const Tweet : SlashCommand = {
         }
         screenNames.forEach((screenName: string) => postTimeline(qc, screenName, count, flags));
     },
-};
+}
 
 export default Tweet;

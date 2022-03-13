@@ -2,7 +2,7 @@ import { cmd } from "../master";
 import { SlashCommand } from "../discord/clientType";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
-const TweetId : SlashCommand = {
+const TweetId: SlashCommand = {
     data: new SlashCommandBuilder()
         .setName("tweetid")
         .setDescription("Post the formatted tweet with the specified ID.")
