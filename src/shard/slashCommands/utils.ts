@@ -6,24 +6,24 @@ export const createSlashCommand = (def: SlashCommandDefinition) => {
   const b = new SlashCommandBuilder()
       .setName(def.name)
       .setDescription(def.description)
-  def.options.forEach(({ type, name, description }) => {
+  def.options.forEach(({ type, name, description, required}) => {
     if (type === 'number') {
       b.addNumberOption(opt => opt
         .setName(name)
         .setDescription(description)
-        .setRequired(false)
+        .setRequired(!!required)
       )
     } else if (type === 'string') {
       b.addStringOption(opt => opt
         .setName(name)
         .setDescription(description)
-        .setRequired(false)
+        .setRequired(!!required)
       )
     } else {
       b.addBooleanOption(opt => opt
         .setName(name)
         .setDescription(description)
-        .setRequired(false)
+        .setRequired(!!required)
       )
     }
   })
