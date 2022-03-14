@@ -40,7 +40,7 @@ const Start : SlashCommand = {
       screenNames,
       flags,
       qc: { ...qc.serialize(), ownerId, guildId },
-      msg: interaction.options.getString('msg'),
+      msg: interaction.options.getString('message'),
     });
   },
 };
