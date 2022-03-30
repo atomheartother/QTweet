@@ -53,15 +53,16 @@ class QChannel {
   }
 
   // Returns a js channel object
-  async obj(): Promise<QCSupportedChannel> {
+  // Null indicates the channel doesn't exist or isn't supported
+  async obj(): Promise<QCSupportedChannel|null> {
     if (this.isDM) {
       return getUserDm(this.id);
     }
     const c = getChannel(this.id);
-    if (isTextChannel(c)) {
+    if (!!c && isTextChannel(c)) {
       return c;
     }
-    throw new Error(`Tried to get obj on channel ${this.id}, but it's not supported! It is ${c.type}`)
+    return null;
   }
 
   ownerId(): string {
