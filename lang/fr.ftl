@@ -238,10 +238,7 @@ formatFlags = Avec {$notext ->
   }, {$noquote ->
     *[0] les citations
     [1] pas de citations
-  }, les pings {$ping -> 
-    *[0] off
-    [1] on
-  }
+  }.
 
 genericObjects = {$count} {$count -> 
     [one] objet

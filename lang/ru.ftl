@@ -251,10 +251,7 @@ formatFlags = C {$notext ->
   }, {$noquote ->
     *[0] с двойными кавычками
     [1] без кавычек
-  }, пинги: {$ping -> 
-    *[0] выключены
-    [1] включены
-  }
+  }.
 
 genericObjects = {$count} {$count -> 
     [one] объект		

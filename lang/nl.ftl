@@ -245,10 +245,7 @@ formatFlags = {$notext ->
   } retweets, {$noquote ->
     *[0] Met
     [1] Zonder
-  } quotes, pings {$ping -> 
-    *[0] aan
-    [1] uit
-  }
+  } quotes.
 
 genericObjects = {$count} {$count -> 
     [one] object

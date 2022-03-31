@@ -246,10 +246,7 @@ formatFlags = Cu {$notext ->
   }, {$noquote ->
     *[0] citate
     [1] fără citate
-  }, ping-uri {$ping -> 
-    *[0] oprite
-    [1] pornite
-  }
+  }.
 
 genericObjects = {$count} {$count -> 
     [one] obiect

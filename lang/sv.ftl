@@ -262,10 +262,7 @@ formatFlags = Med {$notext ->
   }, {$noquote ->
     *[0] citat
     [1] inga citat
-  }, pings {$ping -> 
-    *[0] av
-    [1] på
-  }
+  }.
 
 genericObjects = {$count} {$count -> 
     [one] objekt

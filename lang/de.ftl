@@ -265,9 +265,6 @@ formatFlags = Mit {$notext ->
   }, {$noquote ->
     *[0] Zitate
     [1] keine Zitate
-  }, Pings {$ping -> 
-    *[0] aus
-    [1] an
   } und {$replies -> 
     *[0] keine Antworten
     [1] Antworten

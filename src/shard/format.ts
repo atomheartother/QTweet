@@ -128,7 +128,6 @@ export const formatFlags = (lang: string, flags: number) => i18n(lang, 'formatFl
   notext: isSet(flags, 'notext'),
   retweet: isSet(flags, 'retweets'),
   noquote: isSet(flags, 'noquotes'),
-  ping: isSet(flags, 'ping'),
   replies: isSet(flags, 'replies'),
 });
 
