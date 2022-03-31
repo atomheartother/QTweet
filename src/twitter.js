@@ -195,9 +195,6 @@ const formatTweetText = async (text, entities, isTextTweet) => {
           end,
           newText: `[#${hashtagTxt}](https://twitter.com/hashtag/${hashtagTxt}?src=hash)`,
         });
-        if (hashtagTxt.toLowerCase() === 'qtweet') {
-          metadata.ping = true;
-        }
       });
   }
 
