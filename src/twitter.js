@@ -336,10 +336,10 @@ const flagsFilter = (flags, tweet) => {
   if (isSet(flags, 'notext') && !hasMedia(tweet)) {
     return false;
   }
-  if (!isSet(flags, 'retweet') && tweet.retweeted_status) {
+  if (!isSet(flags, 'retweets') && tweet.retweeted_status) {
     return false;
   }
-  if (isSet(flags, 'noquote') && tweet.is_quote_status) return false;
+  if (isSet(flags, 'noquotes') && tweet.is_quote_status) return false;
   if (!isSet(flags, 'replies') && tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id) return false;
   return true;
 };
@@ -391,9 +391,6 @@ const streamData = async (tweet) => {
   log(`✅ Received valid tweet: ${tweet.id_str}, forwarding to ${subs.length} Discord subscriptions`, null, true);
   const { embed, metadata } = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel, msg }) => {
-    if (metadata.ping && isSet(flags, 'ping')) {
-      post(qChannel, '@everyone', 'message');
-    }
     if (msg) {
       post(qChannel, msg, 'message');
     }

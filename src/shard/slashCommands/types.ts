@@ -15,6 +15,7 @@ export type Option = {
   description: string
   type?: 'boolean' | 'number' | 'string'
   required?: boolean
+  invert?: boolean
 }
 
 export type SlashCommandDefinition = {

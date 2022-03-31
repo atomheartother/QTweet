@@ -2,11 +2,13 @@
 // This module defines subscription flags
 const FlagsEnum = Object.freeze({
   notext: 1,
-  retweet: 2,
-  noquote: 4,
-  ping: 8,
+  retweets: 2,
+  noquotes: 4,
+  // We don't use 8, it was the ping value before msg
   replies: 16,
 });
+
+export type FlagName = 'notext' | 'retweets' | 'noquotes' | 'replies'
 
 export class Flags {
   val: number;
@@ -15,15 +17,15 @@ export class Flags {
   }
 
   set(flag: string) {
-    if (!(this.val & FlagsEnum[flag])) this.val += FlagsEnum[flag];
+    this.val |= FlagsEnum[flag];
   }
 
   unset(flag: string) {
-    this.val -= this.val & FlagsEnum[flag];
+    this.val &= ~FlagsEnum[flag];
   }
 
   isSet(flag: string) {
-    return this.val && FlagsEnum[flag];
+    return this.val & FlagsEnum[flag];
   }
 
   serialize() {
@@ -54,7 +56,7 @@ export class Flags {
 // };
 
 // Return a serialized flag from a bunch of strings
-export const compute = (options: string[]) => {
+export const compute = (options: string[]): number => {
   const flags = new Flags();
   options.forEach((opt) => {
     if (FlagsEnum[opt]) {
@@ -64,4 +66,4 @@ export const compute = (options: string[]) => {
   return flags.serialize();
 };
 
-export const isSet = (val: number, flag: string) => (val & FlagsEnum[flag] ? 1 : 0);
+export const isSet = (val: number, flag: FlagName) => (val & FlagsEnum[flag] ? 1 : 0);

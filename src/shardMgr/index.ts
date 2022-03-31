@@ -1,4 +1,5 @@
 import { Shard } from "discord.js";
+import {FlagName} from "src/flags";
 import { QCSerialized } from "../shard/QChannel/type";
 
 export const CMD_TWEET = 'tweet';
@@ -28,7 +29,7 @@ export type CmdTweet = {
     screen_name: string;
     tweet_type: string;
     qc: QCSerialized;
-    flags: string[];
+    flags: FlagName[];
     count: number;
 }
 

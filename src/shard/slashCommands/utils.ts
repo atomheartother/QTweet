@@ -32,9 +32,9 @@ export const createSlashCommand = (def: SlashCommandDefinition) => {
 
 export const getBoolFlags = (cmdDef: SlashCommandDefinition, interaction: CommandInteraction): string[] =>
   cmdDef.options.reduce((acc, curr) => {
-      if (curr.type !== 'boolean') return acc;
+      if (!!curr.type && curr.type !== 'boolean') return acc;
       const opt = interaction.options.getBoolean(curr.name, false);
-      if (opt) {
+      if (opt && !curr.invert || !opt && curr.invert) {
         return [...acc, curr.name]
       }
       return acc;

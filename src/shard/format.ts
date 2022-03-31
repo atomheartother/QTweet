@@ -126,8 +126,8 @@ const formatSubMsg = (msg: string | undefined) => {
 
 export const formatFlags = (lang: string, flags: number) => i18n(lang, 'formatFlags', {
   notext: isSet(flags, 'notext'),
-  retweet: isSet(flags, 'retweet'),
-  noquote: isSet(flags, 'noquote'),
+  retweet: isSet(flags, 'retweets'),
+  noquote: isSet(flags, 'noquotes'),
   ping: isSet(flags, 'ping'),
   replies: isSet(flags, 'replies'),
 });
