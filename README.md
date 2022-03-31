@@ -30,7 +30,7 @@ It contains:
 
 ## Can I add QTweet to my server?
 
-If you wanna add QTweet to your server, you can just click [this link](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot&permissions=51264).
+If you wanna add QTweet to your server, you can just click [this link](https://discordapp.com/oauth2/authorize?client_id=433615162394804224&scope=bot%20applications.commands&permissions=51264).
 
 ## Can I modify and run your bot?
 
