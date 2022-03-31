@@ -138,7 +138,7 @@ export const tweet : ShardMsgHandlerFunction<'tweet'> = async ({ count, flags, .
       ...params,
       count: TWEETS_MAX,
     };
-    const noRetweet = flags.indexOf('noretweet') !== -1;
+    const noRetweet = flags.indexOf('noretweets') !== -1;
     const noText = flags.indexOf('notext') !== -1;
     while (tweets.length < count && !doneWithTimeline) {
       // We can't really avoid await-ing inside of a loop here
