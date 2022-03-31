@@ -396,7 +396,7 @@ const streamData = async (tweet) => {
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
     subs.forEach(({ flags, qChannel }) => {
-      if (!flags.noquote) {
+      if (!isSet(flags, 'noquotes')) {
         post(qChannel, quotedEmbed, 'embed');
       }
     });
