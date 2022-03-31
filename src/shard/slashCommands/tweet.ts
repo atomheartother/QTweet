@@ -11,7 +11,7 @@ const cmdDef : SlashCommandDefinition = {
   description: "Post the latest tweet(s) from certain user(s).",
   options: [
     { name: "users", description: "The users' screen names, separated by spaces.", type: "string", required: true},
-    { name: "noretweet", description: "Don't count retweets as tweets.", type: "boolean" },
+    { name: "retweets", description: "Count retweets as tweets.", type: "boolean" },
     { name: "reverse", description: "Order tweets from newest to oldest.", type: "boolean" },
     { name: "force", description: "Force the bot to post a lot of tweets.", type: "boolean" },
     { name: "notext", description: "Don't count text-only tweets, only count media tweets.", type: "boolean" },
