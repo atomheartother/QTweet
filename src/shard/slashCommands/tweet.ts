@@ -26,8 +26,8 @@ const Tweet : SlashCommand = {
         let force = false;
         const flags = getBoolFlags(cmdDef, interaction);
         const options: any = {};
-        options.count = flags.find(flag => flag.includes("count"));
-        options.count = options.count ? Number(options.count) : 1;
+        const countOpt = interaction.options.getNumber("count", false)
+        options.count = countOpt ? Number(countOpt) : 1;
 
         const args = interaction.options.getString("users").split(" ");
 
