@@ -25,16 +25,9 @@ class Stream {
     if (this.newUserIds === true) {
       log('⚙️ New users found!', null, true);
       this.newUserIds = false;
-      if (this.stream) {
-        this.stream.destroy();
-        this.stream = null;
-        log(`⚙️ Destroying stream for re-creation in ${destroyDelay}ms`, null, true);
-        setTimeout(() => {
-          this.doCreate();
-        }, destroyDelay);
-      } else {
-        this.doCreate();
-      }
+      this.tClient.post('tweets/search/stream/rules', {
+        add: [ { value: this.userIds.map(() => `from:${this}`).join(' ') } ]
+      });
       return;
     }
     log(`⚙️ No new users, scheduling next check in ${shortDelay}ms`, null, true);
@@ -47,9 +40,10 @@ class Stream {
   doCreate() {
     log(`⚙️ Creating a stream with ${this.userIds.length} registered users`);
     this.stream = this.tClient
-      .stream('statuses/filter', {
-        follow: this.userIds.toString(),
-        tweet_mode: 'extended',
+      .stream('tweets/search/stream',
+        'tweet.fields': 'referenced_tweets,in_reply_to_user_id,author_id,attachments,entities',
+        'user.fields': 'profile_image_url',
+        'expansions': 'referenced_tweets.id,author_id,referenced_tweets.id.author_id,attachments.media_keys'
       })
       .on('start', this.streamStart)
       .on('data', this.streamData)
@@ -65,9 +59,8 @@ class Stream {
   create(userIds) {
     const originalUserIdCount = this.userIds.length;
     this.userIds = userIds;
-    if (originalUserIdCount === 0 && !this.stream) {
-      this.doCreate();
-    } else {
+    this.doCreate();
+    if (originalUserIdCount !== 0) {
       this.newUserIds = true;
     }
   }
