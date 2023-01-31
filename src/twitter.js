@@ -42,6 +42,15 @@ const tClient = new Twitter({
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
+const tClient2 = new Twitter({
+  version: '2',
+  extension: false,
+  consumer_key: process.env.TWITTER_API_KEY,
+  consumer_secret: process.env.TWITTER_API_SECRET_KEY,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+});
+
 const DISABLE_STREAMS = !!Number(process.env.DISABLE_STREAMS);
 
 const reconnectionDelay = new Backup({
@@ -389,9 +398,10 @@ const streamData = async (tweet) => {
   const { embed, metadata } = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel, msg }) => {
     if (msg) {
-      post(qChannel, msg, 'message');
+      post(qChannel, { embeds: embed.embeds, files: embed.files, content: msg }, 'embed');
+    } else {
+      post(qChannel, embed, 'embed');
     }
-    post(qChannel, embed, 'embed');
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
@@ -454,7 +464,7 @@ export const createStream = async () => {
   }
   if (!stream) {
     stream = new Stream(
-      tClient,
+      tClient2,
       streamStart,
       streamData,
       streamError,
