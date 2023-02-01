@@ -88,17 +88,23 @@ export const hasMedia = ({
   extended_entities: extendedEntities,
   extended_tweet: extendedTweet,
   retweeted_status: retweetedStatus,
-}) => (extendedEntities
+  attachments: attachments
+}) => // v2 API:
+  attachments
+    && attachments.media_keys
+    && attachments.media_keys.length > 0
+  // v1 API:
+  || extendedEntities
     && extendedEntities.media
-    && extendedEntities.media.length > 0)
-  || (extendedTweet
+    && extendedEntities.media.length > 0
+  || extendedTweet
     && extendedTweet.extended_entities
     && extendedTweet.extended_entities.media
-    && extendedTweet.extended_entities.media.length > 0)
-  || (retweetedStatus
+    && extendedTweet.extended_entities.media.length > 0
+  || retweetedStatus
     && retweetedStatus.extended_entities
     && retweetedStatus.extended_entities.media
-    && retweetedStatus.extended_entities.media.length > 0);
+    && retweetedStatus.extended_entities.media.length > 0;
 
 // Validation function for tweets
 export const isValid = (tweet) => !(
@@ -233,7 +239,7 @@ const formatTweetText = async (text, entities, isTextTweet) => {
   };
 };
 
-// Takes a tweet and formats it for posting.
+// Takes a v1 tweet and formats it for posting.
 export const formatTweet = async (tweet, isQuoted) => {
   const {
     user,
@@ -397,11 +403,7 @@ const streamData = async (tweet) => {
   log(`✅ Received valid tweet: ${tweet.id_str}, forwarding to ${subs.length} Discord subscriptions`, null, true);
   const { embed, metadata } = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel, msg }) => {
-    if (msg) {
-      post(qChannel, { embeds: embed.embeds, files: embed.files, content: msg }, 'embed');
-    } else {
-      post(qChannel, embed, 'embed');
-    }
+    post(qChannel, msg ? { embeds: embed.embeds, files: embed.files, content: msg } : embed, 'embed');
   });
   if (tweet.is_quote_status) {
     const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
