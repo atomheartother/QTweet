@@ -28,6 +28,9 @@ class Stream {
       this.tClient.post('tweets/search/stream/rules', {
         add: [ { value: this.userIds.map(() => `from:${this}`).join(' ') } ]
       });
+      if (!this.stream) {
+        this.doCreate();
+      }
       return;
     }
     log(`⚙️ No new users, scheduling next check in ${shortDelay}ms`, null, true);
@@ -40,7 +43,7 @@ class Stream {
   doCreate() {
     log(`⚙️ Creating a stream with ${this.userIds.length} registered users`);
     this.stream = this.tClient
-      .stream('tweets/search/stream',
+      .stream('tweets/search/stream', {
         'tweet.fields': 'referenced_tweets,in_reply_to_user_id,author_id,attachments,entities',
         'user.fields': 'profile_image_url',
         'expansions': 'referenced_tweets.id,author_id,referenced_tweets.id.author_id,attachments.media_keys'
@@ -59,8 +62,9 @@ class Stream {
   create(userIds) {
     const originalUserIdCount = this.userIds.length;
     this.userIds = userIds;
-    this.doCreate();
-    if (originalUserIdCount !== 0) {
+    if (originalUserIdCount === 0 && !this.stream)
+      this.doCreate();
+    } else {
       this.newUserIds = true;
     }
   }
