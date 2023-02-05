@@ -27,9 +27,9 @@ export const getUserInfo = async (twitterId: string) => {
 };
 
 export const updateUser = async (user: any) => {
-  const usrInfo = await getUserInfo(user.id_str);
-  if (!usrInfo || usrInfo.name !== user.screen_name) {
-    return addUser(user.id_str, user.screen_name);
+  const usrInfo = await getUserInfo(user.id);
+  if (!usrInfo || usrInfo.name !== user.name) {
+    return addUser(user.id, user.name);
   }
   return 0;
 };
