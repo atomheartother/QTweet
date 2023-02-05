@@ -45,10 +45,7 @@ const tClient = new Twitter({
 const tClient2 = new Twitter({
   version: '2',
   extension: false,
-  consumer_key: process.env.TWITTER_API_KEY,
-  consumer_secret: process.env.TWITTER_API_SECRET_KEY,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+  bearer_token: process.env.TWITTER_BEARER_TOKEN,
 });
 
 const DISABLE_STREAMS = !!Number(process.env.DISABLE_STREAMS);
@@ -88,7 +85,7 @@ export const hasMedia = ({
   extended_entities: extendedEntities,
   extended_tweet: extendedTweet,
   retweeted_status: retweetedStatus,
-  attachments: attachments
+  attachments
 }) => // v2 API:
   attachments
     && attachments.media_keys
@@ -109,16 +106,15 @@ export const hasMedia = ({
 // Validation function for tweets
 export const isValid = (tweet) => !(
   // Ignore undefined or null tweets
-  !tweet
+  !tweet || !tweet.id
     // Ignore tweets without a user object
-    || !tweet.user
-    // Ignore tweets where there is a quote status and not a quoted_status or a user for it.
-    || (tweet.is_quote_status
-      && (!tweet.quoted_status || !tweet.quoted_status.user))
+    || !tweet.author_id
+    || !tweet.includes
+    || !tweet.includes.users
 );
 
 const unfurlUrl = async (url) => {
-  const { expanded_url: expandedUrl, indices } = url;
+  const { expanded_url: expandedUrl, indices = [ url.start, url.end ] } = url;
   if (!(expandedUrl && indices && indices.length === 2)) return null;
   try {
     const unfurledUrl = await unfurl(expandedUrl);
@@ -146,34 +142,42 @@ const bestPicture = (twitterCard, openGraph) => {
 
 const formatTweetText = async (text, entities, isTextTweet) => {
   if (!entities) return text;
-  const { user_mentions: userMentions, urls, hashtags } = entities;
+  const { user_mentions: userMentions, mentions, urls, hashtags, cashtags } = entities;
   const changes = [];
   const metadata = {};
   let offset = 0;
   // Remove all the @s at the start of the tweet to make it shorter
   let inReplies = true;
   let replyIndex = 0;
-  if (userMentions) {
-    userMentions
-      .filter(
-        ({ screen_name: screenName, indices }) => screenName && indices && indices.length === 2,
-      )
-      .forEach(({ screen_name: screenName, name, indices }) => {
-        const [start, end] = indices;
-        if (inReplies && start === replyIndex) {
-          changes.push({ start, end: end + 1, newText: '' });
-          replyIndex = end + 1;
-        } else {
-          inReplies = false;
-          changes.push({
-            start,
-            end,
-            newText: `[@${
-              name || screenName
-            }](https://twitter.com/${screenName})`,
-          });
-        }
-      });
+  if (userMentions || mentions) {
+    // v1 user_mentions:
+    (userMentions && userMentions.filter(
+        ({ screen_name: screenName, indices }) => screenName && indices && indices.length === 2
+      // v2 mentions conversion:
+      ) || mentions.reduce(
+        ({ start, end, tag }, c) => {
+          if(start && end && tag) {
+            c.push({screenName: tag, indices: [start, end]});
+          }
+          return c;
+        }, []))
+    // Handle mentions for both APIs
+    .forEach(({ screen_name: screenName, name, indices }) => {
+      const [start, end] = indices;
+      if (inReplies && start === replyIndex) {
+        changes.push({ start, end: end + 1, newText: '' });
+        replyIndex = end + 1;
+      } else {
+        inReplies = false;
+        changes.push({
+          start,
+          end,
+          newText: `[@${
+            name || screenName
+          }](https://twitter.com/${screenName})`,
+        });
+      }
+    });
   }
   let bestPreview = null;
   if (urls) {
@@ -202,13 +206,29 @@ const formatTweetText = async (text, entities, isTextTweet) => {
   }
   if (hashtags) {
     hashtags
-      .filter(({ text: hashtagTxt, indices }) => hashtagTxt && indices && indices.length === 2)
-      .forEach(({ text: hashtagTxt, indices }) => {
-        const [start, end] = indices;
+      .filter(({ text: hashtagTxt, indices, tag, start, end }) => {
+        hashtagTxt && indices && indices.length === 2 || tag && start && end
+      })
+      .forEach(({ text: hashtagTxt, indices, tag, start, end }) => {
+        if (indices) {
+          [start, end] = indices;
+          tag = hashtagTxt;
+        }
         changes.push({
           start,
           end,
-          newText: `[#${hashtagTxt}](https://twitter.com/hashtag/${hashtagTxt}?src=hash)`,
+          newText: `[#${tag}](https://twitter.com/hashtag/${tag}?src=hash)`,
+        });
+      });
+  }
+  if (cashtags) {
+    cashtags
+      .filter(({ tag, start, end }) => tag && start && end)
+      .forEach(({ tag, start, end }) => {
+        changes.push({
+          start,
+          end,
+          newText: `[$${tag}](https://twitter.com/search?q=%24${tag}&src=cashtag)`,
         });
       });
   }
@@ -220,7 +240,7 @@ const formatTweetText = async (text, entities, isTextTweet) => {
       const nt = [...newText.normalize('NFC')];
       codePoints = codePoints
         .slice(0, start + offset)
-        .concat(nt)
+        concat(nt)
         .concat(codePoints.slice(end + offset));
       offset += nt.length - (end - start);
     });
@@ -237,6 +257,119 @@ const formatTweetText = async (text, entities, isTextTweet) => {
     text: fixedText,
     metadata,
   };
+};
+
+// Takes a v2 tweet and creates its embed.
+const createTweetEmbed = async (tweet, includes) => {
+  const { text, entities } = tweet;
+  const author = includes && includes.users
+    && includes.users.find(u => u.id === tweet.author_id);
+  const embed = {
+    url: `https://twitter.com/${author.username}/status/${tweet.id}`,
+    author: {
+      name: author.name === author.username ? `@${author.username}` : `${author.name} (@${author.username})`,
+      url: `https://twitter.com/${author.username}/status/${tweet.id}`,
+    },
+    thumbnail: {
+      url: author.profile_image_url,
+    },
+  };
+  const isTextTweet = !hasMedia(tweet);
+  const { text: formattedText, metadata: { preview: image } } = await formatTweetText(
+    text,
+    entities,
+    isTextTweet,
+  );
+  let txt = formattedText;
+  let files = [];
+  if (isTextTweet) {
+    // Text tweet
+    if (image) {
+      embed.image = { url: image };
+    }
+    embed.color = colors.text;
+  } else {
+    const {
+      type,
+      url,
+      duration_ms,
+      variants
+    } = includes.media.first(
+      ({media_key}) => media_key === tweet.attachments.media_keys[0]
+    );
+    if (type === 'animated_gif' || type === 'video') {
+      // Gif/video
+      let vidurl = null;
+      let bitrate = null;
+      for (const vid of variants) {
+        // Find the best video
+        if (vid.content_type === 'video/mp4' && vid.bit_rate < 1000000) {
+          const paramIdx = vid.url.lastIndexOf('?');
+          const hasParam = paramIdx !== -1 && paramIdx > vid.url.lastIndexOf('/');
+          vidurl = hasParam ? vid.url.substring(0, paramIdx) : vid.url;
+          bitrate = vid.bitrate;
+        }
+      }
+      if (vidurl !== null) {
+        if (duration_ms < 20000 || bitrate === 0) {
+          files = [vidurl];
+        } else {
+          embed.image = { url: extendedEntities.media[0].media_url_https };
+          txt = `${txt}\n[Link to video](${vidurl})`;
+        }
+      } else {
+        log('Found video tweet with no valid url');
+        log(vidinfo);
+      }
+      embed.color = colors.video;
+    } else {
+      // Image(s)
+      if (includes.attachments.media_keys.length === 1) {
+        embed.image = { url: url };
+      } else {
+        files = tweet.attachments.media_keys.map(
+          ({media_key: mk}) => includes.media.first(m => mk === m.media_key).url
+        );
+      }
+      embed.color = colors.image;
+    }
+  }
+  embed.content = txt;
+  return { embed: embed, files: files };
+};
+
+// Takes a v2 tweet with tweet refs and creates embed(s) for posting.
+const embedTweets = async ({data: tweet, includes}) => {
+  const {
+    retweeted: retweet,
+    quoted: quote,
+    replied_to: reply,
+  } = tweet.referenced_tweets
+    && tweet.referenced_tweets.reduce((a, c) => {
+      // Referenced_tweets[].type is key
+      a[c.type] = includes && includes.tweets
+        // Find the actual tweet for the value
+        && includes.tweets.find(e => e.id === c.id);
+      return a;
+    }, {}) || {};
+  let tweets = [];
+  if (retweet) {
+    tweets.push(await createTweetEmbed(retweet, includes));
+  } else {
+    let current = await createTweetEmbed(tweet, includes);
+    if (reply) {
+      let author = includes && includes.users
+        && includes.users.find(u => u.id === reply.author_id);
+      current.embed.author.name += ` [REPLY TO @${author.username}]`;
+    }
+    tweets.push(current);
+  }
+  if (quote) {
+    let current = await createTweetEmbed(quote, includes);
+    current.embed.author.name = `[QUOTED] ${tweets.quote.embed.author.name}`;
+    tweets.push(current);
+  }
+  return tweets;
 };
 
 // Takes a v1 tweet and formats it for posting.
@@ -348,11 +481,10 @@ const flagsFilter = (flags, tweet) => {
   if (isSet(flags, 'notext') && !hasMedia(tweet)) {
     return false;
   }
-  if (!isSet(flags, 'retweets') && tweet.retweeted_status) {
-    return false;
-  }
-  if (isSet(flags, 'noquotes') && tweet.is_quote_status) return false;
-  if (!isSet(flags, 'replies') && tweet.in_reply_to_user_id && tweet.in_reply_to_user_id !== tweet.user.id) return false;
+  if (!isSet(flags, 'retweets') && tweet.referenced_tweets.some(t => t.type === 'retweeted')) return false;
+  if (isSet(flags, 'noquotes') && tweet.referenced_tweets.some(t => t.type === 'quoted')) return false;
+  if (!isSet(flags, 'replies') && tweet.referenced_tweets.some(t => t.type === 'replied_to'
+        && tweet.includes.tweets.first(i => i.id === t.id).author_id !== tweet.author_id)) return false;
   return true;
 };
 
@@ -361,7 +493,7 @@ export const getFilteredSubs = async (tweet) => {
   if (!isValid(tweet)) return [];
   // Ignore tweets from people we don't follow
   // and replies unless they're replies to oneself (threads)
-  const subs = await getUserSubs(tweet.user.id_str);
+  const subs = await getUserSubs(tweet.author_id);
   if (
     !subs
     || subs.length === 0
@@ -372,7 +504,7 @@ export const getFilteredSubs = async (tweet) => {
     const {
       flags, channelId, isDM, msg,
     } = subs[i];
-    if (isDM) log(`Should we post ${tweet.id_str} in channel ${channelId}?`, null, true);
+    if (isDM) log(`Should we post ${tweet.id} in channel ${channelId}?`, null, true);
     if (flagsFilter(flags, tweet)) {
       if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`, null, true);
       targetSubs.push({ flags, qChannel: { channelId, isDM }, msg });
@@ -400,20 +532,24 @@ const streamData = async (tweet) => {
     log('✅ Discarded a tweet', null, true);
     return;
   }
-  log(`✅ Received valid tweet: ${tweet.id_str}, forwarding to ${subs.length} Discord subscriptions`, null, true);
-  const { embed, metadata } = await formatTweet(tweet);
+  log(`✅ Received valid tweet: ${tweet.data.id}, forwarding to ${subs.length} Discord subscriptions`, null, true);
+  const [main, quote] = await formatTweet(tweet);
   subs.forEach(({ flags, qChannel, msg }) => {
-    post(qChannel, msg ? { embeds: embed.embeds, files: embed.files, content: msg } : embed, 'embed');
-  });
-  if (tweet.is_quote_status) {
-    const { embed: quotedEmbed } = await formatTweet(tweet.quoted_status, true);
-    subs.forEach(({ flags, qChannel }) => {
-      if (!isSet(flags, 'noquotes')) {
-        post(qChannel, quotedEmbed, 'embed');
+    if (quote && !isSet(flags, 'noquotes')) {
+      if (msg) {
+        post(qChannel, { embeds: [main.embed, quote.embed], files: main.files.concat(quote.files), content: msg }, 'embed');
+      } else {
+        post(qChannel, { embeds: [main.embed, quote.embed], files: main.files.concat(quote.files) }, 'embed');
       }
-    });
-  }
-  updateUser(tweet.user);
+    } else {
+      if (msg) {
+        post(qChannel, { embeds: [main.embed], files: main.files, content: msg }, 'embed');
+      } else {
+        post(qChannel, { embeds: [main.embed], files: main.files }, 'embed');
+      }
+    }
+  });
+  updateUser(tweet.includes.users.first(u => u.id === tweet.data.author_id));
 };
 
 // Called when twitter ends the connection
