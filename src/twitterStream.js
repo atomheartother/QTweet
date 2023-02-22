@@ -1,9 +1,10 @@
 import log from './log';
+import { ETwitterStreamEvent, TweetStream, ETwitterApiError } from 'twitter-api-v2';
 
 // Idle delay
-const shortDelay = 1000 * 60 * 15;
+const shortDelay = 1000 * 10;
 // Long delay, when we just created a stream, we put this in before we create the next one
-const longDelay = 1000 * 60 * 45;
+const longDelay = 1000 * 60;
 // Destroying delay, delay between stream destruction and stream re-creation
 const destroyDelay = 1000 * 30;
 
@@ -25,38 +26,45 @@ class Stream {
     if (this.newUserIds === true) {
       log('⚙️ New users found!', null, true);
       this.newUserIds = false;
-      this.tClient.post('tweets/search/stream/rules', {
-        add: [ { value: this.userIds.map(() => `from:${this}`).join(' ') } ]
+      this.tClient.v2.updateStreamRules({
+        add: [
+          { value: this.userIds.map(id => `from:${id}`).join(' OR ') }
+        ]
       });
       if (!this.stream) {
         this.doCreate();
       }
-      return;
+    } else {
+      log(`⚙️ No new users, scheduling next check in ${shortDelay}ms`, null, true);
     }
-    log(`⚙️ No new users, scheduling next check in ${shortDelay}ms`, null, true);
     this.timeout = setTimeout(() => {
       this.timeout = null;
       this.checkNewUsers();
     }, shortDelay);
   }
 
-  doCreate() {
+  async doCreate() {
     log(`⚙️ Creating a stream with ${this.userIds.length} registered users`);
-    this.stream = this.tClient
-      .stream('tweets/search/stream', {
-        'tweet.fields': 'referenced_tweets,in_reply_to_user_id,author_id,attachments,entities',
-        'user.fields': 'profile_image_url',
-        'expansions': 'referenced_tweets.id,author_id,referenced_tweets.id.author_id,attachments.media_keys'
-      })
-      .on('start', this.streamStart)
-      .on('data', this.streamData)
-      .on('error', this.streamError)
-      .on('end', this.streamEnd);
-    log(`⚙️ Scheduling next check in ${longDelay}ms`, null, true);
-    this.timeout = setTimeout(() => {
-      this.timeout = null;
-      this.checkNewUsers();
-    }, longDelay);
+    this.stream = this.tClient.v2.searchStream({
+        autoConnect: false,
+        'tweet.fields': ['referenced_tweets','in_reply_to_user_id','author_id,attachments,entities'],
+        'user.fields': ['profile_image_url'],
+        'media.fields': ['url','duration_ms','preview_image_url','variants'],
+        expansions: ['referenced_tweets.id','author_id','referenced_tweets.id.author_id','attachments.media_keys'],
+      });
+    this.stream.on(ETwitterStreamEvent.Connected, this.streamStart);
+    this.stream.on(ETwitterStreamEvent.Error, this.streamError);
+    this.stream.on(ETwitterStreamEvent.ConnectionClosed, this.streamEnd);
+    this.stream.on(ETwitterStreamEvent.Data, this.streamData);
+
+    try {
+      await this.stream.connect();
+      log(`⚙️ Scheduling next check in ${longDelay}ms`, null, true);
+      this.timeout = setTimeout(() => {
+        this.timeout = null;
+        this.checkNewUsers();
+      }, longDelay);
+    } catch(e) { }
   }
 
   create(userIds) {
