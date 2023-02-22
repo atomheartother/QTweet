@@ -1,3 +1,4 @@
+import { TwitterApi, ETwitterApiError } from 'twitter-api-v2';
 import Twitter from 'twitter-lite';
 import unfurl from 'unfurl.js';
 import { isSet } from './flags';
@@ -42,11 +43,11 @@ const tClient = new Twitter({
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 });
 
-const tClient2 = new Twitter({
-  version: '2',
-  extension: false,
-  bearer_token: process.env.TWITTER_BEARER_TOKEN,
+const consumerClient = new TwitterApi({
+  appKey: process.env.TWITTER_API_KEY,
+  appSecret: process.env.TWITTER_API_SECRET_KEY,
 });
+const tClient2 = await consumerClient.appLogin();
 
 const DISABLE_STREAMS = !!Number(process.env.DISABLE_STREAMS);
 
@@ -62,34 +63,19 @@ export const destroyStream = () => {
   if (stream) { stream.disconnected(); }
 };
 
-function resetTwitterTimeout() {
-  if (twitterTimeoutDelay <= 0) return;
-  if (twitterTimeout !== null) {
-    clearTimeout(twitterTimeout);
-  }
-  twitterTimeout = setTimeout(() => {
-    twitterTimeout = null;
-    log(`❌ ${twitterTimeoutDelay}s without tweets, resetting stream...`);
-    if (reconnectionTimeoutID) {
-      log('❌ We\'re already in reconnection mode, abort timeout system');
-      return;
-    }
-    destroyStream();
-    // eslint-disable-next-line no-use-before-define
-    setTimeout(createStream, 30000);
-  }, twitterTimeoutDelay * 1000);
-}
-
 // Checks if a tweet has any media attached. If false, it's a text tweet
 export const hasMedia = ({
   extended_entities: extendedEntities,
   extended_tweet: extendedTweet,
   retweeted_status: retweetedStatus,
+  // v2 API:
   attachments
-}) => // v2 API:
+}, includes) =>
   attachments
     && attachments.media_keys
     && attachments.media_keys.length > 0
+    && includes && includes.media
+  && attachments.media_keys.every(a => includes.media.some(({id}) => a === id))
   // v1 API:
   || extendedEntities
     && extendedEntities.media
@@ -106,9 +92,9 @@ export const hasMedia = ({
 // Validation function for tweets
 export const isValid = (tweet) => !(
   // Ignore undefined or null tweets
-  !tweet || !tweet.id
+  !tweet || !tweet.data || !tweet.data.id
     // Ignore tweets without a user object
-    || !tweet.author_id
+    || !tweet.data.author_id
     || !tweet.includes
     || !tweet.includes.users
 );
@@ -155,11 +141,11 @@ const formatTweetText = async (text, entities, isTextTweet) => {
         ({ screen_name: screenName, indices }) => screenName && indices && indices.length === 2
       // v2 mentions conversion:
       ) || mentions.reduce(
-        ({ start, end, tag }, c) => {
-          if(start && end && tag) {
-            c.push({screenName: tag, indices: [start, end]});
+        (a, { start, end, username }) => {
+          if((start || start === 0) && end && username) {
+            a.push({screen_name: username, indices: [start, end]});
           }
-          return c;
+          return a;
         }, []))
     // Handle mentions for both APIs
     .forEach(({ screen_name: screenName, name, indices }) => {
@@ -240,7 +226,7 @@ const formatTweetText = async (text, entities, isTextTweet) => {
       const nt = [...newText.normalize('NFC')];
       codePoints = codePoints
         .slice(0, start + offset)
-        concat(nt)
+        .concat(nt)
         .concat(codePoints.slice(end + offset));
       offset += nt.length - (end - start);
     });
@@ -274,7 +260,7 @@ const createTweetEmbed = async (tweet, includes) => {
       url: author.profile_image_url,
     },
   };
-  const isTextTweet = !hasMedia(tweet);
+  const isTextTweet = !hasMedia(tweet, includes);
   const { text: formattedText, metadata: { preview: image } } = await formatTweetText(
     text,
     entities,
@@ -293,30 +279,24 @@ const createTweetEmbed = async (tweet, includes) => {
       type,
       url,
       duration_ms,
-      variants
-    } = includes.media.first(
+      variants,
+      preview_image_url
+    } = includes.media.find(
       ({media_key}) => media_key === tweet.attachments.media_keys[0]
     );
     if (type === 'animated_gif' || type === 'video') {
       // Gif/video
       let vidurl = null;
-      let bitrate = null;
       for (const vid of variants) {
         // Find the best video
         if (vid.content_type === 'video/mp4' && vid.bit_rate < 1000000) {
           const paramIdx = vid.url.lastIndexOf('?');
           const hasParam = paramIdx !== -1 && paramIdx > vid.url.lastIndexOf('/');
           vidurl = hasParam ? vid.url.substring(0, paramIdx) : vid.url;
-          bitrate = vid.bitrate;
         }
       }
       if (vidurl !== null) {
-        if (duration_ms < 20000 || bitrate === 0) {
-          files = [vidurl];
-        } else {
-          embed.image = { url: extendedEntities.media[0].media_url_https };
-          txt = `${txt}\n[Link to video](${vidurl})`;
-        }
+        embed.video = { url: vidurl };
       } else {
         log('Found video tweet with no valid url');
         log(vidinfo);
@@ -324,17 +304,17 @@ const createTweetEmbed = async (tweet, includes) => {
       embed.color = colors.video;
     } else {
       // Image(s)
-      if (includes.attachments.media_keys.length === 1) {
+      if (tweet.attachments.media_keys.length === 1) {
         embed.image = { url: url };
       } else {
         files = tweet.attachments.media_keys.map(
-          ({media_key: mk}) => includes.media.first(m => mk === m.media_key).url
+          ({media_key: mk}) => includes.media.find(m => mk === m.media_key).url
         );
       }
       embed.color = colors.image;
     }
   }
-  embed.content = txt;
+  embed.description = txt;
   return { embed: embed, files: files };
 };
 
@@ -343,6 +323,7 @@ const embedTweets = async ({data: tweet, includes}) => {
   const {
     retweeted: retweet,
     quoted: quote,
+    // Unused because unavailable for private accounts:
     replied_to: reply,
   } = tweet.referenced_tweets
     && tweet.referenced_tweets.reduce((a, c) => {
@@ -352,24 +333,26 @@ const embedTweets = async ({data: tweet, includes}) => {
         && includes.tweets.find(e => e.id === c.id);
       return a;
     }, {}) || {};
-  let tweets = [];
+  let current = null;
   if (retweet) {
-    tweets.push(await createTweetEmbed(retweet, includes));
+    current = await createTweetEmbed(retweet, includes);
+    let author = includes && includes.users
+      && includes.users.find(u => u.id === tweet.author_id);
+    current.embed.author.name += ` [RT BY @${author.username}]`;
   } else {
-    let current = await createTweetEmbed(tweet, includes);
-    if (reply) {
+    current = await createTweetEmbed(tweet, includes);
+    if (tweet.in_reply_to_user_id) {
       let author = includes && includes.users
-        && includes.users.find(u => u.id === reply.author_id);
+        && includes.users.find(u => u.id === tweet.in_reply_to_user_id);
       current.embed.author.name += ` [REPLY TO @${author.username}]`;
     }
-    tweets.push(current);
   }
   if (quote) {
-    let current = await createTweetEmbed(quote, includes);
-    current.embed.author.name = `[QUOTED] ${tweets.quote.embed.author.name}`;
-    tweets.push(current);
+    const quoteEmbed = await createTweetEmbed(quote, includes);
+    quoteEmbed.embed.author.name = `[QUOTED] ${quoteEmbed.embed.author.name}`;
+    return [current, quoteEmbed];
   }
-  return tweets;
+  return [current];
 };
 
 // Takes a v1 tweet and formats it for posting.
@@ -478,13 +461,13 @@ export const formatTweet = async (tweet, isQuoted) => {
 
 // Takes a tweet and determines whether or not it should be posted with these flags
 const flagsFilter = (flags, tweet) => {
-  if (isSet(flags, 'notext') && !hasMedia(tweet)) {
+  if (isSet(flags, 'notext') && !hasMedia(tweet.data, tweet.includes)) {
     return false;
   }
-  if (!isSet(flags, 'retweets') && tweet.referenced_tweets.some(t => t.type === 'retweeted')) return false;
-  if (isSet(flags, 'noquotes') && tweet.referenced_tweets.some(t => t.type === 'quoted')) return false;
-  if (!isSet(flags, 'replies') && tweet.referenced_tweets.some(t => t.type === 'replied_to'
-        && tweet.includes.tweets.first(i => i.id === t.id).author_id !== tweet.author_id)) return false;
+  if (!isSet(flags, 'retweets') && tweet.data.referenced_tweets?.some(t => t.type === 'retweeted')) return false;
+  if (isSet(flags, 'noquotes') && tweet.data.referenced_tweets?.some(t => t.type === 'quoted')) return false;
+  if (!isSet(flags, 'replies') && tweet.data.referenced_tweets?.some(t => t.type === 'replied_to'
+        && tweet.includes.tweets.find(i => i.id === t.id).author_id !== tweet.data.author_id)) return false;
   return true;
 };
 
@@ -493,7 +476,7 @@ export const getFilteredSubs = async (tweet) => {
   if (!isValid(tweet)) return [];
   // Ignore tweets from people we don't follow
   // and replies unless they're replies to oneself (threads)
-  const subs = await getUserSubs(tweet.author_id);
+  const subs = await getUserSubs(tweet.data.author_id);
   if (
     !subs
     || subs.length === 0
@@ -504,7 +487,7 @@ export const getFilteredSubs = async (tweet) => {
     const {
       flags, channelId, isDM, msg,
     } = subs[i];
-    if (isDM) log(`Should we post ${tweet.id} in channel ${channelId}?`, null, true);
+    if (isDM) log(`Should we post ${tweet.data.id} in channel ${channelId}?`, null, true);
     if (flagsFilter(flags, tweet)) {
       if (isDM) log(`Added (${channelId}, ${isDM}) to targetSubs.`, null, true);
       targetSubs.push({ flags, qChannel: { channelId, isDM }, msg });
@@ -517,39 +500,35 @@ export const getFilteredSubs = async (tweet) => {
 // Reset our reconnection delay
 const streamStart = () => {
   log('✅ Stream successfully started');
-  if (twitterTimeoutDelay > 0) {
-    log(`Will reconnect if inactive for ${twitterTimeoutDelay}s`);
-  }
-  resetTwitterTimeout();
   reconnectionDelay.reset();
 };
 
 // Called when we receive data
 const streamData = async (tweet) => {
-  resetTwitterTimeout();
+  log(`✅ Received new data: ${JSON.stringify(tweet)}`, null, true);
   const subs = await getFilteredSubs(tweet);
   if (subs.length === 0) {
     log('✅ Discarded a tweet', null, true);
     return;
   }
   log(`✅ Received valid tweet: ${tweet.data.id}, forwarding to ${subs.length} Discord subscriptions`, null, true);
-  const [main, quote] = await formatTweet(tweet);
+  const [main, quote] = await embedTweets(tweet);
   subs.forEach(({ flags, qChannel, msg }) => {
+    let embed = { embeds: [main.embed], files: main.files };
+    if (msg) {
+      embed.content = msg;
+    }
     if (quote && !isSet(flags, 'noquotes')) {
-      if (msg) {
-        post(qChannel, { embeds: [main.embed, quote.embed], files: main.files.concat(quote.files), content: msg }, 'embed');
-      } else {
-        post(qChannel, { embeds: [main.embed, quote.embed], files: main.files.concat(quote.files) }, 'embed');
-      }
-    } else {
-      if (msg) {
-        post(qChannel, { embeds: [main.embed], files: main.files, content: msg }, 'embed');
-      } else {
-        post(qChannel, { embeds: [main.embed], files: main.files }, 'embed');
+      embed.embeds.push(quote.embed);
+      Array.prototype.push.apply(embed.files, quote.files);
+      if (main.embed.image?.url === quote.embed.image?.url) {
+        embed.embeds[0] = structuredClone(main.embed);
+        embed.embeds[0].photo = null;
       }
     }
+    post(qChannel, embed, 'embed');
   });
-  updateUser(tweet.includes.users.first(u => u.id === tweet.data.author_id));
+  updateUser(tweet.includes.users.find(u => u.id === tweet.data.author_id));
 };
 
 // Called when twitter ends the connection
@@ -568,8 +547,8 @@ const streamEnd = () => {
 };
 
 // Called when the stream has an error
-const streamError = ({ url, status, statusText }) => {
-  if (status === 420) {
+const streamError = ({ type, error: { type: innerType, code, data: { detail } }, message }) => {
+  if (type === 'connect error' && innerType === ETwitterApiError.Response && code === 420) {
     log('⚙️ 420 status code detected, exiting cleanly to reboot bot', null, false);
     process.exit();
   }
@@ -581,9 +560,13 @@ const streamError = ({ url, status, statusText }) => {
   } else {
     reconnectionDelay.increment();
   }
-  log(
-    `❌ Twitter Error (${status}: ${statusText}) at ${url}. Reconnecting in ${delay}ms`,
-  );
+  if (innerType === ETwitterApiError.Response) {
+    log(
+      `❌ Twitter Error ${code}: ${detail} Reconnecting in ${delay}ms`,
+    );
+  } else {
+    log({ type: type, innerType: innerType, code: code, detail: detail, message: message });
+  }
   // eslint-disable-next-line no-use-before-define
   reconnectionTimeoutID = setTimeout(createStreamClearTimeout, delay);
 };
