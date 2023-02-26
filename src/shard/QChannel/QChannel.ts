@@ -1,5 +1,5 @@
 // Helper class to interact with channels and keep memory down
-import { AnyChannel, Channel, DMChannel, Guild, GuildChannel, MessageOptions, TextChannel } from 'discord.js';
+import { AnyChannel, DMChannel, Guild, GuildChannel, MessageOptions, NewsChannel, TextChannel, ThreadChannel } from 'discord.js';
 import {
   getUserDm,
   getChannel,
@@ -8,10 +8,16 @@ import {
   canPostEmbedIn,
   isDmChannel,
   isTextChannel,
+  isThreadChannel,
 } from '../discord/discord';
 import { QCConstructor, QCSerialized, QCSupportedChannel } from './type'
 
 export const isQCSupportedChannel = (c: AnyChannel): c is QCSupportedChannel  => isTextChannel(c) || isDmChannel(c);
+
+const checkFunction = ((channel: NewsChannel | ThreadChannel | TextChannel, msgType: string) => {
+  let gChannel: GuildChannel = isThreadChannel(channel) ? channel.parent : channel;
+  return msgType === 'embed' ? canPostEmbedIn(gChannel) : canPostIn(gChannel);
+})
 
 const getChannelName = (c: AnyChannel) => {
   if (isDmChannel(c)) {
@@ -27,7 +33,10 @@ const getFormattedName = (c: AnyChannel) => {
   if (isDmChannel(c)) {
     return `DM: ${c.recipient.tag} -- ${c.recipient.id}`;
   }
-  else if (isTextChannel(c)) {
+  if (isThreadChannel(c)) {
+    return `Thread: ${c.name} (${c.id}) in ${c.parent.name} (${c.parentId})`
+  }
+  if (isTextChannel(c)) {
     return `#${c.name} -- ${c.guild.name} -- ${c.id}`;
   }
   return `Channel: ${c.id}`
@@ -119,9 +128,8 @@ class QChannel {
 
   static async bestGuildChannel(guild: Guild, msgType = 'message') {
     if (!guild) return null;
-    const checkFunction = msgType === 'embed' ? canPostEmbedIn : canPostIn;
     // Check the system channel
-    if (guild.systemChannel && checkFunction(guild.systemChannel)) {
+    if (guild.systemChannel && checkFunction(guild.systemChannel, msgType)) {
       return new QChannel(guild.systemChannel);
     }
 
@@ -130,11 +138,11 @@ class QChannel {
     const genChan = guild.channels.cache.find(
       (c) => isTextChannel(c) && c.name === 'general',
     ) as TextChannel;
-    if (genChan && checkFunction(genChan)) return new QChannel(genChan);
+    if (genChan && checkFunction(genChan, msgType)) return new QChannel(genChan);
 
     // Iterate over all channels and find the first best one
     const firstBest = guild.channels.cache.find(
-      (c) => isTextChannel(c) && checkFunction(c),
+      (c) => isTextChannel(c) && checkFunction(c, msgType),
     ) as TextChannel;
     if (firstBest) return new QChannel(firstBest);
     // Try to reach the owner, this might fail, we'll return null here if all fails
@@ -148,8 +156,7 @@ class QChannel {
   async bestChannel(msgType = 'message') {
     try {
       const c = await this.obj();
-      const checkFunction = msgType === 'embed' ? canPostEmbedIn : canPostIn;
-      if (isDmChannel(c) || checkFunction(c)) {
+      if (isDmChannel(c) || checkFunction(c, msgType)) {
         return this;
       }
       // From now on we can't post in this channel
