@@ -2,9 +2,9 @@ import log from './log';
 import { ETwitterStreamEvent, TweetStream, ETwitterApiError } from 'twitter-api-v2';
 
 // Idle delay
-const shortDelay = 1000 * 10;
+const shortDelay = 1000 * 60 * 15;
 // Long delay, when we just created a stream, we put this in before we create the next one
-const longDelay = 1000 * 60;
+const longDelay = 1000 * 60 * 45;
 // Destroying delay, delay between stream destruction and stream re-creation
 const destroyDelay = 1000 * 30;
 
@@ -21,15 +21,27 @@ class Stream {
     this.streamEnd = streamEnd;
   }
 
-  checkNewUsers() {
-    log('⚙️ Checking for new stream users...', null, true);
-    if (this.newUserIds === true) {
+  async checkNewUsers(anyRules) {
+    if (this.newUserIds === true || anyRules) {
       log('⚙️ New users found!', null, true);
       this.newUserIds = false;
-      this.tClient.v2.updateStreamRules({
-        add: [
-          { value: this.userIds.map(id => `from:${id}`).join(' OR ') }
-        ]
+      if (!anyRules) {
+        anyRules = await this.tClient.v2.streamRules();
+      }
+      if (anyRules.data?.length) {
+        this.tClient.v2.updateStreamRules({
+          delete: { ids: anyRules.data.map(r => r.id) }
+        });
+      }
+      await this.tClient.v2.updateStreamRules({
+        add: this.userIds.reduce((arr, id) => {
+          if (!arr.length || arr[0].value.length + id.toString().length + 9 > 512) {
+            arr.unshift({value:`from:${id}`});
+          } else {
+            arr[0].value += ` OR from:${id}`;
+          }
+          return arr;
+        }, [])
       });
       if (!this.stream) {
         this.doCreate();
@@ -59,19 +71,25 @@ class Stream {
 
     try {
       await this.stream.connect();
-      log(`⚙️ Scheduling next check in ${longDelay}ms`, null, true);
-      this.timeout = setTimeout(() => {
-        this.timeout = null;
-        this.checkNewUsers();
-      }, longDelay);
     } catch(e) { }
   }
 
-  create(userIds) {
+  async create(userIds) {
     const originalUserIdCount = this.userIds.length;
     this.userIds = userIds;
     if (originalUserIdCount === 0 && !this.stream) {
-      this.doCreate();
+      let rules = await this.tClient.v2.streamRules();
+      if (rules.data?.length) {
+        this.doCreate();
+        
+        log(`⚙️ Scheduling next user check in ${longDelay}ms`, null, true);
+        this.timeout = setTimeout(() => {
+          this.timeout = null;
+          this.checkNewUsers();
+        }, longDelay);
+      } else {
+        this.checkNewUsers(rules);
+      }
     } else {
       this.newUserIds = true;
     }
