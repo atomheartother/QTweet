@@ -1,5 +1,5 @@
 // Direct mappings for discord.js methods
-import { Permissions, AnyChannel, TextChannel, GuildChannel, DMChannel, NewsChannel, Intents } from 'discord.js';
+import { Permissions, AnyChannel, TextChannel, GuildChannel, DMChannel, NewsChannel, Intents, ThreadChannel } from 'discord.js';
 import log from '../../log';
 import Backup from '../../backup';
 import { Client } from './clientType';
@@ -30,8 +30,9 @@ const reconnectionDelay = new Backup({
 });
 
 export const isDmChannel = (c: AnyChannel): c is DMChannel => c.type === 'DM';
-export const isTextChannel = (c: AnyChannel): c is TextChannel | NewsChannel => c.type === 'GUILD_TEXT' || c.type === 'GUILD_NEWS';
+export const isTextChannel = (c: AnyChannel): c is TextChannel | NewsChannel | ThreadChannel => c.type === 'GUILD_TEXT' || c.type === 'GUILD_NEWS' || c.type === "GUILD_PUBLIC_THREAD" || c.type === "GUILD_PRIVATE_THREAD" || c.type === 'GUILD_NEWS_THREAD';
 export const isNewsChannel = (c: AnyChannel): c is NewsChannel => c.type === 'GUILD_NEWS';
+export const isThreadChannel = (c: AnyChannel): c is ThreadChannel => c.type === "GUILD_PRIVATE_THREAD" || c.type === "GUILD_PUBLIC_THREAD";
 
 export const getClient = () => dClient;
 
