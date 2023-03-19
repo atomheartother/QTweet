@@ -13,6 +13,7 @@ import {APIEmbed} from 'discord-api-types';
 // 3: Number of attempts expired, user wasn't warned
 // 4: No way to contact user about error
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 const asyncTimeout = <T=any>(f: Function, ms: number): Promise<T> => new Promise((resolve) => setTimeout(() => {
   resolve(f());
 }, ms));

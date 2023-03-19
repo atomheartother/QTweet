@@ -86,14 +86,16 @@ class QTweetStream {
 
     try {
       await this.stream.connect();
-    } catch(e) { }
+    } catch(e) {
+      log(e)
+    }
   }
 
   async create(userIds: string[]) {
     const originalUserIdCount = this.userIds.length;
     this.userIds = userIds;
     if (originalUserIdCount === 0 && !this.stream) {
-      let rules = await this.tClient.v2.streamRules();
+      const rules = await this.tClient.v2.streamRules();
       if (rules.data?.length) {
         this.doCreate();
         

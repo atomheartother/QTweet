@@ -36,7 +36,7 @@ interface PostTranslatedReturn {
   cmd: typeof FORMAT_POST_TRANSLATED,
   qc: QCSerialized,
   trCode: string,
-};
+}
 
 interface PostEmbedsReturn {
   cmd: typeof FORMAT_POST_EMBEDS,

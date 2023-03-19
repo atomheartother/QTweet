@@ -75,7 +75,7 @@ const createTweetEmbed = async (tweet: TweetV2, includes: ApiV2Includes) => {
     entities,
     isTextTweet,
   );
-  let txt = formattedText;
+  const txt = formattedText;
   let files = [];
   if (isTextTweet) {
     // Text tweet
@@ -139,13 +139,13 @@ const embedTweets = async ({data: tweet, includes}: TweetV2SingleStreamResult) =
   let current = null;
   if (retweet) {
     current = await createTweetEmbed(retweet, includes);
-    let author = includes && includes.users
+    const author = includes && includes.users
       && includes.users.find(u => u.id === tweet.author_id);
     current.embed.author.name += ` [RT BY @${author.username}]`;
   } else {
     current = await createTweetEmbed(tweet, includes);
     if (tweet.in_reply_to_user_id) {
-      let author = includes && includes.users
+      const author = includes && includes.users
         && includes.users.find(u => u.id === tweet.in_reply_to_user_id);
       current.embed.author.name += ` [REPLY TO @${author.username}]`;
     }
@@ -213,7 +213,7 @@ const streamData = async (tweet: TweetV2SingleStreamResult) => {
   log(`✅ Received valid tweet: ${tweet.data.id}, forwarding to ${subs.length} Discord subscriptions`, null, true);
   const [main, quote] = await embedTweets(tweet);
   subs.forEach(({ flags, qChannel, msg }) => {
-    let embed : any = { embeds: [main.embed], files: main.files };
+    const embed : any = { embeds: [main.embed], files: main.files };
     if (msg) {
       embed.content = msg;
     }

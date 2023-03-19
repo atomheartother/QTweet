@@ -23,7 +23,7 @@ export const getInt = (val: string, alias = val) => `${val}::text AS ${alias}`;
 export const sanityCheck = async () => {
   const client = await pool.connect();
   let channels = 0;
-  let guilds = 0;
+  const guilds = 0;
   let users = 0;
   try {
     await client.query('BEGIN');

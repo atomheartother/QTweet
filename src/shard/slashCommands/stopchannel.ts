@@ -24,7 +24,7 @@ const StopChannel : SlashCommand = {
     let channelName = await qc.name();
     const channelIdArg = interaction.options.getString('channelIid');
 
-    if (!!channelIdArg) {
+    if (channelIdArg) {
       if (qc.isDM) {
         translated(qc, 'stopChannelInDm');
         return;

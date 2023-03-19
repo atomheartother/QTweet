@@ -15,7 +15,7 @@ import { QCConstructor, QCSerialized, QCSupportedChannel } from './type'
 export const isQCSupportedChannel = (c: AnyChannel): c is QCSupportedChannel  => isTextChannel(c) || isDmChannel(c);
 
 const checkFunction = ((channel: NewsChannel | ThreadChannel | TextChannel, msgType: string) => {
-  let gChannel: GuildChannel = isThreadChannel(channel) ? channel.parent : channel;
+  const gChannel: GuildChannel = isThreadChannel(channel) ? channel.parent : channel;
   return msgType === 'embed' ? canPostEmbedIn(gChannel) : canPostIn(gChannel);
 })
 
