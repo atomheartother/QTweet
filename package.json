@@ -16,7 +16,7 @@
     "@babel/core": "^7.14.8",
     "@babel/preset-typescript": "^7.14.5",
     "@types/fluent": "^0.11.3",
-    "@types/node": "^17.0.21",
+    "@types/node": "^17.0.29",
     "@types/pg": "^7.14.5",
     "babel-plugin-module-resolver": "^4.1.0",
     "eslint": "^6.8.0",
@@ -35,5 +35,8 @@
     "twitter-api-v2": "^1.14.1",
     "twitter-lite": "^0.14.0",
     "unfurl.js": "^3.0.1"
+  },
+  "engines" : { 
+    "node" : ">=17.0.0"
   }
 }

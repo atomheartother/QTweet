@@ -1,10 +1,11 @@
 import log from '../log';
 import {
-  userTimeline, userLookup, createStream, getError, showTweet, formatTweet, hasMedia,
+  userTimeline, userLookup, getError, showTweet, formatTweet, hasMedia,
 } from '../twitter';
+import {createStream} from '../twitter-v2'
 import { post, postAnnouncement } from './shardManager';
 import { DbModificationsInfo, ShardMsgHandlerFunction } from '.';
-import { add, getAllSubs, rm } from '../db/subs';
+import { add, rm } from '../db/subs';
 import { getUniqueChannels } from '../db/channels';
 import { getUserIds as SQLgetUserIds } from '../db/user';
 

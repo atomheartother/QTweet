@@ -1,6 +1,6 @@
 import {
   createStream,
-} from '../twitter';
+} from '../twitter-v2';
 import {
   start, tweet, tweetId, stop, announce,
 } from './botCommands';

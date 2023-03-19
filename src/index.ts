@@ -3,6 +3,7 @@ import { sanityCheck } from './twitter';
 import shardMsgHandler from './shardMgr/shardMsgHandler';
 import { init as initSharding, mgr } from './shardMgr/shardManager';
 import log from './log';
+import { twitterClientLogin } from './twitter-v2';
 
 const shardReady = async () => {
   if (mgr().shards.size !== mgr().totalShards
@@ -24,6 +25,8 @@ process.on('beforeExit', (code) => {
 });
 
 const start = async () => {
+  await twitterClientLogin();
+  log('✅ Connection to Twitter v2 API successful');
   const manager = initSharding();
   if (!manager) return 1;
   manager.on('shardCreate', (shard) => {
@@ -31,7 +34,7 @@ const start = async () => {
     shard.on('ready', shardReady);
   });
   try {
-    log("Spawning shards...");
+    log('Spawning shards...');
     manager.spawn({delay: Number(process.env.SHARD_SPAWN_DELAY || 15000), timeout: Number(process.env.SHARD_SPAWN_TIMEOUT || 60000)});
   } catch (e) {
     log("Can't spawn shard:");
@@ -41,5 +44,5 @@ const start = async () => {
 try {
   start();
 } catch (e) {
-  log(e)
+  log(e);
 }

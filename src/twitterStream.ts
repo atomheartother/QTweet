@@ -1,16 +1,31 @@
 import log from './log';
-import { ETwitterStreamEvent, TweetStream, ETwitterApiError } from 'twitter-api-v2';
+import { ETwitterStreamEvent, TweetStream, TwitterApi, StreamingV2GetRulesResult, TweetV2SingleStreamResult, ITweetStreamError } from 'twitter-api-v2';
 
 // Idle delay
 const shortDelay = 1000 * 60 * 15;
 // Long delay, when we just created a stream, we put this in before we create the next one
 const longDelay = 1000 * 60 * 45;
-// Destroying delay, delay between stream destruction and stream re-creation
-const destroyDelay = 1000 * 30;
 
 // Manages stream creation and makes a queue for creation so we don't spam twitter with requests
-class Stream {
-  constructor(tClient, streamStart, streamData, streamError, streamEnd) {
+class QTweetStream {
+
+  stream: TweetStream<TweetV2SingleStreamResult> | null;
+  userIds: string[];
+  newUserIds: boolean;
+  tClient: TwitterApi;
+  timeout: ReturnType<typeof setTimeout>
+  streamStart: () => any
+  streamData: (data: TweetV2SingleStreamResult) => any
+  streamError: (err: ITweetStreamError) => any
+  streamEnd: () => any;
+
+  constructor(
+    tClient: TwitterApi,
+    streamStart: () => any,
+    streamData: (data: TweetV2SingleStreamResult) => any,
+    streamError: (err: ITweetStreamError) => any,
+    streamEnd: () => any
+  ) {
     this.stream = null;
     this.userIds = [];
     this.newUserIds = false;
@@ -21,7 +36,7 @@ class Stream {
     this.streamEnd = streamEnd;
   }
 
-  async checkNewUsers(anyRules) {
+  async checkNewUsers(anyRules?: StreamingV2GetRulesResult) {
     if (this.newUserIds === true || anyRules) {
       log('⚙️ New users found!', null, true);
       this.newUserIds = false;
@@ -59,7 +74,7 @@ class Stream {
     log(`⚙️ Creating a stream with ${this.userIds.length} registered users`);
     this.stream = this.tClient.v2.searchStream({
         autoConnect: false,
-        'tweet.fields': ['referenced_tweets','in_reply_to_user_id','author_id,attachments,entities'],
+        'tweet.fields': ['referenced_tweets','in_reply_to_user_id','author_id','attachments','entities'],
         'user.fields': ['profile_image_url'],
         'media.fields': ['url','duration_ms','preview_image_url','variants'],
         expansions: ['referenced_tweets.id','author_id','referenced_tweets.id.author_id','attachments.media_keys'],
@@ -74,7 +89,7 @@ class Stream {
     } catch(e) { }
   }
 
-  async create(userIds) {
+  async create(userIds: string[]) {
     const originalUserIdCount = this.userIds.length;
     this.userIds = userIds;
     if (originalUserIdCount === 0 && !this.stream) {
@@ -121,4 +136,4 @@ class Stream {
   }
 }
 
-export default Stream;
+export default QTweetStream;

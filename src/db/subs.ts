@@ -3,6 +3,7 @@ import { getInt, pool, sanityCheck } from "./index";
 import { addChannel } from "./channels";
 import { addUser } from "./user";
 
+// Database representation of subscription
 type DbSubscription = {
   twitterId: string
   channelId: string
@@ -73,15 +74,22 @@ export const getChannelSubs = async (channelId: string, withName = false) => {
   return rows;
 };
 
-export const getUserSubs = async (twitterId: string, withInfo = false) => {
-  const { rows } = await pool.query<DbSubscription>(
-    withInfo
-      ? `SELECT ${getInt('subs."channelId"', '"channelId"')}, "flags", ${getInt(
+export const getUserSubsWithJoin = async (twitterId: string) => {
+  const { rows } = await pool.query<
+    {channelId: number, guildId: number, ownerId: number, isDM: boolean}
+  >(
+      `SELECT ${getInt('subs."channelId"', '"channelId"')}, "flags", ${getInt(
         '"guildId"',
       )}, ${getInt(
         '"ownerId"',
-      )}, "subs."isDM"" AS "isDM" FROM subs INNER JOIN channels ON subs."channelId" = channels."channelId" WHERE subs."twitterId"=$1;`
-      : `SELECT ${getInt(
+      )}, "subs."isDM"" AS "isDM" FROM subs INNER JOIN channels ON subs."channelId" = channels."channelId" WHERE subs."twitterId"=$1;`,
+      [twitterId]
+  );
+  return rows;
+};
+export const getUserSubsNoJoin = async (twitterId: string) => {
+  const { rows } = await pool.query<{channelId: number, flags: number, isDM: boolean, msg: string}>(
+      `SELECT ${getInt(
         '"channelId"',
       )}, "flags", "isDM", "msg" FROM subs WHERE "twitterId"=$1`, [twitterId],
   );
